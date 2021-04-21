@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", function()
 		const r = HEIGHT_CANVAS/WIDTH_CANVAS;
 
 		if(w*r > window.innerHeight)
-			w = Math.min(w, Math.ceil(h/r), 800);
+			w = Math.min(w, Math.ceil(h/r), WIDTH_CANVAS);
 		h = Math.floor(w*r);
 
 		dom_container.style.width = game.canvas.style.width = `${w}px`;

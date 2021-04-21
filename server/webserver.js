@@ -6,7 +6,8 @@ const http = require("http");
 const TYPEMAP = {
 	".js": "application/javascript",
 	".css": "text/css",
-	".png": "image/png"
+	".png": "image/png",
+	".ico": "image/x-icon"
 };
 
 
