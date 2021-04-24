@@ -3,10 +3,6 @@ const HEIGHT_CANVAS = 600;
 
 const SIZE_TILE = 16;
 
-
-const ID_EMPTY = 0;
-const ID_DIRT = 1;
-
 const map_tile = {
 	"111111111": {frame: "solid", flipped: false},
 	"111111110": {frame: "solid", flipped: false},
@@ -74,68 +70,68 @@ const map_tile = {
 	"110010000": {frame: "overhangoverhang", flipped: false},
 	"101111111": {frame: "floor", flipped: false},
 	"101111110": {frame: "floor", flipped: false},
-	"101111101": {frame: "floor", flipped: false}, // TODO(shawn): need floor + ceiling
-	"101111100": {frame: "floor", flipped: false}, // TODO(shawn): need floor + ceiling
+	"101111101": {frame: "floorceiling", flipped: false},
+	"101111100": {frame: "floorceiling", flipped: false},
 	"101111011": {frame: "floor", flipped: false},
 	"101111010": {frame: "floor", flipped: false},
-	"101111001": {frame: "floor", flipped: false}, // TODO(shawn): need floor + ceiling
-	"101111000": {frame: "floor", flipped: false}, // TODO(shawn): need floor + ceiling
+	"101111001": {frame: "floorceiling", flipped: false},
+	"101111000": {frame: "floorceiling", flipped: false},
 	"101110111": {frame: "edge", flipped: true},
 	"101110110": {frame: "edge", flipped: true},
-	"101110101": {frame: "edge", flipped: true}, // TODO(shawn): need edge + overhang
-	"101110100": {frame: "edge", flipped: true}, // TODO(shawn): need edge + overhang
+	"101110101": {frame: "edgeoverhang", flipped: true},
+	"101110100": {frame: "edgeoverhang", flipped: true},
 	"101110011": {frame: "edge", flipped: true},
 	"101110010": {frame: "edge", flipped: true},
-	"101110001": {frame: "edge", flipped: true}, // TODO(shawn): need edge + overhang
-	"101110000": {frame: "edge", flipped: true}, // TODO(shawn): need edge + overhang
+	"101110001": {frame: "edgeoverhang", flipped: true},
+	"101110000": {frame: "edgeoverhang", flipped: true},
 	"101011111": {frame: "edge", flipped: false},
 	"101011110": {frame: "edge", flipped: false},
-	"101011101": {frame: "edge", flipped: false}, // TODO(shawn): need edge + overhang
-	"101011100": {frame: "edge", flipped: false}, // TODO(shawn): need edge + overhang
+	"101011101": {frame: "edgeoverhang", flipped: false},
+	"101011100": {frame: "edgeoverhang", flipped: false},
 	"101011011": {frame: "edge", flipped: false},
 	"101011010": {frame: "edge", flipped: false},
-	"101011001": {frame: "edge", flipped: false}, // TODO(shawn): need edge + overhang
-	"101011000": {frame: "edge", flipped: false}, // TODO(shawn): need edge + overhang
-	"101010111": {frame: "edge", flipped: false}, // TODO(shawn): need double sided edge
-	"101010110": {frame: "edge", flipped: false}, // TODO(shawn): need double sided edge
-	"101010101": {frame: "edge", flipped: false}, // TODO(shawn): need weird floating thing
-	"101010100": {frame: "edge", flipped: false}, // TODO(shawn): need weird floating thing
-	"101010011": {frame: "edge", flipped: false}, // TODO(shawn): need double sided edge
-	"101010010": {frame: "edge", flipped: false}, // TODO(shawn): need double sided edge
-	"101010001": {frame: "edge", flipped: false}, // TODO(shawn): need weird floating thing
-	"101010000": {frame: "edge", flipped: false}, // TODO(shawn): need weird floating thing
+	"101011001": {frame: "edgeoverhang", flipped: false},
+	"101011000": {frame: "edgeoverhang", flipped: false},
+	"101010111": {frame: "edgeedge", flipped: false},
+	"101010110": {frame: "edgeedge", flipped: false},
+	"101010101": {frame: "island", flipped: false},
+	"101010100": {frame: "island", flipped: false},
+	"101010011": {frame: "edgeedge", flipped: false},
+	"101010010": {frame: "edgeedge", flipped: false},
+	"101010001": {frame: "island", flipped: false},
+	"101010000": {frame: "island", flipped: false},
 	"100111111": {frame: "floor", flipped: false},
 	"100111110": {frame: "floor", flipped: false},
-	"100111101": {frame: "floor", flipped: false}, // TODO(shawn): need floor + ceiling
-	"100111100": {frame: "floor", flipped: false}, // TODO(shawn): need floor + ceiling
+	"100111101": {frame: "floorceiling", flipped: false},
+	"100111100": {frame: "floorceiling", flipped: false},
 	"100111011": {frame: "floor", flipped: false},
 	"100111010": {frame: "floor", flipped: false},
-	"100111001": {frame: "floor", flipped: false}, // TODO(shawn): need floor + ceiling
-	"100111000": {frame: "floor", flipped: false}, // TODO(shawn): need floor + ceiling
+	"100111001": {frame: "floorceiling", flipped: false},
+	"100111000": {frame: "floorceiling", flipped: false},
 	"100110111": {frame: "edge", flipped: true},
 	"100110110": {frame: "edge", flipped: true},
-	"100110101": {frame: "edge", flipped: true}, // TODO(shawn): need edge + overhang
-	"100110100": {frame: "edge", flipped: true}, // TODO(shawn): need edge + overhang
+	"100110101": {frame: "edgeoverhang", flipped: true},
+	"100110100": {frame: "edgeoverhang", flipped: true},
 	"100110011": {frame: "edge", flipped: true},
 	"100110010": {frame: "edge", flipped: true},
-	"100110001": {frame: "edge", flipped: true}, // TODO(shawn): need edge + overhang
-	"100110000": {frame: "edge", flipped: true}, // TODO(shawn): need edge + overhang
+	"100110001": {frame: "edgeoverhang", flipped: true},
+	"100110000": {frame: "edgeoverhang", flipped: true},
 	"100011111": {frame: "edge", flipped: false},
 	"100011110": {frame: "edge", flipped: false},
-	"100011101": {frame: "edge", flipped: false}, // TODO(shawn): need edge + overhang
-	"100011100": {frame: "edge", flipped: false}, // TODO(shawn): need edge + overhang
+	"100011101": {frame: "edgeoverhang", flipped: false},
+	"100011100": {frame: "edgeoverhang", flipped: false},
 	"100011011": {frame: "edge", flipped: false},
 	"100011010": {frame: "edge", flipped: false},
-	"100011001": {frame: "edge", flipped: false}, // TODO(shawn): need edge + overhang
-	"100011000": {frame: "edge", flipped: false}, // TODO(shawn): need edge + overhang
-	"100010111": {frame: "edge", flipped: false}, // TODO(shawn): need double sided edge
-	"100010110": {frame: "edge", flipped: false}, // TODO(shawn): need double sided edge
-	"100010101": {frame: "edge", flipped: false}, // TODO(shawn): need weird floating thing
-	"100010100": {frame: "edge", flipped: false}, // TODO(shawn): need weird floating thing
-	"100010011": {frame: "edge", flipped: false}, // TODO(shawn): need double sided edge
-	"100010010": {frame: "edge", flipped: false}, // TODO(shawn): need double sided edge
-	"100010001": {frame: "edge", flipped: false}, // TODO(shawn): need weird floating thing
-	"100010000": {frame: "edge", flipped: false}, // TODO(shawn): need weird floating thing
+	"100011001": {frame: "edgeoverhang", flipped: false},
+	"100011000": {frame: "edgeoverhang", flipped: false},
+	"100010111": {frame: "edgeedge", flipped: false},
+	"100010110": {frame: "edgeedge", flipped: false},
+	"100010101": {frame: "island", flipped: false},
+	"100010100": {frame: "island", flipped: false},
+	"100010011": {frame: "edgeedge", flipped: false},
+	"100010010": {frame: "edgeedge", flipped: false},
+	"100010001": {frame: "island", flipped: false},
+	"100010000": {frame: "island", flipped: false},
 	"011111111": {frame: "corner", flipped: false},
 	"011111110": {frame: "corner", flipped: false},
 	"011111101": {frame: "cornerceiling", flipped: false},
@@ -168,105 +164,105 @@ const map_tile = {
 	"011010010": {frame: "wallwall", flipped: false},
 	"011010001": {frame: "overhangoverhang", flipped: false},
 	"011010000": {frame: "overhangoverhang", flipped: false},
-	"010111111": {frame: "corner", flipped: false}, // TODO(shawn): need double sided corner
-	"010111110": {frame: "corner", flipped: false}, // TODO(shawn): need double sided corner
-	"010111101": {frame: "corner", flipped: false}, // TODO(shawn): need double sided corner + ceiling
-	"010111100": {frame: "corner", flipped: false}, // TODO(shawn): need double sided corner + ceiling
-	"010111011": {frame: "corner", flipped: false}, // TODO(shawn): need double sided corner
-	"010111010": {frame: "corner", flipped: false}, // TODO(shawn): need double sided corner
-	"010111001": {frame: "corner", flipped: false}, // TODO(shawn): need double sided corner + ceiling
-	"010111000": {frame: "corner", flipped: false}, // TODO(shawn): need double sided corner + ceiling
-	"010110111": {frame: "wall", flipped: true}, // TODO(shawn): need corner + wall
-	"010110110": {frame: "wall", flipped: true}, // TODO(shawn): need corner + wall
-	"010110101": {frame: "overhang", flipped: true}, // TODO(shawn): need corner + overhang
-	"010110100": {frame: "overhang", flipped: true}, // TODO(shawn): need corner + overhang
-	"010110011": {frame: "wall", flipped: true}, // TODO(shawn): need corner + wall
-	"010110010": {frame: "wall", flipped: true}, // TODO(shawn): need corner + wall
-	"010110001": {frame: "overhang", flipped: true}, // TODO(shawn): need corner + overhang
-	"010110000": {frame: "overhang", flipped: true}, // TODO(shawn): need corner + overhang
-	"010011111": {frame: "wall", flipped: false}, // TODO(shawn): need corner + wall
-	"010011110": {frame: "wall", flipped: false}, // TODO(shawn): need corner + wall
-	"010011101": {frame: "overhang", flipped: false}, // TODO(shawn): need corner + overhang
-	"010011100": {frame: "overhang", flipped: false}, // TODO(shawn): need corner + overhang
-	"010011011": {frame: "wall", flipped: false}, // TODO(shawn): need corner + wall
-	"010011010": {frame: "wall", flipped: false}, // TODO(shawn): need corner + wall
-	"010011001": {frame: "overhang", flipped: false}, // TODO(shawn): need corner + overhang
-	"010011000": {frame: "overhang", flipped: false}, // TODO(shawn): need corner + overhang
-	"010010111": {frame: "wall", flipped: false}, // TODO(shawn): need double sided wall
-	"010010110": {frame: "wall", flipped: false}, // TODO(shawn): need double sided wall
-	"010010101": {frame: "overhang", flipped: false}, // TODO(shawn): need double sided overhang
-	"010010100": {frame: "overhang", flipped: false}, // TODO(shawn): need double sided overhang
-	"010010011": {frame: "wall", flipped: false}, // TODO(shawn): need double sided wall
-	"010010010": {frame: "wall", flipped: false}, // TODO(shawn): need double sided wall
-	"010010001": {frame: "overhang", flipped: false}, // TODO(shawn): need double sided overhang
-	"010010000": {frame: "overhang", flipped: false}, // TODO(shawn): need double sided overhang
+	"010111111": {frame: "corners", flipped: false},
+	"010111110": {frame: "corners", flipped: false},
+	"010111101": {frame: "cornersceiling", flipped: false},
+	"010111100": {frame: "cornersceiling", flipped: false},
+	"010111011": {frame: "corners", flipped: false},
+	"010111010": {frame: "corners", flipped: false},
+	"010111001": {frame: "cornersceiling", flipped: false},
+	"010111000": {frame: "cornersceiling", flipped: false},
+	"010110111": {frame: "cornerwall", flipped: true},
+	"010110110": {frame: "cornerwall", flipped: true},
+	"010110101": {frame: "corneroverhang", flipped: true},
+	"010110100": {frame: "corneroverhang", flipped: true},
+	"010110011": {frame: "cornerwall", flipped: true},
+	"010110010": {frame: "cornerwall", flipped: true},
+	"010110001": {frame: "corneroverhang", flipped: true},
+	"010110000": {frame: "corneroverhang", flipped: true},
+	"010011111": {frame: "cornerwall", flipped: false},
+	"010011110": {frame: "cornerwall", flipped: false},
+	"010011101": {frame: "corneroverhang", flipped: false},
+	"010011100": {frame: "corneroverhang", flipped: false},
+	"010011011": {frame: "cornerwall", flipped: false},
+	"010011010": {frame: "cornerwall", flipped: false},
+	"010011001": {frame: "corneroverhang", flipped: false},
+	"010011000": {frame: "corneroverhang", flipped: false},
+	"010010111": {frame: "wallwall", flipped: false},
+	"010010110": {frame: "wallwall", flipped: false},
+	"010010101": {frame: "overhangoverhang", flipped: false},
+	"010010100": {frame: "overhangoverhang", flipped: false},
+	"010010011": {frame: "wallwall", flipped: false},
+	"010010010": {frame: "wallwall", flipped: false},
+	"010010001": {frame: "overhangoverhang", flipped: false},
+	"010010000": {frame: "overhangoverhang", flipped: false},
 	"001111111": {frame: "floor", flipped: false},
 	"001111110": {frame: "floor", flipped: false},
-	"001111101": {frame: "floor", flipped: false}, // TODO(shawn): need floor + ceiling
-	"001111100": {frame: "floor", flipped: false}, // TODO(shawn): need floor + ceiling
+	"001111101": {frame: "floorceiling", flipped: false},
+	"001111100": {frame: "floorceiling", flipped: false},
 	"001111011": {frame: "floor", flipped: false},
 	"001111010": {frame: "floor", flipped: false},
-	"001111001": {frame: "floor", flipped: false}, // TODO(shawn): need floor + ceiling
-	"001111000": {frame: "floor", flipped: false}, // TODO(shawn): need floor + ceiling
+	"001111001": {frame: "floorceiling", flipped: false},
+	"001111000": {frame: "floorceiling", flipped: false},
 	"001110111": {frame: "edge", flipped: true},
 	"001110110": {frame: "edge", flipped: true},
-	"001110101": {frame: "edge", flipped: true}, // TODO(shawn): need edge + overhang
-	"001110100": {frame: "edge", flipped: true}, // TODO(shawn): need edge + overhang
+	"001110101": {frame: "edgeoverhang", flipped: true},
+	"001110100": {frame: "edgeoverhang", flipped: true},
 	"001110011": {frame: "edge", flipped: true},
 	"001110010": {frame: "edge", flipped: true},
-	"001110001": {frame: "edge", flipped: true}, // TODO(shawn): need edge + overhang
-	"001110000": {frame: "edge", flipped: true}, // TODO(shawn): need edge + overhang
+	"001110001": {frame: "edgeoverhang", flipped: true},
+	"001110000": {frame: "edgeoverhang", flipped: true},
 	"001011111": {frame: "edge", flipped: false},
 	"001011110": {frame: "edge", flipped: false},
-	"001011101": {frame: "edge", flipped: false}, // TODO(shawn): need edge + overhang
-	"001011100": {frame: "edge", flipped: false}, // TODO(shawn): need edge + overhang
+	"001011101": {frame: "edgeoverhang", flipped: false},
+	"001011100": {frame: "edgeoverhang", flipped: false},
 	"001011011": {frame: "edge", flipped: false},
 	"001011010": {frame: "edge", flipped: false},
-	"001011001": {frame: "edge", flipped: false}, // TODO(shawn): need edge + overhang
-	"001011000": {frame: "edge", flipped: false}, // TODO(shawn): need edge + overhang
-	"001010111": {frame: "edge", flipped: false}, // TODO(shawn): need double sided edge
-	"001010110": {frame: "edge", flipped: false}, // TODO(shawn): need double sided edge
-	"001010101": {frame: "edge", flipped: false}, // TODO(shawn): need weird floating thing
-	"001010100": {frame: "edge", flipped: false}, // TODO(shawn): need weird floating thing
-	"001010011": {frame: "edge", flipped: false}, // TODO(shawn): need double sided edge
-	"001010010": {frame: "edge", flipped: false}, // TODO(shawn): need double sided edge
-	"001010001": {frame: "edge", flipped: false}, // TODO(shawn): need weird floating thing
-	"001010000": {frame: "edge", flipped: false}, // TODO(shawn): need weird floating thing
+	"001011001": {frame: "edgeoverhang", flipped: false},
+	"001011000": {frame: "edgeoverhang", flipped: false},
+	"001010111": {frame: "edgeedge", flipped: false},
+	"001010110": {frame: "edgeedge", flipped: false},
+	"001010101": {frame: "island", flipped: false},
+	"001010100": {frame: "island", flipped: false},
+	"001010011": {frame: "edgeedge", flipped: false},
+	"001010010": {frame: "edgeedge", flipped: false},
+	"001010001": {frame: "island", flipped: false},
+	"001010000": {frame: "island", flipped: false},
 	"000111111": {frame: "floor", flipped: false},
 	"000111110": {frame: "floor", flipped: false},
-	"000111101": {frame: "floor", flipped: false}, // TODO(shawn): need floor + ceiling
-	"000111100": {frame: "floor", flipped: false}, // TODO(shawn): need floor + ceiling
+	"000111101": {frame: "floorceiling", flipped: false},
+	"000111100": {frame: "floorceiling", flipped: false},
 	"000111011": {frame: "floor", flipped: false},
 	"000111010": {frame: "floor", flipped: false},
-	"000111001": {frame: "floor", flipped: false}, // TODO(shawn): need floor + ceiling
-	"000111000": {frame: "floor", flipped: false}, // TODO(shawn): need floor + ceiling
+	"000111001": {frame: "floorceiling", flipped: false},
+	"000111000": {frame: "floorceiling", flipped: false},
 	"000110111": {frame: "edge", flipped: true},
 	"000110110": {frame: "edge", flipped: true},
-	"000110101": {frame: "edge", flipped: true}, // TODO(shawn): need edge + overhang
-	"000110100": {frame: "edge", flipped: true}, // TODO(shawn): need edge + overhang
+	"000110101": {frame: "edgeoverhang", flipped: true},
+	"000110100": {frame: "edgeoverhang", flipped: true},
 	"000110011": {frame: "edge", flipped: true},
 	"000110010": {frame: "edge", flipped: true},
-	"000110001": {frame: "edge", flipped: true}, // TODO(shawn): need edge + overhang
-	"000110000": {frame: "edge", flipped: true}, // TODO(shawn): need edge + overhang
+	"000110001": {frame: "edgeoverhang", flipped: true},
+	"000110000": {frame: "edgeoverhang", flipped: true},
 	"000011111": {frame: "edge", flipped: false},
 	"000011110": {frame: "edge", flipped: false},
-	"000011101": {frame: "edge", flipped: false}, // TODO(shawn): need edge + overhang
-	"000011100": {frame: "edge", flipped: false}, // TODO(shawn): need edge + overhang
+	"000011101": {frame: "edgeoverhang", flipped: false},
+	"000011100": {frame: "edgeoverhang", flipped: false},
 	"000011011": {frame: "edge", flipped: false},
 	"000011010": {frame: "edge", flipped: false},
-	"000011001": {frame: "edge", flipped: false}, // TODO(shawn): need edge + overhang
-	"000011000": {frame: "edge", flipped: false}, // TODO(shawn): need edge + overhang
-	"000010111": {frame: "edge", flipped: false}, // TODO(shawn): need double sided edge
-	"000010110": {frame: "edge", flipped: false}, // TODO(shawn): need double sided edge
-	"000010101": {frame: "edge", flipped: false}, // TODO(shawn): need weird floating thing
-	"000010100": {frame: "edge", flipped: false}, // TODO(shawn): need weird floating thing
-	"000010011": {frame: "edge", flipped: false}, // TODO(shawn): need double sided edge
-	"000010010": {frame: "edge", flipped: false}, // TODO(shawn): need double sided edge
-	"000010001": {frame: "edge", flipped: false}, // TODO(shawn): need weird floating thing
-	"000010000": {frame: "edge", flipped: false} // TODO(shawn): need weird floating thing
+	"000011001": {frame: "edgeoverhang", flipped: false},
+	"000011000": {frame: "edgeoverhang", flipped: false},
+	"000010111": {frame: "edgeedge", flipped: false},
+	"000010110": {frame: "edgeedge", flipped: false},
+	"000010101": {frame: "island", flipped: false},
+	"000010100": {frame: "island", flipped: false},
+	"000010011": {frame: "edgeedge", flipped: false},
+	"000010010": {frame: "edgeedge", flipped: false},
+	"000010001": {frame: "island", flipped: false},
+	"000010000": {frame: "island", flipped: false}
 };
 
-var energy_current = 10;
+let energy_current = 10;
 
 
 function getSurrounding(level, index_row, index_col)
@@ -465,8 +461,6 @@ document.addEventListener("DOMContentLoaded", function()
 
 	function dig(level, emitter, index_row, index_col)
 	{
-		console.log(index_row, index_col)
-		console.log(level.tiles[index_row][index_col])
 		if(!level.tiles[index_row][index_col])
 			return;
 
@@ -483,16 +477,16 @@ document.addEventListener("DOMContentLoaded", function()
 				const t = map_tile[surrounding];
 				const s = level.sprites[index_row_check][index_col_check];
 
-				s.setFrame(t === undefined ? "void" : t.frame);
-				if(t === undefined)
-					s.body.enable = false;
-				else if(t.flipped)
-					s.flipX = true;
+				if(t !== undefined)
+				{
+					s.setFrame(t.frame);
+					s.flipX = t.flipped;
+				}
 			}
 
 
 
-		energy_current--;
+		// energy_current--;
 		energy_display.setText( 'Energy:' + energy_current);
 		bar.scaleX = energy_current/energy_max;
 	}

@@ -59,6 +59,30 @@
 		{
 			"filename": "corneroverhang",
 			"frame": {"x": 64, "y": 32, "w": 8, "h": 8}
+		},
+		{
+			"filename": "floorceiling",
+			"frame": {"x": 64, "y": 40, "w": 8, "h": 8}
+		},
+		{
+			"filename": "edgeoverhang",
+			"frame": {"x": 64, "y": 48, "w": 8, "h": 8}
+		},
+		{
+			"filename": "edgeedge",
+			"frame": {"x": 64, "y": 56, "w": 8, "h": 8}
+		},
+		{
+			"filename": "island",
+			"frame": {"x": 64, "y": 64, "w": 8, "h": 8}
+		},
+		{
+			"filename": "corners",
+			"frame": {"x": 64, "y": 72, "w": 8, "h": 8}
+		},
+		{
+			"filename": "cornersceiling",
+			"frame": {"x": 64, "y": 80, "w": 8, "h": 8}
 		}
 	]
 }
