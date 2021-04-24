@@ -378,8 +378,11 @@ document.addEventListener("DOMContentLoaded", function()
 
 				bar = this.add.graphics();
 				bar.fillStyle(0xebb134, 1);
+				bar.displayOriginX = 16;
+				
 				bar.fillRect(16, 16, 200, 15);
 				bar.setScrollFactor(0);
+				console.log(bar); 
 				energy_max = 10;
 				energy_current = energy_max;
 				energy_display = this.add.text(84, 16, 'Energy:' + energy_current, { fontSize: '12px', fill: '#000' });
@@ -507,8 +510,9 @@ document.addEventListener("DOMContentLoaded", function()
 		energy_current --;
 		energy_display.setText( 'Energy:' + energy_current);
 		bar.scaleX = energy_current/energy_max;
-		//theres a better way to do this:
-		bar.x += 1.7;
+		//x offset 
+		bar.x += 16 * (1/energy_max);
+
 	}
 
 	window.addEventListener("resize", resize);
