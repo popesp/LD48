@@ -110,6 +110,16 @@ document.addEventListener("DOMContentLoaded", function()
 				energy_display.y = player.body.position.y - HEIGHT_CANVAS/5;
 				bar.x = player.body.position.x - WIDTH_CANVAS/5;;
 				bar.y = player.body.position.y - HEIGHT_CANVAS/5;
+
+				var emitter = this.add.particles('dirt').createEmitter({
+					speed: { min: -800, max: 800 },
+					angle: { min: 0, max: 360 },
+					scale: { start: 0.1, end: 0 },
+					blendMode: 'SCREEN', //'NORMAL'
+					on: false,
+					lifespan: 600,
+					gravityY: 800
+				});
 				if (cursors.left.isDown)
 				{
 					player.setVelocityX(-160);
@@ -144,6 +154,7 @@ document.addEventListener("DOMContentLoaded", function()
 						energy_display.setText( 'Energy:' + energy_current);
 						bar.scaleX = energy_current/energy_max;
 						sprite.destroy();
+						emitter.explode(20, player.x, player.y);
 						levelsprites[Math.floor(player.y/SIZE_TILE)][Math.floor(player.x/SIZE_TILE)] = null;
 					}
 				}
