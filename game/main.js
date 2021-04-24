@@ -364,7 +364,12 @@ document.addEventListener("DOMContentLoaded", function()
 
 					levelsprites.push(rowsprites);
 				}
-				energy_display = this.add.text(16, 16, "Energy:" + energy_current, { fontSize: "12px", fill: "#000" });
+				bar = this.add.graphics();
+				bar.fillStyle(0xebb134, 1);
+				bar.fillRect(0, 0, 200, 15);
+				energy_max = 10;
+				energy_current = energy_max;
+				energy_display = this.add.text(16, 16, 'Energy:' + energy_current, { fontSize: '12px', fill: '#000' });
 
 				this.anims.create({
 					key: "left",
@@ -388,19 +393,53 @@ document.addEventListener("DOMContentLoaded", function()
 			},
 			update: function()
 			{
-				energy_display.x = player.body.position.x - WIDTH_CANVAS/5;
+				energy_display.x = player.body.position.x - WIDTH_CANVAS/8;
 				energy_display.y = player.body.position.y - HEIGHT_CANVAS/5;
+				bar.x = player.body.position.x - WIDTH_CANVAS/5;;
+				bar.y = player.body.position.y - HEIGHT_CANVAS/5;
+
+				const emitter = this.add.particles('dirt').createEmitter({
+					speed: { min: -800, max: 800 },
+					angle: { min: 0, max: 360 },
+					scale: { start: 0.1, end: 0 },
+					blendMode: 'SCREEN', //'NORMAL'
+					on: false,
+					lifespan: 600,
+					gravityY: 800
+				});
+
 				if (cursors.left.isDown)
 				{
 					player.setVelocityX(-160);
 
-					player.anims.play("left", true);
+					player.anims.play('left', true);
+					if (player.body.touching.down && energy_current > 0)
+					{
+						// dig
+						const sprite = levelsprites[Math.floor(player.y/SIZE_TILE-1)][Math.floor(player.x/SIZE_TILE)-1];
+						if(sprite !== null)
+						{
+							dig(sprite)
+							emitter.explode(20, player.x-SIZE_TILE, player.y-SIZE_TILE/2);
+							levelsprites[Math.floor(player.y/SIZE_TILE)-1][Math.floor(player.x/SIZE_TILE)-1] = null;
+						}
+					}
 				}
 				else if (cursors.right.isDown)
 				{
 					player.setVelocityX(160);
+					player.anims.play('right', true);
 
-					player.anims.play("right", true);
+					if (player.body.touching.down && energy_current > 0)
+					{
+						const sprite = levelsprites[Math.floor(player.y/SIZE_TILE-1)][Math.floor(player.x/SIZE_TILE)+1];
+						if(sprite !== null)
+						{
+							dig(sprite);
+							emitter.explode(20, player.x+SIZE_TILE, player.y-SIZE_TILE/2);
+							levelsprites[Math.floor(player.y/SIZE_TILE)-1][Math.floor(player.x/SIZE_TILE)+1] = null;
+						}
+					}
 				}
 				else
 				{
@@ -414,21 +453,27 @@ document.addEventListener("DOMContentLoaded", function()
 					player.setVelocityY(-180);
 				}
 
-				if (cursors.down.isDown && player.body.touching.down)
+				if (cursors.down.isDown && player.body.touching.down && energy_current > 0)
 				{
-					// dig
 					const sprite = levelsprites[Math.floor(player.y/SIZE_TILE)][Math.floor(player.x/SIZE_TILE)];
 					if(sprite !== null)
-					{	
-						energy_current--;
-						energy_display.setText( "Energy:" + energy_current);
-						sprite.destroy();
+					{
+						dig(sprite);
+						emitter.explode(20, player.x, player.y+SIZE_TILE/2);
 						levelsprites[Math.floor(player.y/SIZE_TILE)][Math.floor(player.x/SIZE_TILE)] = null;
 					}
 				}
 			}
 		}
 	});
+	
+	function dig(sprite)
+	{
+		energy_current--;
+		energy_display.setText( 'Energy:' + energy_current);
+		bar.scaleX = energy_current/energy_max;
+		sprite.destroy();
+	}
 
 	window.addEventListener("resize", resize);
 	resize();
