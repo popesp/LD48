@@ -1,13 +1,11 @@
 const WIDTH_CANVAS = 800;
 const HEIGHT_CANVAS = 600;
 
-const SIZE_TILE = 6;
+const SIZE_TILE = 20;
 
 
 const ID_EMPTY = 0;
 const ID_DIRT = 1;
-
-var energy_current = 10;
 
 document.addEventListener("DOMContentLoaded", function()
 {
@@ -79,6 +77,11 @@ document.addEventListener("DOMContentLoaded", function()
 
 					levelsprites.push(rowsprites);
 				}
+				bar = this.add.graphics();
+				bar.fillStyle(0xebb134, 1);
+				bar.fillRect(0, 0, 200, 15);
+				energy_max = 10;
+				energy_current = energy_max;
 				energy_display = this.add.text(16, 16, 'Energy:' + energy_current, { fontSize: '12px', fill: '#000' });
 
 				this.anims.create({
@@ -103,8 +106,10 @@ document.addEventListener("DOMContentLoaded", function()
 			},
 			update: function()
 			{
-				energy_display.x = player.body.position.x - WIDTH_CANVAS/5;
+				energy_display.x = player.body.position.x - WIDTH_CANVAS/8;
 				energy_display.y = player.body.position.y - HEIGHT_CANVAS/5;
+				bar.x = player.body.position.x - WIDTH_CANVAS/5;;
+				bar.y = player.body.position.y - HEIGHT_CANVAS/5;
 				if (cursors.left.isDown)
 				{
 					player.setVelocityX(-160);
@@ -129,7 +134,7 @@ document.addEventListener("DOMContentLoaded", function()
 					player.setVelocityY(-180);
 				}
 
-				if (cursors.down.isDown && player.body.touching.down)
+				if (cursors.down.isDown && player.body.touching.down && energy_current > 0)
 				{
 					// dig
 					const sprite = levelsprites[Math.floor(player.y/SIZE_TILE)][Math.floor(player.x/SIZE_TILE)];
@@ -137,6 +142,7 @@ document.addEventListener("DOMContentLoaded", function()
 					{	
 						energy_current--;
 						energy_display.setText( 'Energy:' + energy_current);
+						bar.scaleX = energy_current/energy_max;
 						sprite.destroy();
 						levelsprites[Math.floor(player.y/SIZE_TILE)][Math.floor(player.x/SIZE_TILE)] = null;
 					}
@@ -144,6 +150,7 @@ document.addEventListener("DOMContentLoaded", function()
 			}
 		}
 	});
+	
 
 	function resize()
 	{
