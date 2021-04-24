@@ -1,7 +1,7 @@
 const WIDTH_CANVAS = 800;
 const HEIGHT_CANVAS = 600;
 
-const SIZE_TILE = 16;
+const SIZE_TILE = 24;
 
 const map_tile = {
 	"111111111": {frame: "solid", flipped: false},
@@ -335,6 +335,7 @@ document.addEventListener("DOMContentLoaded", function()
 				player = this.physics.add.sprite(100, 200, "dude").setDisplaySize(20, 30).setOrigin(0.5, 1);
 				player.setCollideWorldBounds(true);
 				this.cameras.main.startFollow(player);
+				this.cameras.main.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
 
 				cursors = this.input.keyboard.createCursorKeys();
 				platforms = this.physics.add.staticGroup();
