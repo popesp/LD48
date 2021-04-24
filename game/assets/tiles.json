@@ -1,6 +1,10 @@
 {
 	"frames": [
 		{
+			"filename": "void",
+			"frame": {"x": 88, "y": 88, "w": 8, "h": 8}
+		},
+		{
 			"filename": "solid",
 			"frame": {"x": 0, "y": 0, "w": 8, "h": 8}
 		},
@@ -35,6 +39,26 @@
 		{
 			"filename": "ceiling",
 			"frame": {"x": 32, "y": 48, "w": 8, "h": 8}
+		},
+		{
+			"filename": "wallwall",
+			"frame": {"x": 64, "y": 0, "w": 8, "h": 8}
+		},
+		{
+			"filename": "overhangoverhang",
+			"frame": {"x": 64, "y": 8, "w": 8, "h": 8}
+		},
+		{
+			"filename": "cornerceiling",
+			"frame": {"x": 64, "y": 16, "w": 8, "h": 8}
+		},
+		{
+			"filename": "cornerwall",
+			"frame": {"x": 64, "y": 24, "w": 8, "h": 8}
+		},
+		{
+			"filename": "corneroverhang",
+			"frame": {"x": 64, "y": 32, "w": 8, "h": 8}
 		}
 	]
 }

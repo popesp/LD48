@@ -32,22 +32,22 @@ const map_tile = {
 	"111011010": {frame: "wall", flipped: false},
 	"111011001": {frame: "overhang", flipped: false},
 	"111011000": {frame: "overhang", flipped: false},
-	"111010111": {frame: "wall", flipped: false}, // TODO(shawn): need double sided wall
-	"111010110": {frame: "wall", flipped: false}, // TODO(shawn): need double sided wall
-	"111010101": {frame: "overhang", flipped: false}, // TODO(shawn): need double sided overhang
-	"111010100": {frame: "overhang", flipped: false}, // TODO(shawn): need double sided overhang
-	"111010011": {frame: "wall", flipped: false}, // TODO(shawn): need double sided wall
-	"111010010": {frame: "wall", flipped: false}, // TODO(shawn): need double sided wall
-	"111010001": {frame: "overhang", flipped: false}, // TODO(shawn): need double sided overhang
-	"111010000": {frame: "overhang", flipped: false}, // TODO(shawn): need double sided overhang
+	"111010111": {frame: "wallwall", flipped: false},
+	"111010110": {frame: "wallwall", flipped: false},
+	"111010101": {frame: "overhangoverhang", flipped: false},
+	"111010100": {frame: "overhangoverhang", flipped: false},
+	"111010011": {frame: "wallwall", flipped: false},
+	"111010010": {frame: "wallwall", flipped: false},
+	"111010001": {frame: "overhangoverhang", flipped: false},
+	"111010000": {frame: "overhangoverhang", flipped: false},
 	"110111111": {frame: "corner", flipped: true},
 	"110111110": {frame: "corner", flipped: true},
-	"110111101": {frame: "corner", flipped: true}, // TODO(shawn): need corner + ceiling
-	"110111100": {frame: "corner", flipped: true}, // TODO(shawn): need corner + ceiling
+	"110111101": {frame: "cornerceiling", flipped: true},
+	"110111100": {frame: "cornerceiling", flipped: true},
 	"110111011": {frame: "corner", flipped: true},
 	"110111010": {frame: "corner", flipped: true},
-	"110111001": {frame: "corner", flipped: true}, // TODO(shawn): need corner + ceiling
-	"110111000": {frame: "corner", flipped: true}, // TODO(shawn): need corner + ceiling
+	"110111001": {frame: "cornerceiling", flipped: true},
+	"110111000": {frame: "cornerceiling", flipped: true},
 	"110110111": {frame: "wall", flipped: true},
 	"110110110": {frame: "wall", flipped: true},
 	"110110101": {frame: "overhang", flipped: true},
@@ -56,22 +56,22 @@ const map_tile = {
 	"110110010": {frame: "wall", flipped: true},
 	"110110001": {frame: "overhang", flipped: true},
 	"110110000": {frame: "overhang", flipped: true},
-	"110011111": {frame: "wall", flipped: false}, // TODO(shawn): need corner + wall
-	"110011110": {frame: "wall", flipped: false}, // TODO(shawn): need corner + wall
-	"110011101": {frame: "overhang", flipped: false}, // TODO(shawn): need corner + overhang
-	"110011100": {frame: "overhang", flipped: false}, // TODO(shawn): need corner + overhang
-	"110011011": {frame: "wall", flipped: false}, // TODO(shawn): need corner + wall
-	"110011010": {frame: "wall", flipped: false}, // TODO(shawn): need corner + wall
-	"110011001": {frame: "overhang", flipped: false}, // TODO(shawn): need corner + overhang
-	"110011000": {frame: "overhang", flipped: false}, // TODO(shawn): need corner + overhang
-	"110010111": {frame: "wall", flipped: false}, // TODO(shawn): need double sided wall
-	"110010110": {frame: "wall", flipped: false}, // TODO(shawn): need double sided wall
-	"110010101": {frame: "overhang", flipped: false}, // TODO(shawn): need double sided overhang
-	"110010100": {frame: "overhang", flipped: false}, // TODO(shawn): need double sided overhang
-	"110010011": {frame: "wall", flipped: false}, // TODO(shawn): need double sided wall
-	"110010010": {frame: "wall", flipped: false}, // TODO(shawn): need double sided wall
-	"110010001": {frame: "overhang", flipped: false}, // TODO(shawn): need double sided overhang
-	"110010000": {frame: "overhang", flipped: false}, // TODO(shawn): need double sided overhang
+	"110011111": {frame: "cornerwall", flipped: false},
+	"110011110": {frame: "cornerwall", flipped: false},
+	"110011101": {frame: "corneroverhang", flipped: false},
+	"110011100": {frame: "corneroverhang", flipped: false},
+	"110011011": {frame: "cornerwall", flipped: false},
+	"110011010": {frame: "cornerwall", flipped: false},
+	"110011001": {frame: "corneroverhang", flipped: false},
+	"110011000": {frame: "corneroverhang", flipped: false},
+	"110010111": {frame: "wallwall", flipped: false},
+	"110010110": {frame: "wallwall", flipped: false},
+	"110010101": {frame: "overhangoverhang", flipped: false},
+	"110010100": {frame: "overhangoverhang", flipped: false},
+	"110010011": {frame: "wallwall", flipped: false},
+	"110010010": {frame: "wallwall", flipped: false},
+	"110010001": {frame: "overhangoverhang", flipped: false},
+	"110010000": {frame: "overhangoverhang", flipped: false},
 	"101111111": {frame: "floor", flipped: false},
 	"101111110": {frame: "floor", flipped: false},
 	"101111101": {frame: "floor", flipped: false}, // TODO(shawn): need floor + ceiling
@@ -138,20 +138,20 @@ const map_tile = {
 	"100010000": {frame: "edge", flipped: false}, // TODO(shawn): need weird floating thing
 	"011111111": {frame: "corner", flipped: false},
 	"011111110": {frame: "corner", flipped: false},
-	"011111101": {frame: "corner", flipped: false}, // TODO(shawn): need corner + ceiling
-	"011111100": {frame: "corner", flipped: false}, // TODO(shawn): need corner + ceiling
+	"011111101": {frame: "cornerceiling", flipped: false},
+	"011111100": {frame: "cornerceiling", flipped: false},
 	"011111011": {frame: "corner", flipped: false},
 	"011111010": {frame: "corner", flipped: false},
-	"011111001": {frame: "corner", flipped: false}, // TODO(shawn): need corner + ceiling
-	"011111000": {frame: "corner", flipped: false}, // TODO(shawn): need corner + ceiling
-	"011110111": {frame: "wall", flipped: true}, // TODO(shawn): need corner + wall
-	"011110110": {frame: "wall", flipped: true}, // TODO(shawn): need corner + wall
-	"011110101": {frame: "overhang", flipped: true}, // TODO(shawn): need corner + overhang
-	"011110100": {frame: "overhang", flipped: true}, // TODO(shawn): need corner + overhang
-	"011110011": {frame: "wall", flipped: true}, // TODO(shawn): need corner + wall
-	"011110010": {frame: "wall", flipped: true}, // TODO(shawn): need corner + wall
-	"011110001": {frame: "overhang", flipped: true}, // TODO(shawn): need corner + overhang
-	"011110000": {frame: "overhang", flipped: true}, // TODO(shawn): need corner + overhang
+	"011111001": {frame: "cornerceiling", flipped: false},
+	"011111000": {frame: "cornerceiling", flipped: false},
+	"011110111": {frame: "cornerwall", flipped: true},
+	"011110110": {frame: "cornerwall", flipped: true},
+	"011110101": {frame: "corneroverhang", flipped: true},
+	"011110100": {frame: "corneroverhang", flipped: true},
+	"011110011": {frame: "cornerwall", flipped: true},
+	"011110010": {frame: "cornerwall", flipped: true},
+	"011110001": {frame: "corneroverhang", flipped: true},
+	"011110000": {frame: "corneroverhang", flipped: true},
 	"011011111": {frame: "wall", flipped: false},
 	"011011110": {frame: "wall", flipped: false},
 	"011011101": {frame: "overhang", flipped: false},
@@ -160,14 +160,14 @@ const map_tile = {
 	"011011010": {frame: "wall", flipped: false},
 	"011011001": {frame: "overhang", flipped: false},
 	"011011000": {frame: "overhang", flipped: false},
-	"011010111": {frame: "wall", flipped: false}, // TODO(shawn): need double sided wall
-	"011010110": {frame: "wall", flipped: false}, // TODO(shawn): need double sided wall
-	"011010101": {frame: "overhang", flipped: false}, // TODO(shawn): need double sided overhang
-	"011010100": {frame: "overhang", flipped: false}, // TODO(shawn): need double sided overhang
-	"011010011": {frame: "wall", flipped: false}, // TODO(shawn): need double sided wall
-	"011010010": {frame: "wall", flipped: false}, // TODO(shawn): need double sided wall
-	"011010001": {frame: "overhang", flipped: false}, // TODO(shawn): need double sided overhang
-	"011010000": {frame: "overhang", flipped: false}, // TODO(shawn): need double sided overhang
+	"011010111": {frame: "wallwall", flipped: false},
+	"011010110": {frame: "wallwall", flipped: false},
+	"011010101": {frame: "overhangoverhang", flipped: false},
+	"011010100": {frame: "overhangoverhang", flipped: false},
+	"011010011": {frame: "wallwall", flipped: false},
+	"011010010": {frame: "wallwall", flipped: false},
+	"011010001": {frame: "overhangoverhang", flipped: false},
+	"011010000": {frame: "overhangoverhang", flipped: false},
 	"010111111": {frame: "corner", flipped: false}, // TODO(shawn): need double sided corner
 	"010111110": {frame: "corner", flipped: false}, // TODO(shawn): need double sided corner
 	"010111101": {frame: "corner", flipped: false}, // TODO(shawn): need double sided corner + ceiling
@@ -268,6 +268,21 @@ const map_tile = {
 
 var energy_current = 10;
 
+
+function getSurrounding(level, index_row, index_col)
+{
+	let surrounding = "";
+	for(let index_row_check = index_row - 1; index_row_check <= index_row + 1; ++index_row_check)
+		for(let index_col_check = index_col - 1; index_col_check <= index_col + 1; ++index_col_check)
+			if(index_row_check < 0 || index_row_check >= level.height || index_col_check < 0 || index_col_check >= level.width)
+				surrounding += "1";
+			else
+				surrounding += level.tiles[index_row_check][index_col_check];
+
+	return surrounding;
+}
+
+
 document.addEventListener("DOMContentLoaded", function()
 {
 	const dom_container = document.getElementById("container");
@@ -330,40 +345,31 @@ document.addEventListener("DOMContentLoaded", function()
 
 				this.physics.add.collider(player, platforms);
 
-				levelsprites = [];
+				level.sprites = [];
 				for(let index_row = 0; index_row < level.height; ++index_row)
 				{
 					const row = level.tiles[index_row];
 
-					const rowsprites = [];
+					const row_sprites = [];
 					for(let index_col = 0; index_col < level.width; ++index_col)
 					{
-						let surrounding = "";
-						for(let index_row_check = index_row - 1; index_row_check <= index_row + 1; ++index_row_check)
-							for(let index_col_check = index_col - 1; index_col_check <= index_col + 1; ++index_col_check)
-								if(index_row_check < 0 || index_row_check >= level.height || index_col_check < 0 || index_col_check >= level.width)
-									surrounding += "1";
-								else
-									surrounding += level.tiles[index_row_check][index_col_check];
-						
-						const t = map_tile[surrounding];
+						const t = map_tile[getSurrounding(level, index_row, index_col)];
 
-						let tile = null;
-						if(t !== undefined)
-						{
-							tile = platforms.create(index_col*SIZE_TILE, index_row*SIZE_TILE, "tiles", t.frame).setSize(SIZE_TILE, SIZE_TILE).setDisplaySize(SIZE_TILE, SIZE_TILE);
-							tile.setOrigin(0, 0);
-							tile.body.updateFromGameObject();
+						const tile = platforms.create(index_col*SIZE_TILE, index_row*SIZE_TILE, "tiles", t === undefined ? "void" : t.frame).setSize(SIZE_TILE, SIZE_TILE).setDisplaySize(SIZE_TILE, SIZE_TILE);
+						tile.setOrigin(0, 0);
+						tile.body.updateFromGameObject();
 
-							if(t.flipped)
-								tile.flipX = true;
-						}
+						if(t === undefined)
+							tile.body.enable = false;
+						else if(t.flipped)
+							tile.flipX = true;
 
-						rowsprites.push(tile);
+						row_sprites.push(tile);
 					}
 
-					levelsprites.push(rowsprites);
+					level.sprites.push(row_sprites);
 				}
+
 				bar = this.add.graphics();
 				bar.fillStyle(0xebb134, 1);
 				bar.fillRect(0, 0, 200, 15);
@@ -415,14 +421,10 @@ document.addEventListener("DOMContentLoaded", function()
 					player.anims.play('left', true);
 					if (player.body.touching.down && energy_current > 0)
 					{
-						// dig
-						const sprite = levelsprites[Math.floor(player.y/SIZE_TILE-1)][Math.floor(player.x/SIZE_TILE)-1];
-						if(sprite !== null)
-						{
-							dig(sprite)
-							emitter.explode(20, player.x-SIZE_TILE, player.y-SIZE_TILE/2);
-							levelsprites[Math.floor(player.y/SIZE_TILE)-1][Math.floor(player.x/SIZE_TILE)-1] = null;
-						}
+						const index_row = Math.floor(player.y/SIZE_TILE) - 1;
+						const index_col = Math.floor(player.x/SIZE_TILE) - 1;
+
+						dig(level, emitter, index_row, index_col);
 					}
 				}
 				else if (cursors.right.isDown)
@@ -432,13 +434,10 @@ document.addEventListener("DOMContentLoaded", function()
 
 					if (player.body.touching.down && energy_current > 0)
 					{
-						const sprite = levelsprites[Math.floor(player.y/SIZE_TILE-1)][Math.floor(player.x/SIZE_TILE)+1];
-						if(sprite !== null)
-						{
-							dig(sprite);
-							emitter.explode(20, player.x+SIZE_TILE, player.y-SIZE_TILE/2);
-							levelsprites[Math.floor(player.y/SIZE_TILE)-1][Math.floor(player.x/SIZE_TILE)+1] = null;
-						}
+						const index_row = Math.floor(player.y/SIZE_TILE) - 1;
+						const index_col = Math.floor(player.x/SIZE_TILE) + 1;
+
+						dig(level, emitter, index_row, index_col);
 					}
 				}
 				else
@@ -455,24 +454,47 @@ document.addEventListener("DOMContentLoaded", function()
 
 				if (cursors.down.isDown && player.body.touching.down && energy_current > 0)
 				{
-					const sprite = levelsprites[Math.floor(player.y/SIZE_TILE)][Math.floor(player.x/SIZE_TILE)];
-					if(sprite !== null)
-					{
-						dig(sprite);
-						emitter.explode(20, player.x, player.y+SIZE_TILE/2);
-						levelsprites[Math.floor(player.y/SIZE_TILE)][Math.floor(player.x/SIZE_TILE)] = null;
-					}
+					const index_row = Math.floor(player.y/SIZE_TILE);
+					const index_col = Math.floor(player.x/SIZE_TILE);
+
+					dig(level, emitter, index_row, index_col);
 				}
 			}
 		}
 	});
-	
-	function dig(sprite)
+
+	function dig(level, emitter, index_row, index_col)
 	{
+		console.log(index_row, index_col)
+		console.log(level.tiles[index_row][index_col])
+		if(!level.tiles[index_row][index_col])
+			return;
+
+		const sprite = level.sprites[index_row][index_col];
+		level.tiles[index_row][index_col] = 0;
+		sprite.setFrame("void");
+		sprite.body.enable = false;
+		emitter.explode(20, sprite.x + SIZE_TILE/2, sprite.y + SIZE_TILE/2);
+
+		for(let index_row_check = index_row - 1; index_row_check <= index_row + 1; ++index_row_check)
+			for(let index_col_check = index_col - 1; index_col_check <= index_col + 1; ++index_col_check)
+			{
+				const surrounding = getSurrounding(level, index_row_check, index_col_check);
+				const t = map_tile[surrounding];
+				const s = level.sprites[index_row_check][index_col_check];
+
+				s.setFrame(t === undefined ? "void" : t.frame);
+				if(t === undefined)
+					s.body.enable = false;
+				else if(t.flipped)
+					s.flipX = true;
+			}
+
+
+
 		energy_current--;
 		energy_display.setText( 'Energy:' + energy_current);
 		bar.scaleX = energy_current/energy_max;
-		sprite.destroy();
 	}
 
 	window.addEventListener("resize", resize);
