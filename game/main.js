@@ -371,12 +371,19 @@ document.addEventListener("DOMContentLoaded", function()
 					level.sprites.push(row_sprites);
 				}
 
+				barbg = this.add.graphics();
+				barbg.fillStyle(0xcc2418, 1);
+				barbg.fillRect(14, 14, 204, 19);
+				barbg.setScrollFactor(0);
+
 				bar = this.add.graphics();
 				bar.fillStyle(0xebb134, 1);
-				bar.fillRect(0, 0, 200, 15);
+				bar.fillRect(16, 16, 200, 15);
+				bar.setScrollFactor(0);
 				energy_max = 10;
 				energy_current = energy_max;
-				energy_display = this.add.text(16, 16, 'Energy:' + energy_current, { fontSize: '12px', fill: '#000' });
+				energy_display = this.add.text(84, 16, 'Energy:' + energy_current, { fontSize: '12px', fill: '#000' });
+				energy_display.setScrollFactor(0);
 
 				this.anims.create({
 					key: "left",
@@ -402,14 +409,6 @@ document.addEventListener("DOMContentLoaded", function()
 			update: function()
 			{
 				const gamepad = this.input.gamepad.gamepads[0];
-
-				let bar_positionx = this.cameras.main._scrollX + 5;
-				let bar_positiony = this.cameras.main._scrollY + 5;
-
-				energy_display.x = bar_positionx;
-				energy_display.y = bar_positiony;
-				bar.x = bar_positionx;
-				bar.y = bar_positiony;
 
 				const emitter = this.add.particles("tiles", "dirt").createEmitter({
 					speed: {min: 20, max: 100},
@@ -478,6 +477,7 @@ document.addEventListener("DOMContentLoaded", function()
 
 	function dig(level, emitter, index_row, index_col)
 	{
+		
 		if(!level.tiles[index_row][index_col])
 			return;
 
@@ -504,11 +504,11 @@ document.addEventListener("DOMContentLoaded", function()
 				}
 			}
 
-
-
-		// energy_current--;
+		energy_current --;
 		energy_display.setText( 'Energy:' + energy_current);
 		bar.scaleX = energy_current/energy_max;
+		//theres a better way to do this:
+		bar.x += 1.7;
 	}
 
 	window.addEventListener("resize", resize);
