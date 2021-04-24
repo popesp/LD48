@@ -125,12 +125,33 @@ document.addEventListener("DOMContentLoaded", function()
 					player.setVelocityX(-160);
 
 					player.anims.play('left', true);
+					if (player.body.touching.down && energy_current > 0)
+					{
+						// dig
+						const sprite = levelsprites[Math.floor(player.y/SIZE_TILE-1)][Math.floor(player.x/SIZE_TILE)-1];
+						if(sprite !== null)
+						{
+							dig(sprite)
+							emitter.explode(20, player.x-SIZE_TILE, player.y-SIZE_TILE/2);
+							levelsprites[Math.floor(player.y/SIZE_TILE)-1][Math.floor(player.x/SIZE_TILE)-1] = null;
+						}
+					}
 				}
 				else if (cursors.right.isDown)
 				{
 					player.setVelocityX(160);
-
 					player.anims.play('right', true);
+
+					if (player.body.touching.down && energy_current > 0)
+					{
+						const sprite = levelsprites[Math.floor(player.y/SIZE_TILE-1)][Math.floor(player.x/SIZE_TILE)+1];
+						if(sprite !== null)
+						{
+							dig(sprite);
+							emitter.explode(20, player.x+SIZE_TILE, player.y-SIZE_TILE/2);
+							levelsprites[Math.floor(player.y/SIZE_TILE)-1][Math.floor(player.x/SIZE_TILE)+1] = null;
+						}
+					}
 				}
 				else
 				{
@@ -146,15 +167,11 @@ document.addEventListener("DOMContentLoaded", function()
 
 				if (cursors.down.isDown && player.body.touching.down && energy_current > 0)
 				{
-					// dig
 					const sprite = levelsprites[Math.floor(player.y/SIZE_TILE)][Math.floor(player.x/SIZE_TILE)];
 					if(sprite !== null)
-					{	
-						energy_current--;
-						energy_display.setText( 'Energy:' + energy_current);
-						bar.scaleX = energy_current/energy_max;
-						sprite.destroy();
-						emitter.explode(20, player.x, player.y);
+					{
+						dig(sprite);
+						emitter.explode(20, player.x, player.y+SIZE_TILE/2);
 						levelsprites[Math.floor(player.y/SIZE_TILE)][Math.floor(player.x/SIZE_TILE)] = null;
 					}
 				}
@@ -162,6 +179,13 @@ document.addEventListener("DOMContentLoaded", function()
 		}
 	});
 	
+	function dig(sprite)
+	{
+		energy_current--;
+		energy_display.setText( 'Energy:' + energy_current);
+		bar.scaleX = energy_current/energy_max;
+		sprite.destroy();
+	}
 
 	function resize()
 	{
