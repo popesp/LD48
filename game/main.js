@@ -5,6 +5,7 @@ const HEIGHT_CANVAS = 600;
 const ID_EMPTY = 0;
 const ID_DIRT = 1;
 
+var energy_current = 10;
 
 document.addEventListener("DOMContentLoaded", function()
 {
@@ -40,15 +41,14 @@ document.addEventListener("DOMContentLoaded", function()
 			create: function()
 			{
 				this.add.image(400, 300, "sky");
-
 				this.physics.world.setBounds(0, 0, 20*24, 100*24);
 				player = this.physics.add.sprite(100, 200, 'dude').setDisplaySize(20, 30).setOrigin(0.5, 1);
-				console.log(player);
+				//console.log(player);
 				player.setCollideWorldBounds(true);
 				cursors = this.input.keyboard.createCursorKeys();
 				platforms = this.physics.add.staticGroup();
 
-				console.log(this);
+				//console.log(this);
 				this.cameras.main.startFollow(player);
 
 				this.physics.add.collider(player, platforms);
@@ -80,13 +80,12 @@ document.addEventListener("DOMContentLoaded", function()
 							tile.setOrigin(0, 0);
 							tile.body.updateFromGameObject();
 						}
-
-						rowsprites.push(tile);
-						
+						rowsprites.push(tile);	
 					}
 
 					levelsprites.push(rowsprites);
 				}
+				energy_display = this.add.text(16, 16, 'Energy:' + energy_current, { fontSize: '12px', fill: '#000' });
 
 				this.anims.create({
 					key: 'left',
@@ -110,6 +109,8 @@ document.addEventListener("DOMContentLoaded", function()
 			},
 			update: function()
 			{
+				energy_display.x = player.body.position.x - WIDTH_CANVAS/5;
+				energy_display.y = player.body.position.y - HEIGHT_CANVAS/5;
 				if (cursors.left.isDown)
 				{
 					player.setVelocityX(-160);
@@ -138,8 +139,14 @@ document.addEventListener("DOMContentLoaded", function()
 				{
 					// dig
 					const sprite = levelsprites[Math.floor(player.y/24)][Math.floor(player.x/24)];
+					console.log(sprite);
 					if(sprite !== null)
+					{	
+						energy_current--;
+						energy_display.setText( 'Energy:' + energy_current);
 						sprite.destroy();
+						levelsprites[Math.floor(player.y/24)][Math.floor(player.x/24)] = null;
+					}
 				}
 			}
 		}
