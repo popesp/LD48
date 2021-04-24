@@ -393,14 +393,17 @@ document.addEventListener("DOMContentLoaded", function()
 					frameRate: 10,
 					repeat: -1
 				});
-				this.cameras.main.setBounds(0, 0);
+				// console.log(this)
 			},
 			update: function()
 			{
-				energy_display.x = player.body.position.x - WIDTH_CANVAS/8;
-				energy_display.y = player.body.position.y - HEIGHT_CANVAS/5;
-				bar.x = player.body.position.x - WIDTH_CANVAS/5;;
-				bar.y = player.body.position.y - HEIGHT_CANVAS/5;
+				let bar_positionx = this.cameras.main._scrollX + 5;
+				let bar_positiony = this.cameras.main._scrollY + 5;
+
+				energy_display.x = bar_positionx;
+				energy_display.y = bar_positiony;
+				bar.x = bar_positionx;
+				bar.y = bar_positiony;
 
 				const emitter = this.add.particles("tiles", "dirt").createEmitter({
 					speed: {min: 20, max: 100},
