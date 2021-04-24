@@ -1,0 +1,40 @@
+{
+	"frames": [
+		{
+			"filename": "solid",
+			"frame": {"x": 0, "y": 0, "w": 8, "h": 8}
+		},
+		{
+			"filename": "solid1",
+			"frame": {"x": 8, "y": 0, "w": 8, "h": 8}
+		},
+		{
+			"filename": "solid2",
+			"frame": {"x": 16, "y": 0, "w": 8, "h": 8}
+		},
+		{
+			"filename": "edge",
+			"frame": {"x": 24, "y": 32, "w": 8, "h": 8}
+		},
+		{
+			"filename": "floor",
+			"frame": {"x": 32, "y": 32, "w": 8, "h": 8}
+		},
+		{
+			"filename": "corner",
+			"frame": {"x": 40, "y": 32, "w": 8, "h": 8}
+		},
+		{
+			"filename": "wall",
+			"frame": {"x": 24, "y": 40, "w": 8, "h": 8}
+		},
+		{
+			"filename": "overhang",
+			"frame": {"x": 24, "y": 48, "w": 8, "h": 8}
+		},
+		{
+			"filename": "ceiling",
+			"frame": {"x": 32, "y": 48, "w": 8, "h": 8}
+		}
+	]
+}
