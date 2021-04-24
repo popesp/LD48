@@ -1,6 +1,8 @@
 const WIDTH_CANVAS = 800;
 const HEIGHT_CANVAS = 600;
 
+const SIZE_TILE = 6;
+
 
 const ID_EMPTY = 0;
 const ID_DIRT = 1;
@@ -41,7 +43,9 @@ document.addEventListener("DOMContentLoaded", function()
 			{
 				this.add.image(400, 300, "sky");
 
-				this.physics.world.setBounds(0, 0, 20*24, 100*24);
+				level = generate(0.5);
+				this.physics.world.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
+
 				player = this.physics.add.sprite(100, 200, 'dude').setDisplaySize(20, 30).setOrigin(0.5, 1);
 				console.log(player);
 				player.setCollideWorldBounds(true);
@@ -53,36 +57,25 @@ document.addEventListener("DOMContentLoaded", function()
 
 				this.physics.add.collider(player, platforms);
 
-				level = [];
-				for(let i = 0; i < 100; ++i)
-				{
-					const row = [];
-					for(let j = 0; j < 20; ++j)
-						row.push(i >= 10 ? ID_DIRT : ID_EMPTY);
-
-					level.push(row);
-				}
-
 				levelsprites = [];
-				for(let index_row = 0; index_row < level.length; ++index_row)
+				for(let index_row = 0; index_row < level.height; ++index_row)
 				{
-					const row = level[index_row];
+					const row = level.tiles[index_row];
 
 					const rowsprites = [];
-					for(let index_col = 0; index_col < row.length; ++index_col)
+					for(let index_col = 0; index_col < level.width; ++index_col)
 					{
 						const id_tile = row[index_col];
 
 						let tile = null;
 						if(id_tile !== ID_EMPTY)
 						{
-							tile = platforms.create(index_col*24, index_row*24, id_tile === ID_DIRT ? 'dirt' : null).setSize(24, 24).setDisplaySize(24, 24);
+							tile = platforms.create(index_col*SIZE_TILE, index_row*SIZE_TILE, id_tile === ID_DIRT ? 'dirt' : null).setSize(SIZE_TILE, SIZE_TILE).setDisplaySize(SIZE_TILE, SIZE_TILE);
 							tile.setOrigin(0, 0);
 							tile.body.updateFromGameObject();
 						}
 
 						rowsprites.push(tile);
-						
 					}
 
 					levelsprites.push(rowsprites);
@@ -137,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function()
 				if (cursors.down.isDown && player.body.touching.down)
 				{
 					// dig
-					const sprite = levelsprites[Math.floor(player.y/24)][Math.floor(player.x/24)];
+					const sprite = levelsprites[Math.floor(player.y/SIZE_TILE)][Math.floor(player.x/SIZE_TILE)];
 					if(sprite !== null)
 						sprite.destroy();
 				}
