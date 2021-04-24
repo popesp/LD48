@@ -1,0 +1,92 @@
+{
+	"frames": [
+		{
+			"filename": "void",
+			"frame": {"x": 111, "y": 111, "w": 8, "h": 8}
+		},
+		{
+			"filename": "solid",
+			"frame": {"x": 1, "y": 1, "w": 8, "h": 8}
+		},
+		{
+			"filename": "solid1",
+			"frame": {"x": 11, "y": 1, "w": 8, "h": 8}
+		},
+		{
+			"filename": "solid2",
+			"frame": {"x": 21, "y": 1, "w": 8, "h": 8}
+		},
+		{
+			"filename": "edge",
+			"frame": {"x": 31, "y": 41, "w": 8, "h": 8}
+		},
+		{
+			"filename": "floor",
+			"frame": {"x": 41, "y": 41, "w": 8, "h": 8}
+		},
+		{
+			"filename": "corner",
+			"frame": {"x": 51, "y": 41, "w": 8, "h": 8}
+		},
+		{
+			"filename": "wall",
+			"frame": {"x": 31, "y": 51, "w": 8, "h": 8}
+		},
+		{
+			"filename": "overhang",
+			"frame": {"x": 31, "y": 61, "w": 8, "h": 8}
+		},
+		{
+			"filename": "ceiling",
+			"frame": {"x": 41, "y": 61, "w": 8, "h": 8}
+		},
+		{
+			"filename": "wallwall",
+			"frame": {"x": 81, "y": 1, "w": 8, "h": 8}
+		},
+		{
+			"filename": "overhangoverhang",
+			"frame": {"x": 81, "y": 11, "w": 8, "h": 8}
+		},
+		{
+			"filename": "cornerceiling",
+			"frame": {"x": 81, "y": 21, "w": 8, "h": 8}
+		},
+		{
+			"filename": "cornerwall",
+			"frame": {"x": 81, "y": 31, "w": 8, "h": 8}
+		},
+		{
+			"filename": "corneroverhang",
+			"frame": {"x": 81, "y": 41, "w": 8, "h": 8}
+		},
+		{
+			"filename": "floorceiling",
+			"frame": {"x": 81, "y": 51, "w": 8, "h": 8}
+		},
+		{
+			"filename": "edgeoverhang",
+			"frame": {"x": 81, "y": 61, "w": 8, "h": 8}
+		},
+		{
+			"filename": "edgeedge",
+			"frame": {"x": 81, "y": 71, "w": 8, "h": 8}
+		},
+		{
+			"filename": "island",
+			"frame": {"x": 81, "y": 81, "w": 8, "h": 8}
+		},
+		{
+			"filename": "corners",
+			"frame": {"x": 81, "y": 91, "w": 8, "h": 8}
+		},
+		{
+			"filename": "cornersceiling",
+			"frame": {"x": 81, "y": 101, "w": 8, "h": 8}
+		},
+		{
+			"filename": "dirt",
+			"frame": {"x": 51, "y": 111, "w": 1, "h": 1}
+		}
+	]
+}

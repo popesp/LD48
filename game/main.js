@@ -324,7 +324,7 @@ document.addEventListener("DOMContentLoaded", function()
 		scene: {
 			preload: function()
 			{
-				this.load.atlas("tiles", "assets/tiles.png", "assets/tiles.json");
+				this.load.atlas("tiles", "assets/tiles-extruded.png", "assets/tiles-extruded.json");
 				this.load.spritesheet("dude",
 					"assets/dude.png",
 					{frameWidth: 32, frameHeight: 48}
@@ -397,7 +397,6 @@ document.addEventListener("DOMContentLoaded", function()
 					frameRate: 10,
 					repeat: -1
 				});
-				// console.log(this)
 			},
 			update: function()
 			{
@@ -478,6 +477,9 @@ document.addEventListener("DOMContentLoaded", function()
 
 	function dig(level, emitter, index_row, index_col)
 	{
+		if(index_row < 0 || index_row >= level.height || index_col < 0 || index_col >= level.width)
+			return;
+
 		if(!level.tiles[index_row][index_col])
 			return;
 

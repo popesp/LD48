@@ -1,4 +1,4 @@
-const NUM_SMOOTHPASSES = 5;
+const NUM_SMOOTHPASSES = 2;
 
 
 function randFloat(min, max)
@@ -12,17 +12,45 @@ function randInt(min, max)
 }
 
 
-function countSurrounding(level, index_row_test, index_col_test)
-{
-	let num = 0;
-	for(let index_row = index_row_test - 1; index_row <= index_row_test + 1; ++index_row)
-		for(let index_col = index_col_test - 1; index_col <= index_col_test + 1; ++index_col)
-			if(index_row < 0 || index_row >= level.height || index_col < 0 || index_col >= level.width)
-				++num;
-			else if(index_row !== index_row_test || index_col !== index_col_test)
-				num += level.tiles[index_row][index_col];
+// guassian 5x5
+const FILTER = [
+	[0.00390625, 0.01562500, 0.02343750, 0.01562500, 0.00390625],
+	[0.01562500, 0.06250000, 0.09375000, 0.06250000, 0.01562500],
+	[0.02343750, 0.09375000, 0.14062500, 0.09375000, 0.02343750],
+	[0.01562500, 0.06250000, 0.09375000, 0.06250000, 0.01562500],
+	[0.00390625, 0.01562500, 0.02343750, 0.01562500, 0.00390625]
+];
 
-	return num;
+// // guassian 5x5
+// const FILTER = [
+// 	[0.00390625, 0.01562500, 0.02343750, 0.01562500, 0.00390625],
+// 	[0.01562500, 0.06250000, 0.09375000, 0.06250000, 0.01562500],
+// 	[0.02343750, 0.09375000, 0.14062500, 0.09375000, 0.02343750],
+// 	[0.01562500, 0.06250000, 0.09375000, 0.06250000, 0.01562500],
+// 	[0.00390625, 0.01562500, 0.02343750, 0.01562500, 0.00390625]
+// ];
+
+function countSurrounding(level, index_row, index_col)
+{
+	const xmin_filter = Math.floor(FILTER[0].length/2);
+	const ymin_filter = Math.floor(FILTER.length/2);
+
+	let acc = 0;
+	for(let index_row_filter = 0; index_row_filter < FILTER.length; ++index_row_filter)
+	{
+		const row_filter = FILTER[index_row_filter];
+
+		for(let index_col_filter = 0; index_col_filter < row_filter.length; ++index_col_filter)
+		{
+			const index_row_test = index_row + index_row_filter - ymin_filter;
+			const index_col_test = index_col + index_col_filter - xmin_filter;
+
+			const test = (index_row_test < 0 || index_row_test >= level.height || index_col_test < 0 || index_col_test >= level.width) ? 1 : level.tiles[index_row_test][index_col_test]
+			acc += test*row_filter[index_col_filter];
+		}
+	}
+
+	return acc;
 }
 
 
@@ -50,9 +78,9 @@ function generate(density)
 			{
 				const num_surrounding = countSurrounding(level, index_row, index_col);
 
-				if(num_surrounding > 4)
+				if(num_surrounding > 0.5)
 					level.tiles[index_row][index_col] = 1;
-				else if(num_surrounding < 4)
+				else if(num_surrounding < 0.5)
 					level.tiles[index_row][index_col] = 0;
 			}
 

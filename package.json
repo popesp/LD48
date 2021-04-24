@@ -9,6 +9,7 @@
 		"eslint": "^7.24.0"
 	},
 	"dependencies": {
-		"phaser": "^3.54.0"
+		"phaser": "^3.54.0",
+		"tile-extruder": "^2.1.0"
 	}
 }
