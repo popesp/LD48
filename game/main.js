@@ -78,13 +78,11 @@ document.addEventListener("DOMContentLoaded", function()
 						{
 							tile = platforms.create(index_col*24, index_row*24, id_tile === ID_DIRT ? 'dirt' : null).setSize(24, 24).setDisplaySize(24, 24);
 							tile.setOrigin(0, 0);
-							tile.body.updateFromGameObject();
+							tile.body.reset();
 						}
 
 						rowsprites.push(tile);
-						
 					}
-
 					levelsprites.push(rowsprites);
 				}
 
@@ -107,6 +105,7 @@ document.addEventListener("DOMContentLoaded", function()
 					frameRate: 10,
 					repeat: -1
 				});
+				this.cameras.main.setBounds(0, 0);
 			},
 			update: function()
 			{
