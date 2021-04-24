@@ -75,7 +75,11 @@ document.addEventListener("DOMContentLoaded", function()
 
 						let tile = null;
 						if(id_tile !== ID_EMPTY)
+						{
 							tile = platforms.create(index_col*24, index_row*24, id_tile === ID_DIRT ? 'dirt' : null).setSize(24, 24).setDisplaySize(24, 24);
+							tile.setOrigin(0, 0);
+							tile.body.updateFromGameObject();
+						}
 
 						rowsprites.push(tile);
 						
@@ -133,7 +137,7 @@ document.addEventListener("DOMContentLoaded", function()
 				if (cursors.down.isDown && player.body.touching.down)
 				{
 					// dig
-					const sprite = levelsprites[Math.floor(player.y/24) + 1][Math.floor(player.x/24)];
+					const sprite = levelsprites[Math.floor(player.y/24)][Math.floor(player.x/24)];
 					if(sprite !== null)
 						sprite.destroy();
 				}
