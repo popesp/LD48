@@ -401,14 +401,15 @@ document.addEventListener("DOMContentLoaded", function()
 				bar.x = player.body.position.x - WIDTH_CANVAS/5;;
 				bar.y = player.body.position.y - HEIGHT_CANVAS/5;
 
-				const emitter = this.add.particles('dirt').createEmitter({
-					speed: { min: -800, max: 800 },
-					angle: { min: 0, max: 360 },
-					scale: { start: 0.1, end: 0 },
-					blendMode: 'SCREEN', //'NORMAL'
+				const emitter = this.add.particles("tiles", "dirt").createEmitter({
+					speed: {min: 20, max: 100},
+					angle: {min: 200, max: 340},
+					alpha: {start: 1, end: 0},
+					scale: 3,
+					blendMode: "NORMAL",
 					on: false,
-					lifespan: 600,
-					gravityY: 800
+					lifespan: 1000,
+					gravityY: 300
 				});
 
 				if (cursors.left.isDown)
