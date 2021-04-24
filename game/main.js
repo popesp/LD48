@@ -309,6 +309,9 @@ document.addEventListener("DOMContentLoaded", function()
 		height: HEIGHT_CANVAS/2,
 		resolution: 5,
 		backgroundColor: 0x202838,
+		input: {
+			gamepad: true
+		},
 		physics: {
 			default: "arcade",
 			arcade: {
@@ -337,9 +340,10 @@ document.addEventListener("DOMContentLoaded", function()
 				this.cameras.main.startFollow(player);
 				this.cameras.main.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
 
+				this.input.gamepad.start();
 				cursors = this.input.keyboard.createCursorKeys();
-				platforms = this.physics.add.staticGroup();
 
+				platforms = this.physics.add.staticGroup();
 				this.physics.add.collider(player, platforms);
 
 				level.sprites = [];
@@ -397,6 +401,8 @@ document.addEventListener("DOMContentLoaded", function()
 			},
 			update: function()
 			{
+				const gamepad = this.input.gamepad.gamepads[0];
+
 				let bar_positionx = this.cameras.main._scrollX + 5;
 				let bar_positiony = this.cameras.main._scrollY + 5;
 
@@ -416,7 +422,12 @@ document.addEventListener("DOMContentLoaded", function()
 					gravityY: 300
 				});
 
-				if (cursors.left.isDown)
+				const left = cursors.left.isDown || (gamepad && (gamepad.left || gamepad.leftStick.x < -0.1));
+				const right = cursors.right.isDown || (gamepad && (gamepad.right || gamepad.leftStick.x > 0.1));
+				const down = cursors.down.isDown || (gamepad && (gamepad.down || gamepad.leftStick.y > 0.1));
+				const jump = cursors.up.isDown || (gamepad && gamepad.A);
+
+				if(left)
 				{
 					player.setVelocityX(-160);
 
@@ -429,7 +440,7 @@ document.addEventListener("DOMContentLoaded", function()
 						dig(level, emitter, index_row, index_col);
 					}
 				}
-				else if (cursors.right.isDown)
+				else if(right)
 				{
 					player.setVelocityX(160);
 					player.anims.play('right', true);
@@ -449,12 +460,12 @@ document.addEventListener("DOMContentLoaded", function()
 					player.anims.play("turn");
 				}
 
-				if (cursors.up.isDown && player.body.touching.down)
+				if(jump && player.body.touching.down)
 				{
 					player.setVelocityY(-180);
 				}
 
-				if (cursors.down.isDown && player.body.touching.down && energy_current > 0)
+				if(down && player.body.touching.down && energy_current > 0)
 				{
 					const index_row = Math.floor(player.y/SIZE_TILE);
 					const index_col = Math.floor(player.x/SIZE_TILE);
@@ -479,6 +490,9 @@ document.addEventListener("DOMContentLoaded", function()
 		for(let index_row_check = index_row - 1; index_row_check <= index_row + 1; ++index_row_check)
 			for(let index_col_check = index_col - 1; index_col_check <= index_col + 1; ++index_col_check)
 			{
+				if(index_row_check < 0 || index_row_check >= level.height || index_col_check < 0 || index_col_check >= level.width)
+					continue;
+
 				const surrounding = getSurrounding(level, index_row_check, index_col_check);
 				const t = map_tile[surrounding];
 				const s = level.sprites[index_row_check][index_col_check];
