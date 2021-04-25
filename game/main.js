@@ -502,7 +502,7 @@ document.addEventListener("DOMContentLoaded", function()
 					blendMode: "NORMAL",
 					on: false,
 					lifespan: 1000,
-					gravityY: 300,
+					gravityY: 300
 				}));
 
 				const player = {
@@ -540,7 +540,7 @@ document.addEventListener("DOMContentLoaded", function()
 					level.images_minerals.push(image);
 				}
 
-				barbg = this.add.graphics();
+				const barbg = this.add.graphics();
 				barbg.fillStyle(0xcc2418, 1);
 				barbg.fillRect(14, 14, 204, 19);
 				barbg.setScrollFactor(0);
@@ -562,7 +562,7 @@ document.addEventListener("DOMContentLoaded", function()
 				mineral_display = this.add.text(240, 8, minerals, {fontSize: "12px", fill: "#fff", stroke: "#000", strokeThickness: 1});
 				mineral_display.setScrollFactor(0);
 
-				button_home = this.add.image(372, 23, "button_home").setInteractive();
+				const button_home = this.add.image(372, 23, "button_home").setInteractive();
 				button_home.setScrollFactor(0);
 				button_home.scale = 0.3;
 				button_home.scaleY = button_home.scaleX;
@@ -571,19 +571,19 @@ document.addEventListener("DOMContentLoaded", function()
 					if(!home_open)
 					{
 						home_open = true;
-						home_modal = parent.add.image(screenCenterX, screenCenterY, "dialog");
+						const home_modal = parent.add.image(screenCenterX, screenCenterY, "dialog");
 						home_modal.setScrollFactor(0);
 						home_modal.scale = 0.8;
-						confirm_text1 = parent.add.text(141, 120, "Are you sure you", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
-						confirm_text2 = parent.add.text(128, 135, "want to return home?", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+						const confirm_text1 = parent.add.text(141, 120, "Are you sure you", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+						const confirm_text2 = parent.add.text(128, 135, "want to return home?", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
 
-						button_yes = parent.add.image(162, 178, "button_success").setInteractive();
-						yes_text = parent.add.text(151, 170, "YES", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+						const button_yes = parent.add.image(162, 178, "button_success").setInteractive();
+						const yes_text = parent.add.text(151, 170, "YES", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
 						button_yes.setScrollFactor(0);
 						button_yes.scale = 0.3;
 						button_yes.scaleY = button_home.scaleX;
-						button_no = parent.add.image(240, 178, "button_dirty").setInteractive();
-						no_text = parent.add.text(233, 170, "NO", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+						const button_no = parent.add.image(240, 178, "button_dirty").setInteractive();
+						const no_text = parent.add.text(233, 170, "NO", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
 						button_no.setScrollFactor(0);
 						button_no.scale = 0.3;
 						button_no.scaleY = button_home.scaleX;
@@ -614,7 +614,7 @@ document.addEventListener("DOMContentLoaded", function()
 					}
 				});
 
-				button_bag = this.add.image(330, 23, "button_bag").setInteractive();
+				const button_bag = this.add.image(330, 23, "button_bag").setInteractive();
 				button_bag.setScrollFactor(0);
 				button_bag.scale = 0.3;
 				button_bag.scaleY = button_home.scaleX;
@@ -623,23 +623,21 @@ document.addEventListener("DOMContentLoaded", function()
 					if(!bag_open)
 					{
 						bag_open = true;
-						bag = parent.add.image(screenCenterX, screenCenterY, "bag");
+						const bag = parent.add.image(screenCenterX, screenCenterY, "bag");
 						bag.setScrollFactor(0);
 						bag.scale = 0.75;
 
-						bag_close = parent.add.image(screenCenterX, screenCenterY + 50, "bag_close").setInteractive();
+						const bag_close = parent.add.image(screenCenterX, screenCenterY + 50, "bag_close").setInteractive();
 						bag_close.setScrollFactor(0);
 						bag_close.scale = 0.2;
 
-						slots = [];
+						const slots = [];
 						for(let grid_index = 1; grid_index <= 6; grid_index++)
 						{
 							if(grid_index <= 3)
 							{
-								//first row
-								xsubtract = 30 * grid_index;
-								ysubtract = 20;
-								item_slot = parent.add.image((screenCenterX + 60) - xsubtract, screenCenterY - ysubtract, "item_slot");
+								// first row
+								const item_slot = parent.add.image((screenCenterX + 60) - 30*grid_index, screenCenterY - 20, "item_slot");
 								item_slot.setScrollFactor(0);
 								item_slot.scale = 0.3;
 								slots.push(item_slot);
@@ -647,10 +645,8 @@ document.addEventListener("DOMContentLoaded", function()
 							}
 							else
 							{
-								//second row
-								xsubtract = 30 * grid_index;
-								ysubtract = -15;
-								item_slot = parent.add.image((screenCenterX + 150) - xsubtract, screenCenterY - ysubtract, "item_slot");
+								// second row
+								const item_slot = parent.add.image((screenCenterX + 150) - 30*grid_index, screenCenterY + 15, "item_slot");
 								item_slot.setScrollFactor(0);
 								item_slot.scale = 0.3;
 								slots.push(item_slot);
@@ -738,7 +734,7 @@ document.addEventListener("DOMContentLoaded", function()
 				if(left && !right)
 				{
 					player.xvel = Math.max(-MAX_SPEED, player.xvel - RUN_ACCEL);
-					if (player.sprite.anims.currentAnim.key !== 'dig-left' && player.sprite.anims.currentAnim.key !== 'dig-right')
+					if(player.sprite.anims.currentAnim.key !== "dig-left" && player.sprite.anims.currentAnim.key !== "dig-right")
 						player.sprite.anims.play("left", true);
 
 					player.facing = "left";
@@ -746,19 +742,19 @@ document.addEventListener("DOMContentLoaded", function()
 				if(right && !left)
 				{
 					player.xvel = Math.min(MAX_SPEED, player.xvel + RUN_ACCEL);
-					if (player.sprite.anims.currentAnim.key !== 'dig-left' && player.sprite.anims.currentAnim.key !== 'dig-right')
+					if(player.sprite.anims.currentAnim.key !== "dig-left" && player.sprite.anims.currentAnim.key !== "dig-right")
 						player.sprite.anims.play("right", true);
 
 					player.facing = "right";
 				}
 
-				if(left === right )
+				if(left === right)
 				{
-					if (!player.sprite.anims.isPlaying || (player.sprite.anims.currentAnim.key === 'left' || player.sprite.anims.currentAnim.key === 'right'))
+					if(!player.sprite.anims.isPlaying || (player.sprite.anims.currentAnim.key === "left" || player.sprite.anims.currentAnim.key === "right"))
 					{
 						player.sprite.anims.play("idle-"+player.facing, true);
 					}
-					
+
 					if(player.xvel > 0)
 						player.xvel = Math.max(0, player.xvel - RUN_DECEL);
 					else
@@ -855,7 +851,7 @@ document.addEventListener("DOMContentLoaded", function()
 				}
 			}
 
-	
+
 		let isMineral = false;
 		for(let index_gem = 0; index_gem < level.gems.length; ++index_gem)
 		{
