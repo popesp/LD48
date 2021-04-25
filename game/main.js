@@ -1,20 +1,20 @@
 const WIDTH_CANVAS = 800;
 const HEIGHT_CANVAS = 600;
 
-const WIDTH_PLAYER = 12;
-const HEIGHT_PLAYER = 16;
+const WIDTH_PLAYER = 10;
+const HEIGHT_PLAYER = 14;
 
-const SIZE_TILE = 20;
+const SIZE_TILE = 16;
 const EPSILON = 0.00000000001;
 const COOLDOWN_DIG = 30;
 
 // PHYSICS
-const JUMPSPEED = 4.2;
-const JUMPSPEED_CANCEL = 1.6;
+const JUMPSPEED = 3.4;
+const JUMPSPEED_CANCEL = 1.2;
 const RUN_ACCEL = 0.4;
 const RUN_DECEL = 0.4;
-const MAX_SPEED = 2.5;
-const GRAVITY = 0.18;
+const MAX_SPEED = 2.4;
+const GRAVITY = 0.15;
 
 
 const map_tile = {
