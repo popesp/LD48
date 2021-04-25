@@ -87,6 +87,10 @@
 		{
 			"filename": "dirt",
 			"frame": {"x": 51, "y": 111, "w": 1, "h": 1}
+		},
+		{
+			"filename": "mineral",
+			"frame": {"x": 91, "y": 1, "w": 8, "h": 8}
 		}
 	]
 }

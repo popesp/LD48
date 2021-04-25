@@ -318,7 +318,7 @@ document.addEventListener("DOMContentLoaded", function()
 				gravity: {
 					y: 300
 				},
-				debug: false
+				debug: true
 			}
 		},
 		scene: {
@@ -356,6 +356,7 @@ document.addEventListener("DOMContentLoaded", function()
 					lifespan: 1000,
 					gravityY: 300
 				});
+
 
 				level.sprites = [];
 				for(let index_row = 0; index_row < level.height; ++index_row)
@@ -508,11 +509,11 @@ document.addEventListener("DOMContentLoaded", function()
 				}
 			}
 
-		energy_current --;
-		energy_display.setText( 'Energy:' + energy_current);
-		bar.scaleX = energy_current/energy_max;
-		//x offset 
-		bar.x += 16 * (1/energy_max);
+		// energy_current --;
+		// energy_display.setText( 'Energy:' + energy_current);
+		// bar.scaleX = energy_current/energy_max;
+		// //x offset 
+		// bar.x += 16 * (1/energy_max);
 
 	}
 
