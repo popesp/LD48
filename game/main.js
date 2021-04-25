@@ -278,7 +278,6 @@ function getSurrounding(level, index_row, index_col)
 	return surrounding;
 }
 
-
 document.addEventListener("DOMContentLoaded", function()
 {
 	const dom_container = document.getElementById("container");
@@ -329,9 +328,13 @@ document.addEventListener("DOMContentLoaded", function()
 					"assets/dude.png",
 					{frameWidth: 32, frameHeight: 48}
 				);
+				this.load.image('button_home', 'assets/btn_home.png');
+				this.load.image('button_bag', 'assets/btn_backpack.png');
+				this.load.image('dialog', 'assets/dialog.png');
 			},
 			create: function()
 			{
+				let parent = this;
 				level = generate(0.5);
 				this.physics.world.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
 
@@ -339,6 +342,9 @@ document.addEventListener("DOMContentLoaded", function()
 				player.setCollideWorldBounds(true);
 				this.cameras.main.startFollow(player);
 				this.cameras.main.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
+
+				const screenCenterX = this.cameras.main.worldView.x + this.cameras.main.width / 2;
+				const screenCenterY = this.cameras.main.worldView.y + this.cameras.main.height / 2;
 
 				this.input.gamepad.start();
 				cursors = this.input.keyboard.createCursorKeys();
@@ -398,6 +404,29 @@ document.addEventListener("DOMContentLoaded", function()
 				energy_current = energy_max;
 				energy_display = this.add.text(84, 16, 'Energy:' + energy_current, { fontSize: '12px', fill: '#000' });
 				energy_display.setScrollFactor(0);
+
+				button_home = this.add.image(372, 23, 'button_home').setInteractive();
+				button_home.setScrollFactor(0);
+				button_home.scale = 0.3;
+				button_home.scaleY = button_home.scaleX;
+				button_home.on('pointerup', function () {
+					home_modal = parent.add.image(screenCenterX, screenCenterY, 'dialog');
+					home_modal.setScrollFactor(0);
+					home_modal.scale = 0.8;
+					parent.add.text(141, 120, 'Are you sure you', { fontSize: '12px', fill: '#000' }).setScrollFactor(0);
+					parent.add.text(128, 135, 'want to return home?', { fontSize: '12px', fill: '#000' }).setScrollFactor(0);
+				});
+
+				button_bag = this.add.image(330, 23, 'button_bag').setInteractive();
+				button_bag.setScrollFactor(0);
+				button_bag.scale = 0.3;
+				button_bag.scaleY = button_home.scaleX;
+				button_bag.on('pointerup', function () {
+
+					alert('b');
+
+				});
+
 
 				this.anims.create({
 					key: "left",
