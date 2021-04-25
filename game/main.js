@@ -481,7 +481,6 @@ document.addEventListener("DOMContentLoaded", function()
 				const parent = this;
 				let home_open = false;
 				let bag_open = false;
-				console.log(this);
 
 				const screenCenterX = this.cameras.main.worldView.x + this.cameras.main.width / 2;
 				const screenCenterY = this.cameras.main.worldView.y + this.cameras.main.height / 2;
@@ -497,7 +496,7 @@ document.addEventListener("DOMContentLoaded", function()
 					blendMode: "NORMAL",
 					on: false,
 					lifespan: 1000,
-					gravityY: 300
+					gravityY: 300,
 				}));
 
 				const player = {
@@ -682,6 +681,30 @@ document.addEventListener("DOMContentLoaded", function()
 					frameRate: 10,
 					repeat: -1
 				});
+
+				this.anims.create({
+					key:'dig-left',
+					frames: this.anims.generateFrameNumbers("dude", {start: 17, end: 22}),
+					frameRate: 20
+				});
+
+				this.anims.create({
+					key:'dig-right',
+					frames: this.anims.generateFrameNumbers("dude", {start: 11, end: 16}),
+					frameRate: 20
+				});
+
+				this.anims.create({
+					key:'idle-left',
+					frames: this.anims.generateFrameNumbers("dude", {start: 4, end: 4}),
+					frameRate: 10,
+				});
+
+				this.anims.create({
+					key:'idle-right',
+					frames: this.anims.generateFrameNumbers("dude", {start: 23, end: 38}),
+					frameRate: 10,
+				});
 			},
 
 			update: function()
@@ -709,19 +732,25 @@ document.addEventListener("DOMContentLoaded", function()
 				if(left && !right)
 				{
 					player.xvel = Math.max(-MAX_SPEED, player.xvel - 0.4);
-					player.sprite.anims.play("left", true);
+					if (player.sprite.anims.currentAnim.key !== 'dig-left' && player.sprite.anims.currentAnim.key !== 'dig-right')
+						player.sprite.anims.play("left", true);
 					player.facing = "left";
 				}
 				if(right && !left)
 				{
 					player.xvel = Math.min(MAX_SPEED, player.xvel + 0.4);
-					player.sprite.anims.play("right", true);
+					if (player.sprite.anims.currentAnim.key !== 'dig-left' && player.sprite.anims.currentAnim.key !== 'dig-right')
+						player.sprite.anims.play("right", true);
 					player.facing = "right";
 				}
-				if(left === right)
-				{
-					player.sprite.anims.stop();
 
+				if(left === right )
+				{
+					if (!player.sprite.anims.isPlaying || (player.sprite.anims.currentAnim.key === 'left' || player.sprite.anims.currentAnim.key === 'right'))
+					{
+						player.sprite.anims.play("idle-"+player.facing, true);
+					}
+					
 					if(player.xvel > 0)
 						player.xvel = Math.max(0, player.xvel - 0.3);
 					else
@@ -777,7 +806,10 @@ document.addEventListener("DOMContentLoaded", function()
 					const index_col = Math.floor(player.sprite.x/SIZE_TILE) + (player.facing === "right" ? 1 : -1);
 
 					if(dig(level, emitter, mineral_emitter, index_row + (level.tiles[index_row][index_col] ? 0 : 1), index_col, this))
+					{
 						player.cooldown_dig = COOLDOWN_DIG;
+						player.sprite.anims.play("dig-"+player.facing, true);
+					}
 				}
 			}
 		}
@@ -815,6 +847,7 @@ document.addEventListener("DOMContentLoaded", function()
 				}
 			}
 
+	
 		let isMineral = false;
 		for(let index_gem = 0; index_gem < level.gems.length; ++index_gem)
 		{
