@@ -663,7 +663,6 @@ document.addEventListener("DOMContentLoaded", function()
 					}
 				});
 
-
 				this.anims.create({
 					key: "left",
 					frames: this.anims.generateFrameNumbers("dude", {start: 0, end: 4}),
@@ -673,8 +672,8 @@ document.addEventListener("DOMContentLoaded", function()
 
 				this.anims.create({
 					key: "turn",
-					frames: [{key: "dude", frame: 4}],
-					frameRate: 20
+					frames: [{key: "dude", frame: 10}],
+					frameRate: 10
 				});
 
 				this.anims.create({
