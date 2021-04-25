@@ -263,6 +263,7 @@ const map_tile = {
 };
 
 let energy_current = 10;
+let minerals = 0;
 
 
 function getSurrounding(level, index_row, index_col)
@@ -333,7 +334,7 @@ document.addEventListener("DOMContentLoaded", function()
 			},
 			create: function()
 			{
-				level = generate(0.5);
+				level = generate(0.5, 0.1);
 				this.physics.world.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
 
 				player = this.physics.add.sprite(100, 200, "dude").setDisplaySize(32, 32).setOrigin(0.5, 1);
@@ -358,8 +359,20 @@ document.addEventListener("DOMContentLoaded", function()
 					gravityY: 300
 				});
 
+				mineral_emitter = this.add.particles("tiles", "mineral").createEmitter({
+					speed: {min: 20, max: 100},
+					angle: {min: 200, max: 340},
+					alpha: {start: 1, end: 0},
+					scale: 3,
+					blendMode: "NORMAL",
+					on: false,
+					lifespan: 1000,
+					gravityY: 300
+				});
+
 
 				level.sprites = [];
+				level.mineral_sprites = [];
 				for(let index_row = 0; index_row < level.height; ++index_row)
 				{
 					const row = level.tiles[index_row];
@@ -368,6 +381,7 @@ document.addEventListener("DOMContentLoaded", function()
 					for(let index_col = 0; index_col < level.width; ++index_col)
 					{
 						const t = map_tile[getSurrounding(level, index_row, index_col)];
+
 
 						const tile = platforms.create(index_col*SIZE_TILE, index_row*SIZE_TILE, "tiles", t === undefined ? "void" : t.frame).setSize(SIZE_TILE, SIZE_TILE).setDisplaySize(SIZE_TILE, SIZE_TILE);
 						tile.setOrigin(0, 0);
@@ -383,6 +397,18 @@ document.addEventListener("DOMContentLoaded", function()
 
 					level.sprites.push(row_sprites);
 				}
+				console.log("player", player);
+
+				for(let index_gem = 0; index_gem < level.gems.length; ++index_gem)
+				{
+					const gem = level.gems[index_gem];
+					mineral_tile = platforms.create(gem.index_col*SIZE_TILE, gem.index_row*SIZE_TILE, "tiles", "mineral").setSize(SIZE_TILE, SIZE_TILE).setDisplaySize(SIZE_TILE, SIZE_TILE).setOrigin(0, 0);
+					mineral_tile.body.updateFromGameObject();
+					level.mineral_sprites.push(mineral_tile);
+				}
+
+				console.log('afer adding minerals', this)
+
 
 				barbg = this.add.graphics();
 				barbg.fillStyle(0xcc2418, 1);
@@ -392,31 +418,31 @@ document.addEventListener("DOMContentLoaded", function()
 				bar = this.add.graphics();
 				bar.fillStyle(0xebb134, 1);
 				bar.displayOriginX = 16;
-				
+
 				bar.fillRect(16, 16, 200, 15);
 				bar.setScrollFactor(0);
-				console.log(bar); 
+				console.log(bar);
 				energy_max = 10;
 				energy_current = energy_max;
-				energy_display = this.add.text(84, 16, 'Energy:' + energy_current, { fontSize: '12px', fill: '#000' });
+				energy_display = this.add.text(84, 16, "Energy:" + energy_current, {fontSize: "12px", fill: "#000"});
 				energy_display.setScrollFactor(0);
 
 				this.anims.create({
 					key: "left",
-					frames: this.anims.generateFrameNumbers("dude", { start: 0, end: 6 }),
+					frames: this.anims.generateFrameNumbers("dude", {start: 0, end: 6}),
 					frameRate: 10,
 					repeat: -1
 				});
 
 				this.anims.create({
 					key: "turn",
-					frames: [ { key: "dude", frame: 7 } ],
+					frames: [{key: "dude", frame: 7}],
 					frameRate: 20
 				});
 
 				this.anims.create({
 					key: "right",
-					frames: this.anims.generateFrameNumbers("dude", { start: 8, end:  13}),
+					frames: this.anims.generateFrameNumbers("dude", {start: 8, end: 13}),
 					frameRate: 10,
 					repeat: -1
 				});
@@ -434,26 +460,26 @@ document.addEventListener("DOMContentLoaded", function()
 				{
 					player.setVelocityX(-160);
 
-					player.anims.play('left', true);
-					if (player.body.touching.down && energy_current > 0)
+					player.anims.play("left", true);
+					if(player.body.touching.down && energy_current > 0)
 					{
 						const index_row = Math.floor(player.y/SIZE_TILE) - 1;
 						const index_col = Math.floor(player.x/SIZE_TILE) - 1;
 
-						dig(level, emitter, index_row, index_col);
+						dig(level, emitter, mineral_emitter, index_row, index_col);
 					}
 				}
 				else if(right)
 				{
 					player.setVelocityX(160);
-					player.anims.play('right', true);
+					player.anims.play("right", true);
 
-					if (player.body.touching.down && energy_current > 0)
+					if(player.body.touching.down && energy_current > 0)
 					{
 						const index_row = Math.floor(player.y/SIZE_TILE) - 1;
 						const index_col = Math.floor(player.x/SIZE_TILE) + 1;
 
-						dig(level, emitter, index_row, index_col);
+						dig(level, emitter, mineral_emitter, index_row, index_col);
 					}
 				}
 				else
@@ -473,13 +499,13 @@ document.addEventListener("DOMContentLoaded", function()
 					const index_row = Math.floor(player.y/SIZE_TILE);
 					const index_col = Math.floor(player.x/SIZE_TILE);
 
-					dig(level, emitter, index_row, index_col);
+					dig(level, emitter, mineral_emitter, index_row, index_col);
 				}
 			}
 		}
 	});
 
-	function dig(level, emitter, index_row, index_col)
+	function dig(level, emitter, mineral_emitter, index_row, index_col)
 	{
 		if(index_row < 0 || index_row >= level.height || index_col < 0 || index_col >= level.width)
 			return;
@@ -492,6 +518,7 @@ document.addEventListener("DOMContentLoaded", function()
 		sprite.setFrame("void");
 		sprite.body.enable = false;
 		emitter.explode(20, sprite.x + SIZE_TILE/2, sprite.y + SIZE_TILE/2);
+		
 
 		for(let index_row_check = index_row - 1; index_row_check <= index_row + 1; ++index_row_check)
 			for(let index_col_check = index_col - 1; index_col_check <= index_col + 1; ++index_col_check)
@@ -510,10 +537,25 @@ document.addEventListener("DOMContentLoaded", function()
 				}
 			}
 
+		for(let index_gem = 0; index_gem < level.gems.length; ++index_gem)
+		{
+			const gem = level.gems[index_gem];
+			if(gem.index_col === index_col && gem.index_row === index_row)
+			{
+				const mineral_sprite = level.mineral_sprites[index_gem];
+				level.tiles[index_row][index_col] = 0;
+				mineral_sprite.setFrame("void");
+				mineral_sprite.body.enable = false;
+				mineral_emitter.explode(20, mineral_sprite.x + SIZE_TILE/2, mineral_sprite.y + SIZE_TILE/2);
+
+				minerals += 10;
+			}
+		}
+
 		// energy_current --;
 		// energy_display.setText( 'Energy:' + energy_current);
 		// bar.scaleX = energy_current/energy_max;
-		// //x offset 
+		// //x offset
 		// bar.x += 16 * (1/energy_max);
 
 	}
