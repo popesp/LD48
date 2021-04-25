@@ -44,7 +44,7 @@ function countSurrounding(level, index_row, index_col)
 			const index_row_test = index_row + index_row_filter - ymin_filter;
 			const index_col_test = index_col + index_col_filter - xmin_filter;
 
-			const test = (index_row_test < 0 || index_row_test >= level.height || index_col_test < 0 || index_col_test >= level.width) ? 1 : level.tiles[index_row_test][index_col_test]
+			const test = (index_row_test < 0 || index_row_test >= level.height || index_col_test < 0 || index_col_test >= level.width) ? 1 : (level.tiles[index_row_test][index_col_test] ? 1 : 0);
 			acc += test*row_filter[index_col_filter];
 		}
 	}
@@ -75,13 +75,19 @@ function generate(density)
 		for(let index_row = 0; index_row < level.height; ++index_row)
 			for(let index_col = 0; index_col < level.width; ++index_col)
 			{
-				const num_surrounding = countSurrounding(level, index_row, index_col);
+				if(index_row === 0 || index_row === level.height - 1 || index_col === 0 || index_col === level.width - 1)
+					level.tiles[index_row][index_col] = -1;
+				else
+				{
+					const num_surrounding = countSurrounding(level, index_row, index_col);
 
-				if(num_surrounding > 0.5)
-					level.tiles[index_row][index_col] = 1;
-				else if(num_surrounding < 0.5)
-					level.tiles[index_row][index_col] = 0;
+					if(num_surrounding > 0.5)
+						level.tiles[index_row][index_col] = 1;
+					else if(num_surrounding < 0.5)
+						level.tiles[index_row][index_col] = 0;
+				}
 			}
+
 
 	return level;
 }

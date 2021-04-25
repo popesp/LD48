@@ -1,7 +1,15 @@
 const WIDTH_CANVAS = 800;
 const HEIGHT_CANVAS = 600;
 
+const WIDTH_PLAYER = 12;
+const HEIGHT_PLAYER = 20;
+
+const MAX_SPEED = 3;
+
 const SIZE_TILE = 24;
+const EPSILON = 0.00000000001;
+
+const COOLDOWN_DIG = 30;
 
 const map_tile = {
 	"111111111": {frame: "solid", flipped: false},
@@ -265,6 +273,93 @@ const map_tile = {
 let energy_current = 10;
 
 
+function handleCollision(player, level)
+{
+	function collideTile(index_row, index_col)
+	{
+		const y_top = index_row*SIZE_TILE;
+		const y_bottom = y_top + SIZE_TILE;
+		const x_left = index_col*SIZE_TILE;
+		const x_right = x_left + SIZE_TILE;
+
+		if(player.sprite.y - EPSILON > y_top && player.y_old - EPSILON <= y_top)
+		{
+			player.falling = false;
+			player.yvel = 0;
+			player.sprite.y = y_top;
+			return;
+		}
+
+		if(player.sprite.x + WIDTH_PLAYER/2 - EPSILON > x_left && player.x_old + WIDTH_PLAYER/2 - EPSILON <= x_left)
+		{
+			player.xvel = 0;
+			player.sprite.x = x_left - WIDTH_PLAYER/2;
+			return;
+		}
+
+		if(player.sprite.x - WIDTH_PLAYER/2 < x_right && player.x_old - WIDTH_PLAYER/2 >= x_right)
+		{
+			player.xvel = 0;
+			player.sprite.x = x_right + WIDTH_PLAYER/2;
+			return;
+		}
+
+		if(player.sprite.y - HEIGHT_PLAYER < y_bottom && player.y_old - HEIGHT_PLAYER >= y_bottom)
+		{
+			player.yvel = 0;
+			player.sprite.y = y_bottom + HEIGHT_PLAYER;
+			return;
+		}
+	}
+
+	let index_row, index_col;
+
+	// top left
+	index_row = Math.floor((player.sprite.y - HEIGHT_PLAYER)/SIZE_TILE);
+	index_col = Math.floor((player.sprite.x - WIDTH_PLAYER/2)/SIZE_TILE);
+	if(level.tiles[index_row][index_col])
+		collideTile(index_row, index_col);
+
+	// top right
+	index_col = Math.floor((player.sprite.x + WIDTH_PLAYER/2 - EPSILON)/SIZE_TILE);
+	if(level.tiles[index_row][index_col])
+		collideTile(index_row, index_col);
+
+	// bottom left
+	index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
+	index_col = Math.floor((player.sprite.x - WIDTH_PLAYER/2)/SIZE_TILE);
+	if(level.tiles[index_row][index_col])
+		collideTile(index_row, index_col);
+
+	// bottom right
+	index_col = Math.floor((player.sprite.x + WIDTH_PLAYER/2 - EPSILON)/SIZE_TILE);
+	if(level.tiles[index_row][index_col])
+		collideTile(index_row, index_col);
+
+	// top left again
+	index_row = Math.floor((player.sprite.y - HEIGHT_PLAYER)/SIZE_TILE);
+	index_col = Math.floor((player.sprite.x - WIDTH_PLAYER/2)/SIZE_TILE);
+	if(level.tiles[index_row][index_col])
+		collideTile(index_row, index_col);
+
+	// bottom left again
+	index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
+	if(level.tiles[index_row][index_col])
+		collideTile(index_row, index_col);
+
+	// top right again
+	index_row = Math.floor((player.sprite.y - HEIGHT_PLAYER)/SIZE_TILE);
+	index_col = Math.floor((player.sprite.x + WIDTH_PLAYER/2 - EPSILON)/SIZE_TILE);
+	if(level.tiles[index_row][index_col])
+		collideTile(index_row, index_col);
+
+	// bottom right again
+	index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
+	if(level.tiles[index_row][index_col])
+		collideTile(index_row, index_col);
+}
+
+
 function getSurrounding(level, index_row, index_col)
 {
 	let surrounding = "";
@@ -273,7 +368,7 @@ function getSurrounding(level, index_row, index_col)
 			if(index_row_check < 0 || index_row_check >= level.height || index_col_check < 0 || index_col_check >= level.width)
 				surrounding += "1";
 			else
-				surrounding += level.tiles[index_row_check][index_col_check];
+				surrounding += level.tiles[index_row_check][index_col_check] ? 1 : 0;
 
 	return surrounding;
 }
@@ -318,7 +413,7 @@ document.addEventListener("DOMContentLoaded", function()
 				gravity: {
 					y: 300
 				},
-				debug: false
+				debug: true
 			}
 		},
 		scene: {
@@ -330,23 +425,43 @@ document.addEventListener("DOMContentLoaded", function()
 					{frameWidth: 32, frameHeight: 48}
 				);
 			},
+
 			create: function()
 			{
-				level = generate(0.5);
-				this.physics.world.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
+				const level = generate(0.5);
+				level.images = [];
+				for(let index_row = 0; index_row < level.height; ++index_row)
+				{
+					const row_images = [];
+					for(let index_col = 0; index_col < level.width; ++index_col)
+					{
+						let frame = "void", flipped = false;
+						if(level.tiles[index_row][index_col] === -1)
+							frame = "bedrock";
+						else if(level.tiles[index_row][index_col])
+						{
+							const t = map_tile[getSurrounding(level, index_row, index_col)];
+							frame = t.frame;
+							flipped = t.flipped;
+						}
 
-				player = this.physics.add.sprite(100, 200, "dude").setDisplaySize(20, 30).setOrigin(0.5, 1);
-				player.setCollideWorldBounds(true);
-				this.cameras.main.startFollow(player);
-				this.cameras.main.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
+						const tile = this.add.image(index_col*SIZE_TILE, index_row*SIZE_TILE, "tiles", frame);
+						tile.setOrigin(0, 0);
+						tile.setDisplaySize(SIZE_TILE, SIZE_TILE);
+
+						tile.flipX = flipped;
+
+						row_images.push(tile);
+					}
+
+					level.images.push(row_images);
+				}
+				this.data.set("level", level);
 
 				this.input.gamepad.start();
-				cursors = this.input.keyboard.createCursorKeys();
+				this.data.set("cursors", this.input.keyboard.createCursorKeys());
 
-				platforms = this.physics.add.staticGroup();
-				this.physics.add.collider(player, platforms);
-
-				emitter = this.add.particles("tiles", "dirt").createEmitter({
+				this.data.set("emitter", this.add.particles("tiles", "dirt").createEmitter({
 					speed: {min: 20, max: 100},
 					angle: {min: 200, max: 340},
 					alpha: {start: 1, end: 0},
@@ -355,32 +470,23 @@ document.addEventListener("DOMContentLoaded", function()
 					on: false,
 					lifespan: 1000,
 					gravityY: 300
-				});
+				}));
 
-				level.sprites = [];
-				for(let index_row = 0; index_row < level.height; ++index_row)
-				{
-					const row = level.tiles[index_row];
-
-					const row_sprites = [];
-					for(let index_col = 0; index_col < level.width; ++index_col)
-					{
-						const t = map_tile[getSurrounding(level, index_row, index_col)];
-
-						const tile = platforms.create(index_col*SIZE_TILE, index_row*SIZE_TILE, "tiles", t === undefined ? "void" : t.frame).setSize(SIZE_TILE, SIZE_TILE).setDisplaySize(SIZE_TILE, SIZE_TILE);
-						tile.setOrigin(0, 0);
-						tile.body.updateFromGameObject();
-
-						if(t === undefined)
-							tile.body.enable = false;
-						else if(t.flipped)
-							tile.flipX = true;
-
-						row_sprites.push(tile);
-					}
-
-					level.sprites.push(row_sprites);
-				}
+				const player = {
+					falling: true,
+					jump: false,
+					jumpCancel: false,
+					xvel: 0,
+					yvel: 0,
+					cooldown_dig: 0,
+					facing: "right",
+					sprite: this.add.sprite(132, 120, "dude")
+				};
+				player.sprite.setOrigin(0.5, 1);
+				player.sprite.setDisplaySize(16, 24);
+				this.cameras.main.startFollow(player.sprite);
+				this.cameras.main.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
+				this.data.set("player", player);
 
 				barbg = this.add.graphics();
 				barbg.fillStyle(0xcc2418, 1);
@@ -390,88 +496,130 @@ document.addEventListener("DOMContentLoaded", function()
 				bar = this.add.graphics();
 				bar.fillStyle(0xebb134, 1);
 				bar.displayOriginX = 16;
-				
+
 				bar.fillRect(16, 16, 200, 15);
 				bar.setScrollFactor(0);
-				console.log(bar); 
+
 				energy_max = 10;
 				energy_current = energy_max;
-				energy_display = this.add.text(84, 16, 'Energy:' + energy_current, { fontSize: '12px', fill: '#000' });
+				energy_display = this.add.text(84, 16, "Energy:" + energy_current, {fontSize: "12px", fill: "#000"});
 				energy_display.setScrollFactor(0);
 
 				this.anims.create({
 					key: "left",
-					frames: this.anims.generateFrameNumbers("dude", { start: 0, end: 3 }),
+					frames: this.anims.generateFrameNumbers("dude", {start: 0, end: 3}),
 					frameRate: 10,
 					repeat: -1
 				});
 
 				this.anims.create({
 					key: "turn",
-					frames: [ { key: "dude", frame: 4 } ],
+					frames: [{key: "dude", frame: 4}],
 					frameRate: 20
 				});
 
 				this.anims.create({
 					key: "right",
-					frames: this.anims.generateFrameNumbers("dude", { start: 5, end: 8 }),
+					frames: this.anims.generateFrameNumbers("dude", {start: 5, end: 8}),
 					frameRate: 10,
 					repeat: -1
 				});
 			},
+
 			update: function()
 			{
 				const gamepad = this.input.gamepad.gamepads[0];
+				const cursors = this.data.get("cursors");
 
 				const left = cursors.left.isDown || (gamepad && (gamepad.left || gamepad.leftStick.x < -0.1));
 				const right = cursors.right.isDown || (gamepad && (gamepad.right || gamepad.leftStick.x > 0.1));
-				const down = cursors.down.isDown || (gamepad && (gamepad.down || gamepad.leftStick.y > 0.1));
 				const jump = cursors.up.isDown || (gamepad && gamepad.A);
+				const action = cursors.space.isDown;
 
-				if(left)
+				const player = this.data.get("player");
+				const level = this.data.get("level");
+				const emitter = this.data.get("emitter");
+
+				if(jump && !player.falling)
 				{
-					player.setVelocityX(-160);
-
-					player.anims.play('left', true);
-					if (player.body.touching.down && energy_current > 0)
-					{
-						const index_row = Math.floor(player.y/SIZE_TILE) - 1;
-						const index_col = Math.floor(player.x/SIZE_TILE) - 1;
-
-						dig(level, emitter, index_row, index_col);
-					}
+					player.yvel = -5;
+					player.falling = true;
 				}
-				else if(right)
+				if(!jump && player.falling)
+					player.yvel = Math.max(player.yvel, -2);
+
+				if(left && !right)
 				{
-					player.setVelocityX(160);
-					player.anims.play('right', true);
-
-					if (player.body.touching.down && energy_current > 0)
-					{
-						const index_row = Math.floor(player.y/SIZE_TILE) - 1;
-						const index_col = Math.floor(player.x/SIZE_TILE) + 1;
-
-						dig(level, emitter, index_row, index_col);
-					}
+					player.xvel = Math.max(-MAX_SPEED, player.xvel - 0.4);
+					player.sprite.anims.play("left", true);
+					player.facing = "left";
 				}
-				else
+				if(right && !left)
 				{
-					player.setVelocityX(0);
-
-					player.anims.play("turn");
+					player.xvel = Math.min(MAX_SPEED, player.xvel + 0.4);
+					player.sprite.anims.play("right", true);
+					player.facing = "right";
 				}
-
-				if(jump && player.body.touching.down)
+				if(left === right)
 				{
-					player.setVelocityY(-180);
+					player.sprite.anims.stop();
+
+					if(player.xvel > 0)
+						player.xvel = Math.max(0, player.xvel - 0.3);
+					else
+						player.xvel = Math.min(0, player.xvel + 0.3);
 				}
 
-				if(down && player.body.touching.down && energy_current > 0)
-				{
-					const index_row = Math.floor(player.y/SIZE_TILE);
-					const index_col = Math.floor(player.x/SIZE_TILE);
+				player.x_old = player.sprite.x;
+				player.y_old = player.sprite.y;
 
-					dig(level, emitter, index_row, index_col);
+				if(player.falling)
+					player.yvel += 0.22;
+
+				player.sprite.x += player.xvel;
+				player.sprite.y += player.yvel;
+
+				if(player.sprite.y < HEIGHT_PLAYER)
+				{
+					player.sprite.y = HEIGHT_PLAYER;
+					player.yvel = 0;
+				}
+				else if(player.sprite.y > level.height*SIZE_TILE)
+				{
+					player.falling = false;
+					player.sprite.y = level.height*SIZE_TILE - EPSILON;
+					player.yvel = 0;
+				}
+
+				if(player.sprite.x < WIDTH_PLAYER/2)
+				{
+					player.sprite.x = WIDTH_PLAYER/2;
+					player.xvel = 0;
+				}
+				else if(player.sprite.x > level.width*SIZE_TILE - WIDTH_PLAYER/2)
+				{
+					player.sprite.x = level.width*SIZE_TILE - WIDTH_PLAYER/2 - EPSILON;
+					player.xvel = 0;
+				}
+
+				handleCollision(player, level);
+
+				const index_row_under = Math.floor(player.sprite.y/SIZE_TILE);
+				const index_col_left = Math.floor((player.sprite.x - WIDTH_PLAYER/2)/SIZE_TILE);
+				const index_col_right = Math.floor((player.sprite.x + WIDTH_PLAYER/2 - EPSILON)/SIZE_TILE);
+
+				if(!level.tiles[index_row_under][index_col_left] && !level.tiles[index_row_under][index_col_right])
+					player.falling = true;
+
+				if(player.cooldown_dig)
+					player.cooldown_dig--;
+				else if(action && !player.falling)
+				{
+					const index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
+					const index_col = Math.floor(player.sprite.x/SIZE_TILE) + (player.facing === "right" ? 1 : -1);
+
+					if(dig(level, emitter, index_row + (level.tiles[index_row][index_col] ? 0 : 1), index_col))
+						player.cooldown_dig = COOLDOWN_DIG;
 				}
 			}
 		}
@@ -480,26 +628,28 @@ document.addEventListener("DOMContentLoaded", function()
 	function dig(level, emitter, index_row, index_col)
 	{
 		if(index_row < 0 || index_row >= level.height || index_col < 0 || index_col >= level.width)
-			return;
+			return false;
 
-		if(!level.tiles[index_row][index_col])
-			return;
+		if(level.tiles[index_row][index_col] !== 1)
+			return false;
 
-		const sprite = level.sprites[index_row][index_col];
+		const image = level.images[index_row][index_col];
 		level.tiles[index_row][index_col] = 0;
-		sprite.setFrame("void");
-		sprite.body.enable = false;
-		emitter.explode(20, sprite.x + SIZE_TILE/2, sprite.y + SIZE_TILE/2);
+		image.setFrame("void");
+		emitter.explode(20, image.x + SIZE_TILE/2, image.y + SIZE_TILE/2);
 
 		for(let index_row_check = index_row - 1; index_row_check <= index_row + 1; ++index_row_check)
 			for(let index_col_check = index_col - 1; index_col_check <= index_col + 1; ++index_col_check)
 			{
+				if(level.tiles[index_row_check][index_col_check] === -1)
+					continue;
+
 				if(index_row_check < 0 || index_row_check >= level.height || index_col_check < 0 || index_col_check >= level.width)
 					continue;
 
 				const surrounding = getSurrounding(level, index_row_check, index_col_check);
 				const t = map_tile[surrounding];
-				const s = level.sprites[index_row_check][index_col_check];
+				const s = level.images[index_row_check][index_col_check];
 
 				if(t !== undefined)
 				{
@@ -509,11 +659,12 @@ document.addEventListener("DOMContentLoaded", function()
 			}
 
 		energy_current --;
-		energy_display.setText( 'Energy:' + energy_current);
+		energy_display.setText("Energy:" + energy_current);
 		bar.scaleX = energy_current/energy_max;
-		//x offset 
+		//x offset
 		bar.x += 16 * (1/energy_max);
 
+		return true;
 	}
 
 	window.addEventListener("resize", resize);
