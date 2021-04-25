@@ -346,6 +346,17 @@ document.addEventListener("DOMContentLoaded", function()
 				platforms = this.physics.add.staticGroup();
 				this.physics.add.collider(player, platforms);
 
+				emitter = this.add.particles("tiles", "dirt").createEmitter({
+					speed: {min: 20, max: 100},
+					angle: {min: 200, max: 340},
+					alpha: {start: 1, end: 0},
+					scale: 3,
+					blendMode: "NORMAL",
+					on: false,
+					lifespan: 1000,
+					gravityY: 300
+				});
+
 				level.sprites = [];
 				for(let index_row = 0; index_row < level.height; ++index_row)
 				{
@@ -411,17 +422,6 @@ document.addEventListener("DOMContentLoaded", function()
 			update: function()
 			{
 				const gamepad = this.input.gamepad.gamepads[0];
-
-				const emitter = this.add.particles("tiles", "dirt").createEmitter({
-					speed: {min: 20, max: 100},
-					angle: {min: 200, max: 340},
-					alpha: {start: 1, end: 0},
-					scale: 3,
-					blendMode: "NORMAL",
-					on: false,
-					lifespan: 1000,
-					gravityY: 300
-				});
 
 				const left = cursors.left.isDown || (gamepad && (gamepad.left || gamepad.leftStick.x < -0.1));
 				const right = cursors.right.isDown || (gamepad && (gamepad.right || gamepad.leftStick.x > 0.1));
