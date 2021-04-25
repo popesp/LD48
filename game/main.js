@@ -2,11 +2,11 @@ const WIDTH_CANVAS = 800;
 const HEIGHT_CANVAS = 600;
 
 const WIDTH_PLAYER = 12;
-const HEIGHT_PLAYER = 20;
+const HEIGHT_PLAYER = 16;
 
 const MAX_SPEED = 3;
 
-const SIZE_TILE = 40;
+const SIZE_TILE = 20;
 const EPSILON = 0.00000000001;
 
 const COOLDOWN_DIG = 30;
