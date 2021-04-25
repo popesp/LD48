@@ -433,7 +433,7 @@ document.addEventListener("DOMContentLoaded", function()
 				this.load.atlas("tiles", "assets/tiles-extruded.png", "assets/tiles-extruded.json");
 				this.load.spritesheet("dude",
 					"assets/dude3.png",
-					{frameWidth: 16, frameHeight: 16}
+					{frameWidth: 20, frameHeight: 16}
 				);
 				this.load.audio("music", "assets/cavemusic.wav");
 				this.load.image("button_home", "assets/btn_home.png");
@@ -516,7 +516,7 @@ document.addEventListener("DOMContentLoaded", function()
 					sprite: this.add.sprite(132, 132, "dude")
 				};
 				player.sprite.setOrigin(0.5, 1);
-				player.sprite.setDisplaySize(16, 16);
+				player.sprite.setDisplaySize(20, 16);
 				this.cameras.main.startFollow(player.sprite);
 				this.cameras.main.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
 				this.data.set("player", player);
@@ -666,38 +666,26 @@ document.addEventListener("DOMContentLoaded", function()
 
 				this.anims.create({
 					key: "turn",
-					frames: [{key: "dude", frame: 10}],
+					frames: [{key: "dude", frame: 5}],
 					frameRate: 10
 				});
 
 				this.anims.create({
 					key: "run",
-					frames: this.anims.generateFrameNumbers("dude", {start: 5, end: 9}),
+					frames: this.anims.generateFrameNumbers("dude", {start: 0, end: 4}),
 					frameRate: 10,
 					repeat: -1
 				});
 
 				this.anims.create({
-					key: "dig-left",
-					frames: this.anims.generateFrameNumbers("dude", {start: 17, end: 22}),
+					key: "dig",
+					frames: this.anims.generateFrameNumbers("dude", {start: 6, end: 10}),
 					frameRate: 20
 				});
 
 				this.anims.create({
-					key: "dig-right",
-					frames: this.anims.generateFrameNumbers("dude", {start: 11, end: 16}),
-					frameRate: 20
-				});
-
-				this.anims.create({
-					key: "idle-left",
-					frames: this.anims.generateFrameNumbers("dude", {start: 4, end: 4}),
-					frameRate: 10
-				});
-
-				this.anims.create({
-					key: "idle-right",
-					frames: this.anims.generateFrameNumbers("dude", {start: 23, end: 38}),
+					key: "idle",
+					frames: this.anims.generateFrameNumbers("dude", {start: 11, end: 26}),
 					frameRate: 10
 				});
 			},
