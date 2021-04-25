@@ -325,20 +325,28 @@ document.addEventListener("DOMContentLoaded", function()
 			{
 				this.load.atlas("tiles", "assets/tiles-extruded.png", "assets/tiles-extruded.json");
 				this.load.spritesheet("dude",
-					"assets/dude.png",
-					{frameWidth: 32, frameHeight: 48}
+					"assets/dude2.png",
+					{frameWidth: 32, frameHeight: 32}
 				);
 				this.load.image('button_home', 'assets/btn_home.png');
 				this.load.image('button_bag', 'assets/btn_backpack.png');
+				this.load.image('button_success', 'assets/btn_success.png');
+				this.load.image('button_dirty', 'assets/btn_dirty.png');
 				this.load.image('dialog', 'assets/dialog.png');
+				this.load.image('bag', 'assets/bag.png');
+				this.load.image('bag_close', 'assets/btn_close.png');
+				this.load.image('item_slot', 'assets/item_slot.png');
+				console.log(this.load.spritesheet);
 			},
 			create: function()
 			{
 				let parent = this;
+				let home_open = false;
+				let bag_open = false;
 				level = generate(0.5);
 				this.physics.world.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
 
-				player = this.physics.add.sprite(100, 200, "dude").setDisplaySize(20, 30).setOrigin(0.5, 1);
+				player = this.physics.add.sprite(100, 200, "dude").setDisplaySize(32, 32).setOrigin(0.5, 1);
 				player.setCollideWorldBounds(true);
 				this.cameras.main.startFollow(player);
 				this.cameras.main.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
@@ -410,11 +418,47 @@ document.addEventListener("DOMContentLoaded", function()
 				button_home.scale = 0.3;
 				button_home.scaleY = button_home.scaleX;
 				button_home.on('pointerup', function () {
-					home_modal = parent.add.image(screenCenterX, screenCenterY, 'dialog');
-					home_modal.setScrollFactor(0);
-					home_modal.scale = 0.8;
-					parent.add.text(141, 120, 'Are you sure you', { fontSize: '12px', fill: '#000' }).setScrollFactor(0);
-					parent.add.text(128, 135, 'want to return home?', { fontSize: '12px', fill: '#000' }).setScrollFactor(0);
+					if (!home_open){
+						home_open = true;
+						home_modal = parent.add.image(screenCenterX, screenCenterY, 'dialog');
+						home_modal.setScrollFactor(0);
+						home_modal.scale = 0.8;
+						confirm_text1 = parent.add.text(141, 120, 'Are you sure you', { fontSize: '12px', fill: '#000' }).setScrollFactor(0);
+						confirm_text2 = parent.add.text(128, 135, 'want to return home?', { fontSize: '12px', fill: '#000' }).setScrollFactor(0);
+	
+						button_yes = parent.add.image(162, 178, 'button_success').setInteractive();
+						yes_text = parent.add.text(151, 170, 'YES', { fontSize: '12px', fill: '#000' }).setScrollFactor(0);
+						button_yes.setScrollFactor(0);
+						button_yes.scale = 0.3;
+						button_yes.scaleY = button_home.scaleX;
+						button_no = parent.add.image(240, 178, 'button_dirty').setInteractive();
+						no_text = parent.add.text(233, 170, 'NO', { fontSize: '12px', fill: '#000' }).setScrollFactor(0);
+						button_no.setScrollFactor(0);
+						button_no.scale = 0.3;
+						button_no.scaleY = button_home.scaleX;
+	
+						button_yes.on('pointerup', function () {
+							home_modal.destroy();
+							confirm_text1.destroy();
+							confirm_text2.destroy();
+							yes_text.destroy();
+							button_yes.destroy();
+							button_no.destroy();
+							no_text.destroy();
+							home_open = false;
+						});
+	
+						button_no.on('pointerup', function () {
+							home_modal.destroy();
+							confirm_text1.destroy();
+							confirm_text2.destroy();
+							yes_text.destroy();
+							button_yes.destroy();
+							button_no.destroy();
+							no_text.destroy();
+							home_open = false;
+						});
+					}
 				});
 
 				button_bag = this.add.image(330, 23, 'button_bag').setInteractive();
@@ -422,28 +466,65 @@ document.addEventListener("DOMContentLoaded", function()
 				button_bag.scale = 0.3;
 				button_bag.scaleY = button_home.scaleX;
 				button_bag.on('pointerup', function () {
+					if (!bag_open){
+						bag = parent.add.image(screenCenterX, screenCenterY, 'bag');
+						bag.setScrollFactor(0);
+						bag.scale = 0.75;
 
-					alert('b');
+						bag_close = parent.add.image(screenCenterX, screenCenterY + 50, 'bag_close').setInteractive();;
+						bag_close.setScrollFactor(0);
+						bag_close.scale = 0.2;
 
+						slots = [];
+
+						for(let grid_index = 1; grid_index <= 6; grid_index++){
+							if (grid_index <= 3){
+								//first row
+								xsubtract = 30 * grid_index;
+								ysubtract = 20;
+								item_slot = parent.add.image((screenCenterX + 60) - xsubtract, screenCenterY - ysubtract, 'item_slot');
+								item_slot.setScrollFactor(0);
+								item_slot.scale = 0.3;
+								slots.push(item_slot);
+							}
+							else{
+								//second row
+								xsubtract = 30 * grid_index;
+								ysubtract = -15;
+								item_slot = parent.add.image((screenCenterX + 150) - xsubtract, screenCenterY - ysubtract, 'item_slot');
+								item_slot.setScrollFactor(0);
+								item_slot.scale = 0.3;
+								slots.push(item_slot);
+							}
+						}
+
+						bag_close.on('pointerup', function () {
+							bag.destroy();
+							bag_close.destroy();
+							slots.forEach(slot => slot.destroy());
+							slots = [];
+							bag_open = false;
+						});
+					}
 				});
 
 
 				this.anims.create({
 					key: "left",
-					frames: this.anims.generateFrameNumbers("dude", { start: 0, end: 3 }),
+					frames: this.anims.generateFrameNumbers("dude", { start: 0, end: 6 }),
 					frameRate: 10,
 					repeat: -1
 				});
 
 				this.anims.create({
 					key: "turn",
-					frames: [ { key: "dude", frame: 4 } ],
+					frames: [ { key: "dude", frame: 7 } ],
 					frameRate: 20
 				});
 
 				this.anims.create({
 					key: "right",
-					frames: this.anims.generateFrameNumbers("dude", { start: 5, end: 8 }),
+					frames: this.anims.generateFrameNumbers("dude", { start: 8, end:  13}),
 					frameRate: 10,
 					repeat: -1
 				});
