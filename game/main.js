@@ -335,6 +335,7 @@ document.addEventListener("DOMContentLoaded", function()
 			{
 				level = generate(0.5, 0.1);
 				music = this.sound.add('music');
+				music.loop = true;
 				music.play();
 				this.load.image('button_home', 'assets/btn_home.png');
 				this.load.image('button_bag', 'assets/btn_backpack.png');
