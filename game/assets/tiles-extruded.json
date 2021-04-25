@@ -85,8 +85,12 @@
 			"frame": {"x": 81, "y": 101, "w": 8, "h": 8}
 		},
 		{
-			"filename": "dirt",
+			"filename": "morsel_dirt",
 			"frame": {"x": 51, "y": 111, "w": 1, "h": 1}
+		},
+		{
+			"filename": "morsel_gold",
+			"frame": {"x": 53, "y": 111, "w": 1, "h": 1}
 		},
 		{
 			"filename": "bedrock",

@@ -488,7 +488,7 @@ document.addEventListener("DOMContentLoaded", function()
 				this.input.gamepad.start();
 				this.data.set("cursors", this.input.keyboard.createCursorKeys());
 
-				this.data.set("emitter", this.add.particles("tiles", "dirt").createEmitter({
+				this.data.set("emitter", this.add.particles("tiles", "morsel_dirt").createEmitter({
 					speed: {min: 20, max: 100},
 					angle: {min: 200, max: 340},
 					alpha: {start: 1, end: 0},
@@ -515,7 +515,7 @@ document.addEventListener("DOMContentLoaded", function()
 				this.cameras.main.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
 				this.data.set("player", player);
 
-				mineral_emitter = this.add.particles("tiles", "mineral").createEmitter({
+				mineral_emitter = this.add.particles("tiles", "morsel_gold").createEmitter({
 					speed: {min: 20, max: 100},
 					angle: {min: 200, max: 340},
 					alpha: {start: 1, end: 0},
@@ -794,7 +794,6 @@ document.addEventListener("DOMContentLoaded", function()
 		const image = level.images[index_row][index_col];
 		level.tiles[index_row][index_col] = 0;
 		image.setFrame("void");
-		emitter.explode(20, image.x + SIZE_TILE/2, image.y + SIZE_TILE/2);
 
 		for(let index_row_check = index_row - 1; index_row_check <= index_row + 1; ++index_row_check)
 			for(let index_col_check = index_col - 1; index_col_check <= index_col + 1; ++index_col_check)
@@ -816,6 +815,7 @@ document.addEventListener("DOMContentLoaded", function()
 				}
 			}
 
+		let isMineral = false;
 		for(let index_gem = 0; index_gem < level.gems.length; ++index_gem)
 		{
 			const gem = level.gems[index_gem];
@@ -824,12 +824,23 @@ document.addEventListener("DOMContentLoaded", function()
 				const image_mineral = level.images_minerals[index_gem];
 
 				image_mineral.destroy();
-				mineral_emitter.explode(5, image_mineral.x + SIZE_TILE/2, image_mineral.y + SIZE_TILE/2);
+				isMineral = true;
 
 				minerals += 10;
 				mineral_display.setText(minerals);
 			}
 		}
+
+		// particles
+		const x_particle = image.x + SIZE_TILE/2;
+		const y_particle = image.y + SIZE_TILE/2;
+		if(isMineral)
+		{
+			emitter.explode(10, x_particle, y_particle);
+			mineral_emitter.explode(10, x_particle, y_particle);
+		}
+		else
+			emitter.explode(20, x_particle, y_particle);
 
 		energy_current --;
 		energy_display.setText("Energy:" + energy_current);
