@@ -329,9 +329,12 @@ document.addEventListener("DOMContentLoaded", function()
 					"assets/dude2.png",
 					{frameWidth: 32, frameHeight: 32}
 				);
+				this.load.audio('music', 'assets/cavemusic.wav');
 			},
 			create: function()
 			{
+				music = this.sound.add('music');
+				music.play();
 				level = generate(0.5);
 				this.physics.world.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
 
