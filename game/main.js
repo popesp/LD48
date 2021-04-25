@@ -1,15 +1,21 @@
 const WIDTH_CANVAS = 800;
 const HEIGHT_CANVAS = 600;
 
-const WIDTH_PLAYER = 12;
-const HEIGHT_PLAYER = 20;
+const WIDTH_PLAYER = 10;
+const HEIGHT_PLAYER = 14;
 
-const MAX_SPEED = 3;
-
-const SIZE_TILE = 40;
+const SIZE_TILE = 16;
 const EPSILON = 0.00000000001;
-
 const COOLDOWN_DIG = 30;
+
+// PHYSICS
+const JUMPSPEED = 3.4;
+const JUMPSPEED_CANCEL = 1.2;
+const RUN_ACCEL = 0.4;
+const RUN_DECEL = 0.4;
+const MAX_SPEED = 2.4;
+const GRAVITY = 0.15;
+
 
 const map_tile = {
 	"111111111": {frame: "solid", flipped: false},
@@ -510,7 +516,7 @@ document.addEventListener("DOMContentLoaded", function()
 					sprite: this.add.sprite(132, 132, "dude")
 				};
 				player.sprite.setOrigin(0.5, 1);
-				player.sprite.setDisplaySize(32, 32);
+				player.sprite.setDisplaySize(16, 16);
 				this.cameras.main.startFollow(player.sprite);
 				this.cameras.main.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
 				this.data.set("player", player);
@@ -723,24 +729,26 @@ document.addEventListener("DOMContentLoaded", function()
 				//shawns a nerd
 				if(jump && !player.falling)
 				{
-					player.yvel = -5;
+					player.yvel = -JUMPSPEED;
 					player.falling = true;
 				}
 				if(!jump && player.falling)
-					player.yvel = Math.max(player.yvel, -2);
+					player.yvel = Math.max(player.yvel, -JUMPSPEED_CANCEL);
 
 				if(left && !right)
 				{
-					player.xvel = Math.max(-MAX_SPEED, player.xvel - 0.4);
+					player.xvel = Math.max(-MAX_SPEED, player.xvel - RUN_ACCEL);
 					if (player.sprite.anims.currentAnim.key !== 'dig-left' && player.sprite.anims.currentAnim.key !== 'dig-right')
 						player.sprite.anims.play("left", true);
+
 					player.facing = "left";
 				}
 				if(right && !left)
 				{
-					player.xvel = Math.min(MAX_SPEED, player.xvel + 0.4);
+					player.xvel = Math.min(MAX_SPEED, player.xvel + RUN_ACCEL);
 					if (player.sprite.anims.currentAnim.key !== 'dig-left' && player.sprite.anims.currentAnim.key !== 'dig-right')
 						player.sprite.anims.play("right", true);
+
 					player.facing = "right";
 				}
 
@@ -752,16 +760,16 @@ document.addEventListener("DOMContentLoaded", function()
 					}
 					
 					if(player.xvel > 0)
-						player.xvel = Math.max(0, player.xvel - 0.3);
+						player.xvel = Math.max(0, player.xvel - RUN_DECEL);
 					else
-						player.xvel = Math.min(0, player.xvel + 0.3);
+						player.xvel = Math.min(0, player.xvel + RUN_DECEL);
 				}
 
 				player.x_old = player.sprite.x;
 				player.y_old = player.sprite.y;
 
 				if(player.falling)
-					player.yvel += 0.22;
+					player.yvel += GRAVITY;
 
 				player.sprite.x += player.xvel;
 				player.sprite.y += player.yvel;
