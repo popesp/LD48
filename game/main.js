@@ -326,16 +326,17 @@ document.addEventListener("DOMContentLoaded", function()
 			{
 				this.load.atlas("tiles", "assets/tiles-extruded.png", "assets/tiles-extruded.json");
 				this.load.spritesheet("dude",
-					"assets/dude.png",
-					{frameWidth: 32, frameHeight: 48}
+					"assets/dude2.png",
+					{frameWidth: 32, frameHeight: 32}
 				);
+				console.log(this.load.spritesheet);
 			},
 			create: function()
 			{
 				level = generate(0.5);
 				this.physics.world.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
 
-				player = this.physics.add.sprite(100, 200, "dude").setDisplaySize(20, 30).setOrigin(0.5, 1);
+				player = this.physics.add.sprite(100, 200, "dude").setDisplaySize(32, 32).setOrigin(0.5, 1);
 				player.setCollideWorldBounds(true);
 				this.cameras.main.startFollow(player);
 				this.cameras.main.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
@@ -402,20 +403,20 @@ document.addEventListener("DOMContentLoaded", function()
 
 				this.anims.create({
 					key: "left",
-					frames: this.anims.generateFrameNumbers("dude", { start: 0, end: 3 }),
+					frames: this.anims.generateFrameNumbers("dude", { start: 0, end: 6 }),
 					frameRate: 10,
 					repeat: -1
 				});
 
 				this.anims.create({
 					key: "turn",
-					frames: [ { key: "dude", frame: 4 } ],
+					frames: [ { key: "dude", frame: 7 } ],
 					frameRate: 20
 				});
 
 				this.anims.create({
 					key: "right",
-					frames: this.anims.generateFrameNumbers("dude", { start: 5, end: 8 }),
+					frames: this.anims.generateFrameNumbers("dude", { start: 8, end:  13}),
 					frameRate: 10,
 					repeat: -1
 				});
