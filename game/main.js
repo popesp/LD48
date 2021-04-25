@@ -11,8 +11,8 @@ const COOLDOWN_DIG = 30;
 // PHYSICS
 const JUMPSPEED = 3.4;
 const JUMPSPEED_CANCEL = 1.2;
-const RUN_ACCEL = 0.4;
-const RUN_DECEL = 0.4;
+const RUN_ACCEL = 0.3;
+const RUN_DECEL = 0.3;
 const MAX_SPEED = 2.4;
 const GRAVITY = 0.15;
 
@@ -492,9 +492,9 @@ document.addEventListener("DOMContentLoaded", function()
 				const screenCenterY = this.cameras.main.worldView.y + this.cameras.main.height / 2;
 
 				this.input.gamepad.start();
-				this.data.set("cursors", this.input.keyboard.createCursorKeys());
+				this.cursors = this.input.keyboard.createCursorKeys();
 
-				this.data.set("emitter", this.add.particles("tiles", "morsel_dirt").createEmitter({
+				this.emitter_dirt = this.add.particles("tiles", "morsel_dirt").createEmitter({
 					speed: {min: 20, max: 100},
 					angle: {min: 200, max: 340},
 					alpha: {start: 1, end: 0},
@@ -503,7 +503,28 @@ document.addEventListener("DOMContentLoaded", function()
 					on: false,
 					lifespan: 1000,
 					gravityY: 300
-				}));
+				});
+
+				this.emitter_mineral = this.add.particles("tiles", "morsel_gold").createEmitter({
+					speed: {min: 20, max: 100},
+					angle: {min: 200, max: 340},
+					alpha: {start: 1, end: 0},
+					scale: 3,
+					blendMode: "NORMAL",
+					on: false,
+					lifespan: 1000,
+					gravityY: 300
+				});
+
+				this.emitter_dust = this.add.particles("tiles", "morsel_dirt").createEmitter({
+					speedY: {min: -20, max: -10},
+					alpha: {start: 1, end: 0},
+					scale: {start: 2, end: 5},
+					blendMode: "NORMAL",
+					on: false,
+					lifespan: 1000,
+					gravityY: 20
+				});
 
 				const player = {
 					falling: true,
@@ -520,17 +541,6 @@ document.addEventListener("DOMContentLoaded", function()
 				this.cameras.main.startFollow(player.sprite);
 				this.cameras.main.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
 				this.data.set("player", player);
-
-				mineral_emitter = this.add.particles("tiles", "morsel_gold").createEmitter({
-					speed: {min: 20, max: 100},
-					angle: {min: 200, max: 340},
-					alpha: {start: 1, end: 0},
-					scale: 3,
-					blendMode: "NORMAL",
-					on: false,
-					lifespan: 1000,
-					gravityY: 300
-				});
 
 				level.images_minerals = [];
 				for(let index_gem = 0; index_gem < level.gems.length; ++index_gem)
@@ -693,21 +703,26 @@ document.addEventListener("DOMContentLoaded", function()
 			update: function()
 			{
 				const gamepad = this.input.gamepad.gamepads[0];
-				const cursors = this.data.get("cursors");
 
-				const left = cursors.left.isDown || (gamepad && (gamepad.left || gamepad.leftStick.x < -0.1));
-				const right = cursors.right.isDown || (gamepad && (gamepad.right || gamepad.leftStick.x > 0.1));
-				const jump = cursors.up.isDown || (gamepad && gamepad.A);
-				const action = cursors.space.isDown;
+				const left = this.cursors.left.isDown || (gamepad && (gamepad.left || gamepad.leftStick.x < -0.1));
+				const right = this.cursors.right.isDown || (gamepad && (gamepad.right || gamepad.leftStick.x > 0.1));
+				const jump = this.cursors.up.isDown || (gamepad && gamepad.A);
+				const action = this.cursors.space.isDown;
 
 				const player = this.data.get("player");
 				const level = this.data.get("level");
-				const emitter = this.data.get("emitter");
+
+				this.emitter_dust.setSpeedX(player.xvel*5);
+
 				//shawns a nerd
 				if(jump && !player.falling)
 				{
 					player.yvel = -JUMPSPEED;
 					player.falling = true;
+
+					const vel = player.xvel*5;
+					this.emitter_dust.setSpeedX({min: vel - 10, max: vel + 10});
+					this.emitter_dust.explode(10, player.sprite.x, player.sprite.y);
 				}
 				if(!jump && player.falling)
 					player.yvel = Math.max(player.yvel, -JUMPSPEED_CANCEL);
@@ -724,6 +739,9 @@ document.addEventListener("DOMContentLoaded", function()
 				}
 				else if(left)
 				{
+					if(player.xvel > 0 && !player.falling)
+						this.emitter_dust.emitParticle(1, player.sprite.x, player.sprite.y);
+
 					player.xvel = Math.max(-MAX_SPEED, player.xvel - RUN_ACCEL);
 					if(!player.falling && !player.cooldown_dig)
 						player.sprite.anims.play("run", true);
@@ -733,6 +751,9 @@ document.addEventListener("DOMContentLoaded", function()
 				}
 				else if(right)
 				{
+					if(player.xvel < 0 && !player.falling)
+						this.emitter_dust.emitParticle(1, player.sprite.x, player.sprite.y);
+
 					player.xvel = Math.min(MAX_SPEED, player.xvel + RUN_ACCEL);
 					if(!player.falling && !player.cooldown_dig)
 						player.sprite.anims.play("run", true);
@@ -789,7 +810,7 @@ document.addEventListener("DOMContentLoaded", function()
 					const index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
 					const index_col = Math.floor(player.sprite.x/SIZE_TILE) + (player.facing === "right" ? 1 : -1);
 
-					if(dig(level, emitter, mineral_emitter, index_row + (level.tiles[index_row][index_col] ? 0 : 1), index_col, this))
+					if(dig(level, this, index_row + (level.tiles[index_row][index_col] ? 0 : 1), index_col))
 					{
 						player.cooldown_dig = COOLDOWN_DIG;
 						player.sprite.anims.play("dig");
@@ -799,7 +820,7 @@ document.addEventListener("DOMContentLoaded", function()
 		}
 	});
 
-	function dig(level, emitter, mineral_emitter, index_row, index_col, scene_instance)
+	function dig(level, scene, index_row, index_col)
 	{
 		if(index_row < 0 || index_row >= level.height || index_col < 0 || index_col >= level.width)
 			return false;
@@ -853,11 +874,11 @@ document.addEventListener("DOMContentLoaded", function()
 		const y_particle = image.y + SIZE_TILE/2;
 		if(isMineral)
 		{
-			emitter.explode(10, x_particle, y_particle);
-			mineral_emitter.explode(10, x_particle, y_particle);
+			scene.emitter_dirt.explode(10, x_particle, y_particle);
+			scene.emitter_mineral.explode(10, x_particle, y_particle);
 		}
 		else
-			emitter.explode(20, x_particle, y_particle);
+			scene.emitter_dirt.explode(20, x_particle, y_particle);
 
 		energy_current --;
 		energy_display.setText("Energy:" + energy_current);
@@ -866,7 +887,7 @@ document.addEventListener("DOMContentLoaded", function()
 		bar.x += 16 * (1/energy_max);
 		if(energy_current === 0)
 		{
-			restart_scene(scene_instance, "main");
+			restart_scene(scene, "main");
 			minerals = 0;
 		}
 
@@ -902,10 +923,10 @@ function upgrade_energy(scene)
 	return energy_max;
 }
 
-function restart_scene(scene_instance, key)
+function restart_scene(scene, key)
 {
-	scene_instance.scene.scene.registry.destroy();
-	scene_instance.scene.scene.events.off();
-	scene_instance.scene.start(key);
+	scene.scene.scene.registry.destroy();
+	scene.scene.scene.events.off();
+	scene.scene.start(key);
 	music.stop();
 }
