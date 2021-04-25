@@ -698,6 +698,25 @@ document.addEventListener("DOMContentLoaded", function()
 					frames: this.anims.generateFrameNumbers("dude", {start: 11, end: 26}),
 					frameRate: 10
 				});
+
+				this.anims.create({
+					key: "jump",
+					frames: this.anims.generateFrameNumbers("dude", {start: 27, end: 30}),
+					frameRate: 10
+				});
+
+				this.anims.create({
+					key: "fall",
+					frames: this.anims.generateFrameNumbers("dude", {start: 31, end: 34}),
+					frameRate: 10,
+					repeat: -1
+				});
+
+				this.anims.create({
+					key: "die",
+					frames: this.anims.generateFrameNumbers("dude", {start: 35, end: 38}),
+					frameRate: 10
+				});
 			},
 
 			update: function()
@@ -717,6 +736,7 @@ document.addEventListener("DOMContentLoaded", function()
 				//shawns a nerd
 				if(jump && !player.falling)
 				{
+					player.sprite.anims.play("jump", true);
 					player.yvel = -JUMPSPEED;
 					player.falling = true;
 
@@ -725,7 +745,10 @@ document.addEventListener("DOMContentLoaded", function()
 					this.emitter_dust.explode(10, player.sprite.x, player.sprite.y);
 				}
 				if(!jump && player.falling)
+				{
+					player.sprite.anims.play("fall", true);
 					player.yvel = Math.max(player.yvel, -JUMPSPEED_CANCEL);
+				}
 
 				if(left === right)
 				{
