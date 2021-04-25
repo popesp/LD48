@@ -270,7 +270,12 @@ const map_tile = {
 	"000010000": {frame: "island", flipped: false}
 };
 
-let energy_current = 10;
+let energy_max = 10;
+let minerals = 0;
+const shovel = {
+	level: 1,
+	dig_energy: 3
+};
 
 
 function handleCollision(player, level)
@@ -373,7 +378,6 @@ function getSurrounding(level, index_row, index_col)
 	return surrounding;
 }
 
-
 document.addEventListener("DOMContentLoaded", function()
 {
 	const dom_container = document.getElementById("container");
@@ -417,18 +421,29 @@ document.addEventListener("DOMContentLoaded", function()
 			}
 		},
 		scene: {
+			key: "main",
 			preload: function()
 			{
 				this.load.atlas("tiles", "assets/tiles-extruded.png", "assets/tiles-extruded.json");
 				this.load.spritesheet("dude",
-					"assets/dude.png",
-					{frameWidth: 32, frameHeight: 48}
+					"assets/dude2.png",
+					{frameWidth: 32, frameHeight: 32}
 				);
+				this.load.audio("music", "assets/cavemusic.wav");
+				this.load.image("button_home", "assets/btn_home.png");
+				this.load.image("button_bag", "assets/btn_backpack.png");
+				this.load.image("button_success", "assets/btn_success.png");
+				this.load.image("button_dirty", "assets/btn_dirty.png");
+				this.load.image("dialog", "assets/dialog.png");
+				this.load.image("bag", "assets/bag.png");
+				this.load.image("bag_close", "assets/btn_close.png");
+				this.load.image("item_slot", "assets/item_slot.png");
+				this.load.image("mineral_slot", "assets/mineral_slot.png");
 			},
 
 			create: function()
 			{
-				const level = generate(0.5);
+				const level = generate(0.5, 0.1);
 				level.images = [];
 				for(let index_row = 0; index_row < level.height; ++index_row)
 				{
@@ -457,6 +472,18 @@ document.addEventListener("DOMContentLoaded", function()
 					level.images.push(row_images);
 				}
 				this.data.set("level", level);
+
+				music = this.sound.add("music");
+				music.loop = true;
+				music.play();
+
+				const parent = this;
+				let home_open = false;
+				let bag_open = false;
+				console.log(this);
+
+				const screenCenterX = this.cameras.main.worldView.x + this.cameras.main.width / 2;
+				const screenCenterY = this.cameras.main.worldView.y + this.cameras.main.height / 2;
 
 				this.input.gamepad.start();
 				this.data.set("cursors", this.input.keyboard.createCursorKeys());
@@ -488,6 +515,25 @@ document.addEventListener("DOMContentLoaded", function()
 				this.cameras.main.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
 				this.data.set("player", player);
 
+				mineral_emitter = this.add.particles("tiles", "mineral").createEmitter({
+					speed: {min: 20, max: 100},
+					angle: {min: 200, max: 340},
+					alpha: {start: 1, end: 0},
+					scale: 3,
+					blendMode: "NORMAL",
+					on: false,
+					lifespan: 1000,
+					gravityY: 300
+				});
+
+				level.images_minerals = [];
+				for(let index_gem = 0; index_gem < level.gems.length; ++index_gem)
+				{
+					const gem = level.gems[index_gem];
+					const image = this.add.image(gem.index_col*SIZE_TILE, gem.index_row*SIZE_TILE, "tiles", "mineral").setOrigin(0, 0).setDisplaySize(SIZE_TILE, SIZE_TILE);
+					level.images_minerals.push(image);
+				}
+
 				barbg = this.add.graphics();
 				barbg.fillStyle(0xcc2418, 1);
 				barbg.fillRect(14, 14, 204, 19);
@@ -500,27 +546,139 @@ document.addEventListener("DOMContentLoaded", function()
 				bar.fillRect(16, 16, 200, 15);
 				bar.setScrollFactor(0);
 
-				energy_max = 10;
 				energy_current = energy_max;
 				energy_display = this.add.text(84, 16, "Energy:" + energy_current, {fontSize: "12px", fill: "#000"});
 				energy_display.setScrollFactor(0);
 
+				mineral_slot = this.add.image(240, 20, "mineral_slot");
+				mineral_slot.setScrollFactor(0);
+				mineral_slot.scale = 0.3;
+				mineral_display = this.add.text(240, 8, minerals, {fontSize: "12px", fill: "#fff", stroke: "#000", strokeThickness: 1});
+				mineral_display.setScrollFactor(0);
+
+				button_home = this.add.image(372, 23, "button_home").setInteractive();
+				button_home.setScrollFactor(0);
+				button_home.scale = 0.3;
+				button_home.scaleY = button_home.scaleX;
+				button_home.on("pointerup", function()
+				{
+					if(!home_open)
+					{
+						home_open = true;
+						home_modal = parent.add.image(screenCenterX, screenCenterY, "dialog");
+						home_modal.setScrollFactor(0);
+						home_modal.scale = 0.8;
+						confirm_text1 = parent.add.text(141, 120, "Are you sure you", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+						confirm_text2 = parent.add.text(128, 135, "want to return home?", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+
+						button_yes = parent.add.image(162, 178, "button_success").setInteractive();
+						yes_text = parent.add.text(151, 170, "YES", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+						button_yes.setScrollFactor(0);
+						button_yes.scale = 0.3;
+						button_yes.scaleY = button_home.scaleX;
+						button_no = parent.add.image(240, 178, "button_dirty").setInteractive();
+						no_text = parent.add.text(233, 170, "NO", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+						button_no.setScrollFactor(0);
+						button_no.scale = 0.3;
+						button_no.scaleY = button_home.scaleX;
+
+						button_yes.on("pointerup", function()
+						{
+							home_modal.destroy();
+							confirm_text1.destroy();
+							confirm_text2.destroy();
+							yes_text.destroy();
+							button_yes.destroy();
+							button_no.destroy();
+							no_text.destroy();
+							home_open = false;
+						});
+
+						button_no.on("pointerup", function()
+						{
+							home_modal.destroy();
+							confirm_text1.destroy();
+							confirm_text2.destroy();
+							yes_text.destroy();
+							button_yes.destroy();
+							button_no.destroy();
+							no_text.destroy();
+							home_open = false;
+						});
+					}
+				});
+
+				button_bag = this.add.image(330, 23, "button_bag").setInteractive();
+				button_bag.setScrollFactor(0);
+				button_bag.scale = 0.3;
+				button_bag.scaleY = button_home.scaleX;
+				button_bag.on("pointerup", function()
+				{
+					if(!bag_open)
+					{
+						bag_open = true;
+						bag = parent.add.image(screenCenterX, screenCenterY, "bag");
+						bag.setScrollFactor(0);
+						bag.scale = 0.75;
+
+						bag_close = parent.add.image(screenCenterX, screenCenterY + 50, "bag_close").setInteractive();
+						bag_close.setScrollFactor(0);
+						bag_close.scale = 0.2;
+
+						slots = [];
+						for(let grid_index = 1; grid_index <= 6; grid_index++)
+						{
+							if(grid_index <= 3)
+							{
+								//first row
+								xsubtract = 30 * grid_index;
+								ysubtract = 20;
+								item_slot = parent.add.image((screenCenterX + 60) - xsubtract, screenCenterY - ysubtract, "item_slot");
+								item_slot.setScrollFactor(0);
+								item_slot.scale = 0.3;
+								slots.push(item_slot);
+
+							}
+							else
+							{
+								//second row
+								xsubtract = 30 * grid_index;
+								ysubtract = -15;
+								item_slot = parent.add.image((screenCenterX + 150) - xsubtract, screenCenterY - ysubtract, "item_slot");
+								item_slot.setScrollFactor(0);
+								item_slot.scale = 0.3;
+								slots.push(item_slot);
+							}
+						}
+
+						bag_close.on("pointerup", function()
+						{
+							bag.destroy();
+							bag_close.destroy();
+							slots.forEach(slot => slot.destroy());
+							slots = [];
+							bag_open = false;
+						});
+					}
+				});
+
+
 				this.anims.create({
 					key: "left",
-					frames: this.anims.generateFrameNumbers("dude", {start: 0, end: 3}),
+					frames: this.anims.generateFrameNumbers("dude", {start: 0, end: 6}),
 					frameRate: 10,
 					repeat: -1
 				});
 
 				this.anims.create({
 					key: "turn",
-					frames: [{key: "dude", frame: 4}],
+					frames: [{key: "dude", frame: 7}],
 					frameRate: 20
 				});
 
 				this.anims.create({
 					key: "right",
-					frames: this.anims.generateFrameNumbers("dude", {start: 5, end: 8}),
+					frames: this.anims.generateFrameNumbers("dude", {start: 8, end: 13}),
 					frameRate: 10,
 					repeat: -1
 				});
@@ -618,14 +776,14 @@ document.addEventListener("DOMContentLoaded", function()
 					const index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
 					const index_col = Math.floor(player.sprite.x/SIZE_TILE) + (player.facing === "right" ? 1 : -1);
 
-					if(dig(level, emitter, index_row + (level.tiles[index_row][index_col] ? 0 : 1), index_col))
+					if(dig(level, emitter, mineral_emitter, index_row + (level.tiles[index_row][index_col] ? 0 : 1), index_col, this))
 						player.cooldown_dig = COOLDOWN_DIG;
 				}
 			}
 		}
 	});
 
-	function dig(level, emitter, index_row, index_col)
+	function dig(level, emitter, mineral_emitter, index_row, index_col, scene_instance)
 	{
 		if(index_row < 0 || index_row >= level.height || index_col < 0 || index_col >= level.width)
 			return false;
@@ -658,11 +816,32 @@ document.addEventListener("DOMContentLoaded", function()
 				}
 			}
 
+		for(let index_gem = 0; index_gem < level.gems.length; ++index_gem)
+		{
+			const gem = level.gems[index_gem];
+			if(gem.index_col === index_col && gem.index_row === index_row)
+			{
+				const image_mineral = level.images_minerals[index_gem];
+
+				image_mineral.destroy();
+				mineral_emitter.explode(5, image_mineral.x + SIZE_TILE/2, image_mineral.y + SIZE_TILE/2);
+
+				minerals += 10;
+				mineral_display.setText(minerals);
+			}
+		}
+
 		energy_current --;
 		energy_display.setText("Energy:" + energy_current);
 		bar.scaleX = energy_current/energy_max;
 		//x offset
 		bar.x += 16 * (1/energy_max);
+		if(energy_current === 0)
+		{
+			restart_scene(scene_instance, "main");
+			minerals = 0;
+		}
+
 
 		return true;
 	}
@@ -670,3 +849,34 @@ document.addEventListener("DOMContentLoaded", function()
 	window.addEventListener("resize", resize);
 	resize();
 });
+
+function upgrade_shovel(scene)
+{
+	if(minerals >= 50 && shovel.level < 3)
+	{
+		shovel.level++;
+		shovel.dig_energy--;
+		minerals -= 50;
+	}
+	restart_scene(scene, "main");
+	return shovel;
+}
+
+function upgrade_energy(scene)
+{
+	if(minerals >= 20)
+	{
+		energy_max += 10;
+		minerals -= 20;
+	}
+
+	restart_scene(scene, "main");
+	return energy_max;
+}
+
+function restart_scene(scene_instance, key)
+{
+	scene_instance.scene.scene.registry.destroy();
+	scene_instance.scene.scene.events.off();
+	scene_instance.scene.start(key);
+}

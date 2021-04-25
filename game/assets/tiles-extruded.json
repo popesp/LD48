@@ -91,6 +91,10 @@
 		{
 			"filename": "bedrock",
 			"frame": {"x": 31, "y": 1, "w": 8, "h": 8}
+		},
+		{
+			"filename": "mineral",
+			"frame": {"x": 91, "y": 1, "w": 8, "h": 8}
 		}
 	]
 }

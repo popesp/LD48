@@ -53,13 +53,14 @@ function countSurrounding(level, index_row, index_col)
 }
 
 
-function generate(density)
+function generate(density, gem_density)
 {
 	const level = {
 		width: randInt(40, 80),
 		height: randInt(100, 140),
 		tiles: [],
-		density: density
+		density: density,
+		gems: []
 	};
 
 	for(let index_row = 0; index_row < level.height; ++index_row)
@@ -70,6 +71,7 @@ function generate(density)
 
 		level.tiles.push(row);
 	}
+
 
 	for(let index_pass = 0; index_pass < NUM_SMOOTHPASSES; ++index_pass)
 		for(let index_row = 0; index_row < level.height; ++index_row)
@@ -88,6 +90,14 @@ function generate(density)
 				}
 			}
 
+	// list on level for gems
+	for(let index_row = 0; index_row < level.height; ++index_row)
+		for(let index_col = 0; index_col < level.width; ++index_col)
+		{
+			if(level.tiles[index_row][index_col] === 1)
+				if(randFloat(0, 1) < gem_density)
+					level.gems.push({index_col: index_col, index_row: index_row});
+		}
 
 	return level;
 }
