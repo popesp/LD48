@@ -495,6 +495,7 @@ document.addEventListener("DOMContentLoaded", function()
 				button_bag.scaleY = button_home.scaleX;
 				button_bag.on('pointerup', function () {
 					if (!bag_open){
+						bag_open = true;
 						bag = parent.add.image(screenCenterX, screenCenterY, 'bag');
 						bag.setScrollFactor(0);
 						bag.scale = 0.75;
