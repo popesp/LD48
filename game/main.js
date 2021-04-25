@@ -403,11 +403,9 @@ document.addEventListener("DOMContentLoaded", function()
 
 				bar = this.add.graphics();
 				bar.fillStyle(0xebb134, 1);
-				bar.displayOriginX = 16;
-				
 				bar.fillRect(16, 16, 200, 15);
 				bar.setScrollFactor(0);
-				console.log(bar); 
+
 				energy_max = 10;
 				energy_current = energy_max;
 				energy_display = this.add.text(84, 16, 'Energy:' + energy_current, { fontSize: '12px', fill: '#000' });
