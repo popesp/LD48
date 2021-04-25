@@ -534,7 +534,10 @@ document.addEventListener("DOMContentLoaded", function()
 									mineral_slot = parent.add.image((screenCenterX + 60) - xsubtract, screenCenterY - ysubtract, "mineral_slot");
 									mineral_slot.setScrollFactor(0);
 									mineral_slot.scale = 0.3;
+									mineral_count = parent.add.text((screenCenterX + 60) - xsubtract + 5, screenCenterY - ysubtract - 12, minerals, {fontSize: "10px", fill: "#fff"});
+									mineral_count.setScrollFactor(0);
 									items.push(mineral_slot);
+									items.push(mineral_count)
 								}
 							}
 							else
