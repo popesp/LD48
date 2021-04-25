@@ -446,6 +446,12 @@ document.addEventListener("DOMContentLoaded", function()
 				energy_display = this.add.text(84, 16, "Energy:" + energy_current, {fontSize: "12px", fill: "#000"});
 				energy_display.setScrollFactor(0);
 
+				mineral_slot = this.add.image(240, 20, "mineral_slot");
+				mineral_slot.setScrollFactor(0);
+				mineral_slot.scale = 0.3;
+				mineral_display = this.add.text(240, 8, minerals, {fontSize: "12px", fill: "#fff", stroke: '#000', strokeThickness: 1});
+				mineral_display.setScrollFactor(0);
+
 				button_home = this.add.image(372, 23, "button_home").setInteractive();
 				button_home.setScrollFactor(0);
 				button_home.scale = 0.3;
@@ -516,8 +522,6 @@ document.addEventListener("DOMContentLoaded", function()
 						bag_close.scale = 0.2;
 
 						slots = [];
-						items = [];
-
 						for(let grid_index = 1; grid_index <= 6; grid_index++)
 						{
 							if(grid_index <= 3)
@@ -529,16 +533,7 @@ document.addEventListener("DOMContentLoaded", function()
 								item_slot.setScrollFactor(0);
 								item_slot.scale = 0.3;
 								slots.push(item_slot);
-								if(grid_index === 3)
-								{
-									mineral_slot = parent.add.image((screenCenterX + 60) - xsubtract, screenCenterY - ysubtract, "mineral_slot");
-									mineral_slot.setScrollFactor(0);
-									mineral_slot.scale = 0.3;
-									mineral_count = parent.add.text((screenCenterX + 60) - xsubtract + 5, screenCenterY - ysubtract - 12, minerals, {fontSize: "10px", fill: "#fff"});
-									mineral_count.setScrollFactor(0);
-									items.push(mineral_slot);
-									items.push(mineral_count)
-								}
+
 							}
 							else
 							{
@@ -558,8 +553,6 @@ document.addEventListener("DOMContentLoaded", function()
 							bag_close.destroy();
 							slots.forEach(slot => slot.destroy());
 							slots = [];
-							items.forEach(slot => slot.destroy());
-							items = [];
 							bag_open = false;
 						});
 					}
@@ -688,6 +681,7 @@ document.addEventListener("DOMContentLoaded", function()
 				mineral_emitter.explode(20, mineral_sprite.x + SIZE_TILE/2, mineral_sprite.y + SIZE_TILE/2);
 
 				minerals += 10;
+				mineral_display.setText(minerals);
 			}
 		}
 
