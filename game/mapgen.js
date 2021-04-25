@@ -77,6 +77,7 @@ function generate(density, gem_density)
 		for(let index_row = 0; index_row < level.height; ++index_row)
 			for(let index_col = 0; index_col < level.width; ++index_col)
 			{
+				// border of bedrock
 				if(index_row === 0 || index_row === level.height - 1 || index_col === 0 || index_col === level.width - 1)
 					level.tiles[index_row][index_col] = -1;
 				else
