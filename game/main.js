@@ -426,8 +426,8 @@ document.addEventListener("DOMContentLoaded", function()
 			{
 				this.load.atlas("tiles", "assets/tiles-extruded.png", "assets/tiles-extruded.json");
 				this.load.spritesheet("dude",
-					"assets/dude2.png",
-					{frameWidth: 32, frameHeight: 32}
+					"assets/dude3.png",
+					{frameWidth: 16, frameHeight: 16}
 				);
 				this.load.audio("music", "assets/cavemusic.wav");
 				this.load.image("button_home", "assets/btn_home.png");
@@ -477,6 +477,7 @@ document.addEventListener("DOMContentLoaded", function()
 				music.loop = true;
 				music.play();
 
+					
 				const parent = this;
 				let home_open = false;
 				let bag_open = false;
@@ -507,7 +508,7 @@ document.addEventListener("DOMContentLoaded", function()
 					yvel: 0,
 					cooldown_dig: 0,
 					facing: "right",
-					sprite: this.add.sprite(132, 120, "dude")
+					sprite: this.add.sprite(132, 132, "dude")
 				};
 				player.sprite.setOrigin(0.5, 1);
 				player.sprite.setDisplaySize(16, 24);
@@ -665,20 +666,20 @@ document.addEventListener("DOMContentLoaded", function()
 
 				this.anims.create({
 					key: "left",
-					frames: this.anims.generateFrameNumbers("dude", {start: 0, end: 6}),
+					frames: this.anims.generateFrameNumbers("dude", {start: 0, end: 4}),
 					frameRate: 10,
 					repeat: -1
 				});
 
 				this.anims.create({
 					key: "turn",
-					frames: [{key: "dude", frame: 7}],
+					frames: [{key: "dude", frame: 4}],
 					frameRate: 20
 				});
 
 				this.anims.create({
 					key: "right",
-					frames: this.anims.generateFrameNumbers("dude", {start: 8, end: 13}),
+					frames: this.anims.generateFrameNumbers("dude", {start: 5, end: 9}),
 					frameRate: 10,
 					repeat: -1
 				});
@@ -697,7 +698,7 @@ document.addEventListener("DOMContentLoaded", function()
 				const player = this.data.get("player");
 				const level = this.data.get("level");
 				const emitter = this.data.get("emitter");
-
+				//shawns a nerd
 				if(jump && !player.falling)
 				{
 					player.yvel = -5;
@@ -890,4 +891,5 @@ function restart_scene(scene_instance, key)
 	scene_instance.scene.scene.registry.destroy();
 	scene_instance.scene.scene.events.off();
 	scene_instance.scene.start(key);
+	music.stop();
 }
