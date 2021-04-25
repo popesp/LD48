@@ -6,7 +6,7 @@ const HEIGHT_PLAYER = 20;
 
 const MAX_SPEED = 3;
 
-const SIZE_TILE = 24;
+const SIZE_TILE = 40;
 const EPSILON = 0.00000000001;
 
 const COOLDOWN_DIG = 30;
@@ -477,7 +477,7 @@ document.addEventListener("DOMContentLoaded", function()
 				music.loop = true;
 				music.play();
 
-					
+
 				const parent = this;
 				let home_open = false;
 				let bag_open = false;
@@ -511,7 +511,7 @@ document.addEventListener("DOMContentLoaded", function()
 					sprite: this.add.sprite(132, 132, "dude")
 				};
 				player.sprite.setOrigin(0.5, 1);
-				player.sprite.setDisplaySize(16, 24);
+				player.sprite.setDisplaySize(32, 32);
 				this.cameras.main.startFollow(player.sprite);
 				this.cameras.main.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
 				this.data.set("player", player);
