@@ -262,8 +262,12 @@ const map_tile = {
 	"000010000": {frame: "island", flipped: false}
 };
 
-let energy_current = 10;
+let energy_max = 10;
 let minerals = 0;
+const shovel = {
+	level: 1,
+	dig_energy: 3
+};
 
 
 function getSurrounding(level, index_row, index_col)
@@ -322,7 +326,7 @@ document.addEventListener("DOMContentLoaded", function()
 			}
 		},
 		scene: {
-			key: 'main',
+			key: "main",
 			preload: function()
 			{
 				this.load.atlas("tiles", "assets/tiles-extruded.png", "assets/tiles-extruded.json");
@@ -351,6 +355,7 @@ document.addEventListener("DOMContentLoaded", function()
 				const parent = this;
 				let home_open = false;
 				let bag_open = false;
+				console.log(this);
 
 				this.physics.world.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
 
@@ -417,7 +422,6 @@ document.addEventListener("DOMContentLoaded", function()
 
 					level.sprites.push(row_sprites);
 				}
-				console.log("player", player);
 
 				for(let index_gem = 0; index_gem < level.gems.length; ++index_gem)
 				{
@@ -427,7 +431,6 @@ document.addEventListener("DOMContentLoaded", function()
 					level.mineral_sprites.push(mineral_tile);
 				}
 
-				console.log("afer adding minerals", this);
 
 
 				barbg = this.add.graphics();
@@ -442,7 +445,6 @@ document.addEventListener("DOMContentLoaded", function()
 				bar.fillRect(16, 16, 200, 15);
 				bar.setScrollFactor(0);
 
-				energy_max = 10;
 				energy_current = energy_max;
 				energy_display = this.add.text(84, 16, "Energy:" + energy_current, {fontSize: "12px", fill: "#000"});
 				energy_display.setScrollFactor(0);
@@ -693,9 +695,8 @@ document.addEventListener("DOMContentLoaded", function()
 		bar.x += 16 * (1/energy_max);
 		if(energy_current === 0)
 		{
-			scene_instance.scene.scene.registry.destroy();
-			scene_instance.scene.scene.events.off();
-			scene_instance.scene.start('main');
+			restart_scene(scene_instance, "main");
+			minerals = 0;
 		}
 
 
@@ -704,3 +705,33 @@ document.addEventListener("DOMContentLoaded", function()
 	window.addEventListener("resize", resize);
 	resize();
 });
+
+function upgrade_shovel(scene)
+{
+	if(shovel.level < 3)
+	{
+		shovel.level++;
+		shovel.dig_energy--;
+	}
+	restart_scene(scene, "main");
+	return shovel;
+}
+
+function upgrade_energy(scene)
+{
+	if(minerals >= 20)
+	{
+		energy_max += 10;
+		minerals -= 20;
+	}
+
+	restart_scene(scene, "main");
+	return energy_max;
+}
+
+function restart_scene(scene_instance, key)
+{
+	scene_instance.scene.scene.registry.destroy();
+	scene_instance.scene.scene.events.off();
+	scene_instance.scene.start(key);
+}
