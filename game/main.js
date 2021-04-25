@@ -326,8 +326,8 @@ document.addEventListener("DOMContentLoaded", function()
 			{
 				this.load.atlas("tiles", "assets/tiles-extruded.png", "assets/tiles-extruded.json");
 				this.load.spritesheet("dude",
-					"assets/dude.png",
-					{frameWidth: 32, frameHeight: 48}
+					"assets/dude2.png",
+					{frameWidth: 32, frameHeight: 32}
 				);
 			},
 			create: function()
@@ -335,7 +335,7 @@ document.addEventListener("DOMContentLoaded", function()
 				level = generate(0.5);
 				this.physics.world.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
 
-				player = this.physics.add.sprite(100, 200, "dude").setDisplaySize(20, 30).setOrigin(0.5, 1);
+				player = this.physics.add.sprite(100, 200, "dude").setDisplaySize(32, 32).setOrigin(0.5, 1);
 				player.setCollideWorldBounds(true);
 				this.cameras.main.startFollow(player);
 				this.cameras.main.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
