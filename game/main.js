@@ -322,6 +322,7 @@ document.addEventListener("DOMContentLoaded", function()
 			}
 		},
 		scene: {
+			key: 'main',
 			preload: function()
 			{
 				this.load.atlas("tiles", "assets/tiles-extruded.png", "assets/tiles-extruded.json");
@@ -329,25 +330,25 @@ document.addEventListener("DOMContentLoaded", function()
 					"assets/dude2.png",
 					{frameWidth: 32, frameHeight: 32}
 				);
-				this.load.audio('music', 'assets/cavemusic.wav');
-				this.load.image('button_home', 'assets/btn_home.png');
-				this.load.image('button_bag', 'assets/btn_backpack.png');
-				this.load.image('button_success', 'assets/btn_success.png');
-				this.load.image('button_dirty', 'assets/btn_dirty.png');
-				this.load.image('dialog', 'assets/dialog.png');
-				this.load.image('bag', 'assets/bag.png');
-				this.load.image('bag_close', 'assets/btn_close.png');
-				this.load.image('item_slot', 'assets/item_slot.png');
-				this.load.image('mineral_slot', 'assets/mineral_slot.png');
+				this.load.audio("music", "assets/cavemusic.wav");
+				this.load.image("button_home", "assets/btn_home.png");
+				this.load.image("button_bag", "assets/btn_backpack.png");
+				this.load.image("button_success", "assets/btn_success.png");
+				this.load.image("button_dirty", "assets/btn_dirty.png");
+				this.load.image("dialog", "assets/dialog.png");
+				this.load.image("bag", "assets/bag.png");
+				this.load.image("bag_close", "assets/btn_close.png");
+				this.load.image("item_slot", "assets/item_slot.png");
+				this.load.image("mineral_slot", "assets/mineral_slot.png");
 			},
 			create: function()
 			{
 				level = generate(0.5, 0.1);
-				music = this.sound.add('music');
+				music = this.sound.add("music");
 				music.loop = true;
 				music.play();
 
-				let parent = this;
+				const parent = this;
 				let home_open = false;
 				let bag_open = false;
 
@@ -449,7 +450,7 @@ document.addEventListener("DOMContentLoaded", function()
 				mineral_slot = this.add.image(240, 20, "mineral_slot");
 				mineral_slot.setScrollFactor(0);
 				mineral_slot.scale = 0.3;
-				mineral_display = this.add.text(240, 8, minerals, {fontSize: "12px", fill: "#fff", stroke: '#000', strokeThickness: 1});
+				mineral_display = this.add.text(240, 8, minerals, {fontSize: "12px", fill: "#fff", stroke: "#000", strokeThickness: 1});
 				mineral_display.setScrollFactor(0);
 
 				button_home = this.add.image(372, 23, "button_home").setInteractive();
@@ -598,7 +599,7 @@ document.addEventListener("DOMContentLoaded", function()
 						const index_row = Math.floor(player.y/SIZE_TILE) - 1;
 						const index_col = Math.floor(player.x/SIZE_TILE) - 1;
 
-						dig(level, emitter, mineral_emitter, index_row, index_col);
+						dig(level, emitter, mineral_emitter, index_row, index_col, this);
 					}
 				}
 				else if(right)
@@ -611,7 +612,7 @@ document.addEventListener("DOMContentLoaded", function()
 						const index_row = Math.floor(player.y/SIZE_TILE) - 1;
 						const index_col = Math.floor(player.x/SIZE_TILE) + 1;
 
-						dig(level, emitter, mineral_emitter, index_row, index_col);
+						dig(level, emitter, mineral_emitter, index_row, index_col, this);
 					}
 				}
 				else
@@ -631,13 +632,13 @@ document.addEventListener("DOMContentLoaded", function()
 					const index_row = Math.floor(player.y/SIZE_TILE);
 					const index_col = Math.floor(player.x/SIZE_TILE);
 
-					dig(level, emitter, mineral_emitter, index_row, index_col);
+					dig(level, emitter, mineral_emitter, index_row, index_col, this);
 				}
 			}
 		}
 	});
 
-	function dig(level, emitter, mineral_emitter, index_row, index_col)
+	function dig(level, emitter, mineral_emitter, index_row, index_col, scene_instance)
 	{
 		if(index_row < 0 || index_row >= level.height || index_col < 0 || index_col >= level.width)
 			return;
@@ -685,11 +686,18 @@ document.addEventListener("DOMContentLoaded", function()
 			}
 		}
 
-		// energy_current --;
-		// energy_display.setText( 'Energy:' + energy_current);
-		// bar.scaleX = energy_current/energy_max;
-		// //x offset
-		// bar.x += 16 * (1/energy_max);
+		energy_current --;
+		energy_display.setText("Energy:" + energy_current);
+		bar.scaleX = energy_current/energy_max;
+		//x offset
+		bar.x += 16 * (1/energy_max);
+		if(energy_current === 0)
+		{
+			scene_instance.scene.scene.registry.destroy();
+			scene_instance.scene.scene.events.off();
+			scene_instance.scene.start('main');
+		}
+
 
 	}
 
