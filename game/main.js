@@ -263,6 +263,7 @@ const map_tile = {
 };
 
 let energy_current = 10;
+let minerals = 0;
 
 
 function getSurrounding(level, index_row, index_col)
@@ -277,7 +278,6 @@ function getSurrounding(level, index_row, index_col)
 
 	return surrounding;
 }
-
 
 document.addEventListener("DOMContentLoaded", function()
 {
@@ -318,7 +318,7 @@ document.addEventListener("DOMContentLoaded", function()
 				gravity: {
 					y: 300
 				},
-				debug: false
+				debug: true
 			}
 		},
 		scene: {
@@ -333,15 +333,32 @@ document.addEventListener("DOMContentLoaded", function()
 			},
 			create: function()
 			{
+				level = generate(0.5, 0.1);
 				music = this.sound.add('music');
 				music.play();
-				level = generate(0.5);
+				this.load.image('button_home', 'assets/btn_home.png');
+				this.load.image('button_bag', 'assets/btn_backpack.png');
+				this.load.image('button_success', 'assets/btn_success.png');
+				this.load.image('button_dirty', 'assets/btn_dirty.png');
+				this.load.image('dialog', 'assets/dialog.png');
+				this.load.image('bag', 'assets/bag.png');
+				this.load.image('bag_close', 'assets/btn_close.png');
+				this.load.image('item_slot', 'assets/item_slot.png');
+				console.log(this.load.spritesheet);
+				
+				let parent = this;
+				let home_open = false;
+				let bag_open = false;
+
 				this.physics.world.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
 
 				player = this.physics.add.sprite(100, 200, "dude").setDisplaySize(32, 32).setOrigin(0.5, 1);
 				player.setCollideWorldBounds(true);
 				this.cameras.main.startFollow(player);
 				this.cameras.main.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
+
+				const screenCenterX = this.cameras.main.worldView.x + this.cameras.main.width / 2;
+				const screenCenterY = this.cameras.main.worldView.y + this.cameras.main.height / 2;
 
 				this.input.gamepad.start();
 				cursors = this.input.keyboard.createCursorKeys();
@@ -360,7 +377,20 @@ document.addEventListener("DOMContentLoaded", function()
 					gravityY: 300
 				});
 
+				mineral_emitter = this.add.particles("tiles", "mineral").createEmitter({
+					speed: {min: 20, max: 100},
+					angle: {min: 200, max: 340},
+					alpha: {start: 1, end: 0},
+					scale: 3,
+					blendMode: "NORMAL",
+					on: false,
+					lifespan: 1000,
+					gravityY: 300
+				});
+
+
 				level.sprites = [];
+				level.mineral_sprites = [];
 				for(let index_row = 0; index_row < level.height; ++index_row)
 				{
 					const row = level.tiles[index_row];
@@ -369,6 +399,7 @@ document.addEventListener("DOMContentLoaded", function()
 					for(let index_col = 0; index_col < level.width; ++index_col)
 					{
 						const t = map_tile[getSurrounding(level, index_row, index_col)];
+
 
 						const tile = platforms.create(index_col*SIZE_TILE, index_row*SIZE_TILE, "tiles", t === undefined ? "void" : t.frame).setSize(SIZE_TILE, SIZE_TILE).setDisplaySize(SIZE_TILE, SIZE_TILE);
 						tile.setOrigin(0, 0);
@@ -384,6 +415,18 @@ document.addEventListener("DOMContentLoaded", function()
 
 					level.sprites.push(row_sprites);
 				}
+				console.log("player", player);
+
+				for(let index_gem = 0; index_gem < level.gems.length; ++index_gem)
+				{
+					const gem = level.gems[index_gem];
+					mineral_tile = platforms.create(gem.index_col*SIZE_TILE, gem.index_row*SIZE_TILE, "tiles", "mineral").setSize(SIZE_TILE, SIZE_TILE).setDisplaySize(SIZE_TILE, SIZE_TILE).setOrigin(0, 0);
+					mineral_tile.body.updateFromGameObject();
+					level.mineral_sprites.push(mineral_tile);
+				}
+
+				console.log('afer adding minerals', this)
+
 
 				barbg = this.add.graphics();
 				barbg.fillStyle(0xcc2418, 1);
@@ -392,30 +435,129 @@ document.addEventListener("DOMContentLoaded", function()
 
 				bar = this.add.graphics();
 				bar.fillStyle(0xebb134, 1);
+				bar.displayOriginX = 16;
+
 				bar.fillRect(16, 16, 200, 15);
 				bar.setScrollFactor(0);
 
 				energy_max = 10;
 				energy_current = energy_max;
-				energy_display = this.add.text(84, 16, 'Energy:' + energy_current, { fontSize: '12px', fill: '#000' });
+				energy_display = this.add.text(84, 16, "Energy:" + energy_current, {fontSize: "12px", fill: "#000"});
 				energy_display.setScrollFactor(0);
+
+				button_home = this.add.image(372, 23, 'button_home').setInteractive();
+				button_home.setScrollFactor(0);
+				button_home.scale = 0.3;
+				button_home.scaleY = button_home.scaleX;
+				button_home.on('pointerup', function () {
+					if (!home_open){
+						home_open = true;
+						home_modal = parent.add.image(screenCenterX, screenCenterY, 'dialog');
+						home_modal.setScrollFactor(0);
+						home_modal.scale = 0.8;
+						confirm_text1 = parent.add.text(141, 120, 'Are you sure you', { fontSize: '12px', fill: '#000' }).setScrollFactor(0);
+						confirm_text2 = parent.add.text(128, 135, 'want to return home?', { fontSize: '12px', fill: '#000' }).setScrollFactor(0);
+	
+						button_yes = parent.add.image(162, 178, 'button_success').setInteractive();
+						yes_text = parent.add.text(151, 170, 'YES', { fontSize: '12px', fill: '#000' }).setScrollFactor(0);
+						button_yes.setScrollFactor(0);
+						button_yes.scale = 0.3;
+						button_yes.scaleY = button_home.scaleX;
+						button_no = parent.add.image(240, 178, 'button_dirty').setInteractive();
+						no_text = parent.add.text(233, 170, 'NO', { fontSize: '12px', fill: '#000' }).setScrollFactor(0);
+						button_no.setScrollFactor(0);
+						button_no.scale = 0.3;
+						button_no.scaleY = button_home.scaleX;
+	
+						button_yes.on('pointerup', function () {
+							home_modal.destroy();
+							confirm_text1.destroy();
+							confirm_text2.destroy();
+							yes_text.destroy();
+							button_yes.destroy();
+							button_no.destroy();
+							no_text.destroy();
+							home_open = false;
+						});
+	
+						button_no.on('pointerup', function () {
+							home_modal.destroy();
+							confirm_text1.destroy();
+							confirm_text2.destroy();
+							yes_text.destroy();
+							button_yes.destroy();
+							button_no.destroy();
+							no_text.destroy();
+							home_open = false;
+						});
+					}
+				});
+
+				button_bag = this.add.image(330, 23, 'button_bag').setInteractive();
+				button_bag.setScrollFactor(0);
+				button_bag.scale = 0.3;
+				button_bag.scaleY = button_home.scaleX;
+				button_bag.on('pointerup', function () {
+					if (!bag_open){
+						bag_open = true;
+						bag = parent.add.image(screenCenterX, screenCenterY, 'bag');
+						bag.setScrollFactor(0);
+						bag.scale = 0.75;
+
+						bag_close = parent.add.image(screenCenterX, screenCenterY + 50, 'bag_close').setInteractive();;
+						bag_close.setScrollFactor(0);
+						bag_close.scale = 0.2;
+
+						slots = [];
+
+						for(let grid_index = 1; grid_index <= 6; grid_index++){
+							if (grid_index <= 3){
+								//first row
+								xsubtract = 30 * grid_index;
+								ysubtract = 20;
+								item_slot = parent.add.image((screenCenterX + 60) - xsubtract, screenCenterY - ysubtract, 'item_slot');
+								item_slot.setScrollFactor(0);
+								item_slot.scale = 0.3;
+								slots.push(item_slot);
+							}
+							else{
+								//second row
+								xsubtract = 30 * grid_index;
+								ysubtract = -15;
+								item_slot = parent.add.image((screenCenterX + 150) - xsubtract, screenCenterY - ysubtract, 'item_slot');
+								item_slot.setScrollFactor(0);
+								item_slot.scale = 0.3;
+								slots.push(item_slot);
+							}
+						}
+
+						bag_close.on('pointerup', function () {
+							bag.destroy();
+							bag_close.destroy();
+							slots.forEach(slot => slot.destroy());
+							slots = [];
+							bag_open = false;
+						});
+					}
+				});
+
 
 				this.anims.create({
 					key: "left",
-					frames: this.anims.generateFrameNumbers("dude", { start: 0, end: 6 }),
+					frames: this.anims.generateFrameNumbers("dude", {start: 0, end: 6}),
 					frameRate: 10,
 					repeat: -1
 				});
 
 				this.anims.create({
 					key: "turn",
-					frames: [ { key: "dude", frame: 7 } ],
+					frames: [{key: "dude", frame: 7}],
 					frameRate: 20
 				});
 
 				this.anims.create({
 					key: "right",
-					frames: this.anims.generateFrameNumbers("dude", { start: 8, end:  13}),
+					frames: this.anims.generateFrameNumbers("dude", {start: 8, end: 13}),
 					frameRate: 10,
 					repeat: -1
 				});
@@ -433,26 +575,26 @@ document.addEventListener("DOMContentLoaded", function()
 				{
 					player.setVelocityX(-160);
 
-					player.anims.play('left', true);
-					if (player.body.touching.down && energy_current > 0)
+					player.anims.play("left", true);
+					if(player.body.touching.down && energy_current > 0)
 					{
 						const index_row = Math.floor(player.y/SIZE_TILE) - 1;
 						const index_col = Math.floor(player.x/SIZE_TILE) - 1;
 
-						dig(level, emitter, index_row, index_col);
+						dig(level, emitter, mineral_emitter, index_row, index_col);
 					}
 				}
 				else if(right)
 				{
 					player.setVelocityX(160);
-					player.anims.play('right', true);
+					player.anims.play("right", true);
 
-					if (player.body.touching.down && energy_current > 0)
+					if(player.body.touching.down && energy_current > 0)
 					{
 						const index_row = Math.floor(player.y/SIZE_TILE) - 1;
 						const index_col = Math.floor(player.x/SIZE_TILE) + 1;
 
-						dig(level, emitter, index_row, index_col);
+						dig(level, emitter, mineral_emitter, index_row, index_col);
 					}
 				}
 				else
@@ -472,13 +614,13 @@ document.addEventListener("DOMContentLoaded", function()
 					const index_row = Math.floor(player.y/SIZE_TILE);
 					const index_col = Math.floor(player.x/SIZE_TILE);
 
-					dig(level, emitter, index_row, index_col);
+					dig(level, emitter, mineral_emitter, index_row, index_col);
 				}
 			}
 		}
 	});
 
-	function dig(level, emitter, index_row, index_col)
+	function dig(level, emitter, mineral_emitter, index_row, index_col)
 	{
 		if(index_row < 0 || index_row >= level.height || index_col < 0 || index_col >= level.width)
 			return;
@@ -491,6 +633,7 @@ document.addEventListener("DOMContentLoaded", function()
 		sprite.setFrame("void");
 		sprite.body.enable = false;
 		emitter.explode(20, sprite.x + SIZE_TILE/2, sprite.y + SIZE_TILE/2);
+		
 
 		for(let index_row_check = index_row - 1; index_row_check <= index_row + 1; ++index_row_check)
 			for(let index_col_check = index_col - 1; index_col_check <= index_col + 1; ++index_col_check)
@@ -509,11 +652,26 @@ document.addEventListener("DOMContentLoaded", function()
 				}
 			}
 
-		energy_current --;
-		energy_display.setText( 'Energy:' + energy_current);
-		bar.scaleX = energy_current/energy_max;
-		//x offset 
-		bar.x += 16 * (1/energy_max);
+		for(let index_gem = 0; index_gem < level.gems.length; ++index_gem)
+		{
+			const gem = level.gems[index_gem];
+			if(gem.index_col === index_col && gem.index_row === index_row)
+			{
+				const mineral_sprite = level.mineral_sprites[index_gem];
+				level.tiles[index_row][index_col] = 0;
+				mineral_sprite.setFrame("void");
+				mineral_sprite.body.enable = false;
+				mineral_emitter.explode(20, mineral_sprite.x + SIZE_TILE/2, mineral_sprite.y + SIZE_TILE/2);
+
+				minerals += 10;
+			}
+		}
+
+		// energy_current --;
+		// energy_display.setText( 'Energy:' + energy_current);
+		// bar.scaleX = energy_current/energy_max;
+		// //x offset
+		// bar.x += 16 * (1/energy_max);
 
 	}
 

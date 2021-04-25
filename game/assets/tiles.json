@@ -1,0 +1,96 @@
+{
+	"frames": [
+		{
+			"filename": "void",
+			"frame": {"x": 88, "y": 88, "w": 8, "h": 8}
+		},
+		{
+			"filename": "solid",
+			"frame": {"x": 0, "y": 0, "w": 8, "h": 8}
+		},
+		{
+			"filename": "solid1",
+			"frame": {"x": 8, "y": 0, "w": 8, "h": 8}
+		},
+		{
+			"filename": "solid2",
+			"frame": {"x": 16, "y": 0, "w": 8, "h": 8}
+		},
+		{
+			"filename": "edge",
+			"frame": {"x": 24, "y": 32, "w": 8, "h": 8}
+		},
+		{
+			"filename": "floor",
+			"frame": {"x": 32, "y": 32, "w": 8, "h": 8}
+		},
+		{
+			"filename": "corner",
+			"frame": {"x": 40, "y": 32, "w": 8, "h": 8}
+		},
+		{
+			"filename": "wall",
+			"frame": {"x": 24, "y": 40, "w": 8, "h": 8}
+		},
+		{
+			"filename": "overhang",
+			"frame": {"x": 24, "y": 48, "w": 8, "h": 8}
+		},
+		{
+			"filename": "ceiling",
+			"frame": {"x": 32, "y": 48, "w": 8, "h": 8}
+		},
+		{
+			"filename": "wallwall",
+			"frame": {"x": 64, "y": 0, "w": 8, "h": 8}
+		},
+		{
+			"filename": "overhangoverhang",
+			"frame": {"x": 64, "y": 8, "w": 8, "h": 8}
+		},
+		{
+			"filename": "cornerceiling",
+			"frame": {"x": 64, "y": 16, "w": 8, "h": 8}
+		},
+		{
+			"filename": "cornerwall",
+			"frame": {"x": 64, "y": 24, "w": 8, "h": 8}
+		},
+		{
+			"filename": "corneroverhang",
+			"frame": {"x": 64, "y": 32, "w": 8, "h": 8}
+		},
+		{
+			"filename": "floorceiling",
+			"frame": {"x": 64, "y": 40, "w": 8, "h": 8}
+		},
+		{
+			"filename": "edgeoverhang",
+			"frame": {"x": 64, "y": 48, "w": 8, "h": 8}
+		},
+		{
+			"filename": "edgeedge",
+			"frame": {"x": 64, "y": 56, "w": 8, "h": 8}
+		},
+		{
+			"filename": "island",
+			"frame": {"x": 64, "y": 64, "w": 8, "h": 8}
+		},
+		{
+			"filename": "corners",
+			"frame": {"x": 64, "y": 72, "w": 8, "h": 8}
+		},
+		{
+			"filename": "cornersceiling",
+			"frame": {"x": 64, "y": 80, "w": 8, "h": 8}
+		},
+		{
+			"filename": "dirt",
+			"frame": {"x": 40, "y": 88, "w": 1, "h": 1}
+		},
+		{
+			"filename": "gold_coin",
+			"frame": {"x": 72, "y": 0, "w": 8, "h": 8}
+		}
+	]
+}
