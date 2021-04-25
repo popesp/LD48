@@ -330,7 +330,6 @@ document.addEventListener("DOMContentLoaded", function()
 					"assets/dude2.png",
 					{frameWidth: 32, frameHeight: 32}
 				);
-				console.log(this.load.spritesheet);
 			},
 			create: function()
 			{
@@ -421,7 +420,7 @@ document.addEventListener("DOMContentLoaded", function()
 
 				bar.fillRect(16, 16, 200, 15);
 				bar.setScrollFactor(0);
-				console.log(bar);
+
 				energy_max = 10;
 				energy_current = energy_max;
 				energy_display = this.add.text(84, 16, "Energy:" + energy_current, {fontSize: "12px", fill: "#000"});
