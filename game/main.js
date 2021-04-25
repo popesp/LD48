@@ -665,20 +665,13 @@ document.addEventListener("DOMContentLoaded", function()
 				});
 
 				this.anims.create({
-					key: "left",
-					frames: this.anims.generateFrameNumbers("dude", {start: 0, end: 4}),
-					frameRate: 10,
-					repeat: -1
-				});
-
-				this.anims.create({
 					key: "turn",
 					frames: [{key: "dude", frame: 10}],
 					frameRate: 10
 				});
 
 				this.anims.create({
-					key: "right",
+					key: "run",
 					frames: this.anims.generateFrameNumbers("dude", {start: 5, end: 9}),
 					frameRate: 10,
 					repeat: -1
@@ -731,34 +724,33 @@ document.addEventListener("DOMContentLoaded", function()
 				if(!jump && player.falling)
 					player.yvel = Math.max(player.yvel, -JUMPSPEED_CANCEL);
 
-				if(left && !right)
-				{
-					player.xvel = Math.max(-MAX_SPEED, player.xvel - RUN_ACCEL);
-					if(player.sprite.anims.currentAnim.key !== "dig-left" && player.sprite.anims.currentAnim.key !== "dig-right")
-						player.sprite.anims.play("left", true);
-
-					player.facing = "left";
-				}
-				if(right && !left)
-				{
-					player.xvel = Math.min(MAX_SPEED, player.xvel + RUN_ACCEL);
-					if(player.sprite.anims.currentAnim.key !== "dig-left" && player.sprite.anims.currentAnim.key !== "dig-right")
-						player.sprite.anims.play("right", true);
-
-					player.facing = "right";
-				}
-
 				if(left === right)
 				{
-					if(!player.sprite.anims.isPlaying || (player.sprite.anims.currentAnim.key === "left" || player.sprite.anims.currentAnim.key === "right"))
-					{
-						player.sprite.anims.play("idle-"+player.facing, true);
-					}
+					if(!player.falling && !player.cooldown_dig)
+						player.sprite.anims.play("idle", true);
 
 					if(player.xvel > 0)
 						player.xvel = Math.max(0, player.xvel - RUN_DECEL);
 					else
 						player.xvel = Math.min(0, player.xvel + RUN_DECEL);
+				}
+				else if(left)
+				{
+					player.xvel = Math.max(-MAX_SPEED, player.xvel - RUN_ACCEL);
+					if(!player.falling && !player.cooldown_dig)
+						player.sprite.anims.play("run", true);
+
+					player.facing = "left";
+					player.sprite.flipX = true;
+				}
+				else if(right)
+				{
+					player.xvel = Math.min(MAX_SPEED, player.xvel + RUN_ACCEL);
+					if(!player.falling && !player.cooldown_dig)
+						player.sprite.anims.play("run", true);
+
+					player.facing = "right";
+					player.sprite.flipX = false;
 				}
 
 				player.x_old = player.sprite.x;
@@ -812,7 +804,7 @@ document.addEventListener("DOMContentLoaded", function()
 					if(dig(level, emitter, mineral_emitter, index_row + (level.tiles[index_row][index_col] ? 0 : 1), index_col, this))
 					{
 						player.cooldown_dig = COOLDOWN_DIG;
-						player.sprite.anims.play("dig-"+player.facing, true);
+						player.sprite.anims.play("dig");
 					}
 				}
 			}
