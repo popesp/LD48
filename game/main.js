@@ -330,13 +330,6 @@ document.addEventListener("DOMContentLoaded", function()
 					{frameWidth: 32, frameHeight: 32}
 				);
 				this.load.audio('music', 'assets/cavemusic.wav');
-			},
-			create: function()
-			{
-				level = generate(0.5, 0.1);
-				music = this.sound.add('music');
-				music.loop = true;
-				music.play();
 				this.load.image('button_home', 'assets/btn_home.png');
 				this.load.image('button_bag', 'assets/btn_backpack.png');
 				this.load.image('button_success', 'assets/btn_success.png');
@@ -345,8 +338,15 @@ document.addEventListener("DOMContentLoaded", function()
 				this.load.image('bag', 'assets/bag.png');
 				this.load.image('bag_close', 'assets/btn_close.png');
 				this.load.image('item_slot', 'assets/item_slot.png');
-				console.log(this.load.spritesheet);
-				
+				this.load.image('mineral_slot', 'assets/mineral_slot.png');
+			},
+			create: function()
+			{
+				level = generate(0.5, 0.1);
+				music = this.sound.add('music');
+				music.loop = true;
+				music.play();
+
 				let parent = this;
 				let home_open = false;
 				let bag_open = false;
@@ -426,7 +426,7 @@ document.addEventListener("DOMContentLoaded", function()
 					level.mineral_sprites.push(mineral_tile);
 				}
 
-				console.log('afer adding minerals', this)
+				console.log("afer adding minerals", this);
 
 
 				barbg = this.add.graphics();
@@ -446,31 +446,34 @@ document.addEventListener("DOMContentLoaded", function()
 				energy_display = this.add.text(84, 16, "Energy:" + energy_current, {fontSize: "12px", fill: "#000"});
 				energy_display.setScrollFactor(0);
 
-				button_home = this.add.image(372, 23, 'button_home').setInteractive();
+				button_home = this.add.image(372, 23, "button_home").setInteractive();
 				button_home.setScrollFactor(0);
 				button_home.scale = 0.3;
 				button_home.scaleY = button_home.scaleX;
-				button_home.on('pointerup', function () {
-					if (!home_open){
+				button_home.on("pointerup", function()
+				{
+					if(!home_open)
+					{
 						home_open = true;
-						home_modal = parent.add.image(screenCenterX, screenCenterY, 'dialog');
+						home_modal = parent.add.image(screenCenterX, screenCenterY, "dialog");
 						home_modal.setScrollFactor(0);
 						home_modal.scale = 0.8;
-						confirm_text1 = parent.add.text(141, 120, 'Are you sure you', { fontSize: '12px', fill: '#000' }).setScrollFactor(0);
-						confirm_text2 = parent.add.text(128, 135, 'want to return home?', { fontSize: '12px', fill: '#000' }).setScrollFactor(0);
-	
-						button_yes = parent.add.image(162, 178, 'button_success').setInteractive();
-						yes_text = parent.add.text(151, 170, 'YES', { fontSize: '12px', fill: '#000' }).setScrollFactor(0);
+						confirm_text1 = parent.add.text(141, 120, "Are you sure you", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+						confirm_text2 = parent.add.text(128, 135, "want to return home?", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+
+						button_yes = parent.add.image(162, 178, "button_success").setInteractive();
+						yes_text = parent.add.text(151, 170, "YES", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
 						button_yes.setScrollFactor(0);
 						button_yes.scale = 0.3;
 						button_yes.scaleY = button_home.scaleX;
-						button_no = parent.add.image(240, 178, 'button_dirty').setInteractive();
-						no_text = parent.add.text(233, 170, 'NO', { fontSize: '12px', fill: '#000' }).setScrollFactor(0);
+						button_no = parent.add.image(240, 178, "button_dirty").setInteractive();
+						no_text = parent.add.text(233, 170, "NO", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
 						button_no.setScrollFactor(0);
 						button_no.scale = 0.3;
 						button_no.scaleY = button_home.scaleX;
-	
-						button_yes.on('pointerup', function () {
+
+						button_yes.on("pointerup", function()
+						{
 							home_modal.destroy();
 							confirm_text1.destroy();
 							confirm_text2.destroy();
@@ -480,8 +483,9 @@ document.addEventListener("DOMContentLoaded", function()
 							no_text.destroy();
 							home_open = false;
 						});
-	
-						button_no.on('pointerup', function () {
+
+						button_no.on("pointerup", function()
+						{
 							home_modal.destroy();
 							confirm_text1.destroy();
 							confirm_text2.destroy();
@@ -494,49 +498,65 @@ document.addEventListener("DOMContentLoaded", function()
 					}
 				});
 
-				button_bag = this.add.image(330, 23, 'button_bag').setInteractive();
+				button_bag = this.add.image(330, 23, "button_bag").setInteractive();
 				button_bag.setScrollFactor(0);
 				button_bag.scale = 0.3;
 				button_bag.scaleY = button_home.scaleX;
-				button_bag.on('pointerup', function () {
-					if (!bag_open){
+				button_bag.on("pointerup", function()
+				{
+					if(!bag_open)
+					{
 						bag_open = true;
-						bag = parent.add.image(screenCenterX, screenCenterY, 'bag');
+						bag = parent.add.image(screenCenterX, screenCenterY, "bag");
 						bag.setScrollFactor(0);
 						bag.scale = 0.75;
 
-						bag_close = parent.add.image(screenCenterX, screenCenterY + 50, 'bag_close').setInteractive();;
+						bag_close = parent.add.image(screenCenterX, screenCenterY + 50, "bag_close").setInteractive();
 						bag_close.setScrollFactor(0);
 						bag_close.scale = 0.2;
 
 						slots = [];
+						items = [];
 
-						for(let grid_index = 1; grid_index <= 6; grid_index++){
-							if (grid_index <= 3){
+						for(let grid_index = 1; grid_index <= 6; grid_index++)
+						{
+							if(grid_index <= 3)
+							{
 								//first row
 								xsubtract = 30 * grid_index;
 								ysubtract = 20;
-								item_slot = parent.add.image((screenCenterX + 60) - xsubtract, screenCenterY - ysubtract, 'item_slot');
+								item_slot = parent.add.image((screenCenterX + 60) - xsubtract, screenCenterY - ysubtract, "item_slot");
 								item_slot.setScrollFactor(0);
 								item_slot.scale = 0.3;
 								slots.push(item_slot);
+								if(grid_index === 3)
+								{
+									mineral_slot = parent.add.image((screenCenterX + 60) - xsubtract, screenCenterY - ysubtract, "mineral_slot");
+									mineral_slot.setScrollFactor(0);
+									mineral_slot.scale = 0.3;
+									items.push(mineral_slot);
+								}
 							}
-							else{
+							else
+							{
 								//second row
 								xsubtract = 30 * grid_index;
 								ysubtract = -15;
-								item_slot = parent.add.image((screenCenterX + 150) - xsubtract, screenCenterY - ysubtract, 'item_slot');
+								item_slot = parent.add.image((screenCenterX + 150) - xsubtract, screenCenterY - ysubtract, "item_slot");
 								item_slot.setScrollFactor(0);
 								item_slot.scale = 0.3;
 								slots.push(item_slot);
 							}
 						}
 
-						bag_close.on('pointerup', function () {
+						bag_close.on("pointerup", function()
+						{
 							bag.destroy();
 							bag_close.destroy();
 							slots.forEach(slot => slot.destroy());
 							slots = [];
+							items.forEach(slot => slot.destroy());
+							items = [];
 							bag_open = false;
 						});
 					}
@@ -634,7 +654,7 @@ document.addEventListener("DOMContentLoaded", function()
 		sprite.setFrame("void");
 		sprite.body.enable = false;
 		emitter.explode(20, sprite.x + SIZE_TILE/2, sprite.y + SIZE_TILE/2);
-		
+
 
 		for(let index_row_check = index_row - 1; index_row_check <= index_row + 1; ++index_row_check)
 			for(let index_col_check = index_col - 1; index_col_check <= index_col + 1; ++index_col_check)
