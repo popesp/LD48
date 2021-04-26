@@ -1,59 +1,20 @@
-const NUM_SMOOTHPASSES = 3;
+/* global randFloat, randInt */
+/* exported generate */
 
 
-function randFloat(min, max)
+function Level(width, height)
 {
-	return min + Math.random()*(max - min);
+	this.width = width;
+	this.height = height;
+
+	this.tiles = new Array(height);
+	for(let index_row = 0; index_row < height; ++index_row)
+		this.tiles[index_row] = new Array(width);
+
+	this.gems = [];
 }
 
-function randInt(min, max)
-{
-	return Math.floor(randFloat(min, max + 1));
-}
-
-
-// // guassian 5x5
-// const FILTER = [
-// 	[0.00390625, 0.01562500, 0.02343750, 0.01562500, 0.00390625],
-// 	[0.01562500, 0.06250000, 0.09375000, 0.06250000, 0.01562500],
-// 	[0.02343750, 0.09375000, 0.14062500, 0.09375000, 0.02343750],
-// 	[0.01562500, 0.06250000, 0.09375000, 0.06250000, 0.01562500],
-// 	[0.00390625, 0.01562500, 0.02343750, 0.01562500, 0.00390625]
-// ];
-
-const FILTER = [
-	[0.00000000, 0.00390625, 0.00781250, 0.00390625, 0.00000000],
-	[0.00390625, 0.01562500, 0.02343750, 0.01562500, 0.00390625],
-	[0.03125000, 0.12500000, 0.21093750, 0.12500000, 0.03125000],
-	[0.01953125, 0.07812500, 0.12500000, 0.07812500, 0.01953125],
-	[0.00390625, 0.01953125, 0.03125000, 0.01953125, 0.00390625]
-];
-
-function countSurrounding(level, index_row, index_col)
-{
-	const xmin_filter = Math.floor(FILTER[0].length/2);
-	const ymin_filter = Math.floor(FILTER.length/2);
-
-	let acc = 0;
-	for(let index_row_filter = 0; index_row_filter < FILTER.length; ++index_row_filter)
-	{
-		const row_filter = FILTER[index_row_filter];
-
-		for(let index_col_filter = 0; index_col_filter < row_filter.length; ++index_col_filter)
-		{
-			const index_row_test = index_row + index_row_filter - ymin_filter;
-			const index_col_test = index_col + index_col_filter - xmin_filter;
-
-			const test = (index_row_test < 0 || index_row_test >= level.height || index_col_test < 0 || index_col_test >= level.width) ? 1 : (level.tiles[index_row_test][index_col_test] ? 1 : 0);
-			acc += test*row_filter[index_col_filter];
-		}
-	}
-
-	return acc;
-}
-
-
-function generate(density, gem_density)
+Level.prototype.generate = function(density_tile, density_resource)
 {
 	const level = {
 		width: randInt(40, 80),
@@ -82,7 +43,7 @@ function generate(density, gem_density)
 					level.tiles[index_row][index_col] = -1;
 				else
 				{
-					const num_surrounding = countSurrounding(level, index_row, index_col);
+					const num_surrounding = applyFilter(level, index_row, index_col);
 
 					if(num_surrounding > 0.5)
 						level.tiles[index_row][index_col] = 1;
@@ -100,5 +61,87 @@ function generate(density, gem_density)
 					level.gems.push({index_col: index_col, index_row: index_row});
 		}
 
+	region(level);
+
 	return level;
+};
+
+
+const NUM_SMOOTHPASSES = 3;
+
+
+// // guassian 5x5
+// const FILTER = [
+// 	[0.00390625, 0.01562500, 0.02343750, 0.01562500, 0.00390625],
+// 	[0.01562500, 0.06250000, 0.09375000, 0.06250000, 0.01562500],
+// 	[0.02343750, 0.09375000, 0.14062500, 0.09375000, 0.02343750],
+// 	[0.01562500, 0.06250000, 0.09375000, 0.06250000, 0.01562500],
+// 	[0.00390625, 0.01562500, 0.02343750, 0.01562500, 0.00390625]
+// ];
+
+const FILTER = [
+	[0.00000000, 0.00390625, 0.00781250, 0.00390625, 0.00000000],
+	[0.00390625, 0.01562500, 0.02343750, 0.01562500, 0.00390625],
+	[0.03125000, 0.12500000, 0.21093750, 0.12500000, 0.03125000],
+	[0.01953125, 0.07812500, 0.12500000, 0.07812500, 0.01953125],
+	[0.00390625, 0.01953125, 0.03125000, 0.01953125, 0.00390625]
+];
+
+function inLevel(level, index_row, index_col)
+{
+	return index_row >= 0 && index_row < level.height && index_col >= 0 && index_col < level.width;
+}
+
+function applyFilter(level, index_row, index_col)
+{
+	const xmin_filter = Math.floor(FILTER[0].length/2);
+	const ymin_filter = Math.floor(FILTER.length/2);
+
+	let acc = 0;
+	for(let index_row_filter = 0; index_row_filter < FILTER.length; ++index_row_filter)
+	{
+		const row_filter = FILTER[index_row_filter];
+
+		for(let index_col_filter = 0; index_col_filter < row_filter.length; ++index_col_filter)
+		{
+			const index_row_test = index_row + index_row_filter - ymin_filter;
+			const index_col_test = index_col + index_col_filter - xmin_filter;
+
+			const test = inLevel(level, index_row_test, index_col_test) ? (level.tiles[index_row_test][index_col_test] ? 1 : 0) : 1;
+			acc += test*row_filter[index_col_filter];
+		}
+	}
+
+	return acc;
+}
+
+function region(level, index_row_start, index_col_start)
+{
+	const type = level[index_row_start][index_col_start];
+	const queue = [{index_row: index_row_start, index_col: index_col_start}];
+	const tiles = [];
+
+	const visited = [];
+	for(let index_row = 0; index_row < level.height; ++index_row)
+		visited.push(new Array(level.width).fill(false));
+	visited[index_row_start][index_col_start] = true;
+
+	while(queue.length > 0)
+	{
+		const tile = queue.shift();
+		tiles.push(tile);
+
+		
+	}
+	console.log(visited);
+
+
+
+	// return tiles;
+}
+
+
+function generate(density, gem_density)
+{
+	
 }

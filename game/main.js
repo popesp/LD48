@@ -1,3 +1,6 @@
+/* global randInt, Level*/
+
+
 const WIDTH_CANVAS = 800;
 const HEIGHT_CANVAS = 600;
 
@@ -449,7 +452,9 @@ document.addEventListener("DOMContentLoaded", function()
 
 			create: function()
 			{
-				const level = generate(0.5, 0.1);
+				const level = new Level(randInt(40, 80), randInt(100, 140));
+				level.generate(0.5, 0.1);
+
 				level.images = [];
 				for(let index_row = 0; index_row < level.height; ++index_row)
 				{
@@ -726,7 +731,7 @@ document.addEventListener("DOMContentLoaded", function()
 				const left = this.cursors.left.isDown || (gamepad && (gamepad.left || gamepad.leftStick.x < -0.1));
 				const right = this.cursors.right.isDown || (gamepad && (gamepad.right || gamepad.leftStick.x > 0.1));
 				const jump = this.cursors.up.isDown || (gamepad && gamepad.A);
-				const action = this.cursors.space.isDown;
+				const action = this.cursors.space.isDown || (gamepad && gamepad.X);
 
 				const player = this.data.get("player");
 				const level = this.data.get("level");
