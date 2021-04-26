@@ -519,32 +519,32 @@ document.addEventListener("DOMContentLoaded", function()
 
 				this.anims.create({
 					key: "dig",
-					frames: this.anims.generateFrameNumbers("dude", {start: 6, end: 10}),
+					frames: this.anims.generateFrameNumbers("dude", {start: 6, end: 11}),
 					frameRate: 20
 				});
 
 				this.anims.create({
 					key: "idle",
-					frames: this.anims.generateFrameNumbers("dude", {start: 11, end: 26}),
+					frames: this.anims.generateFrameNumbers("dude", {start: 12, end: 27}),
 					frameRate: 10
 				});
 
 				this.anims.create({
 					key: "jump",
-					frames: this.anims.generateFrameNumbers("dude", {start: 27, end: 30}),
+					frames: this.anims.generateFrameNumbers("dude", {start: 28, end: 31}),
 					frameRate: 10
 				});
 
 				this.anims.create({
 					key: "fall",
-					frames: this.anims.generateFrameNumbers("dude", {start: 31, end: 34}),
+					frames: this.anims.generateFrameNumbers("dude", {start: 32, end: 35}),
 					frameRate: 10,
 					repeat: -1
 				});
 
 				this.anims.create({
 					key: "die",
-					frames: this.anims.generateFrameNumbers("dude", {start: 35, end: 38}),
+					frames: this.anims.generateFrameNumbers("dude", {start: 36, end: 39}),
 					frameRate: 10
 				});
 
