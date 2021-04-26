@@ -464,12 +464,16 @@ document.addEventListener("DOMContentLoaded", function()
 				this.load.image("mineral_slot", "assets/mineral_slot.png");
 
 				this.load.audio("music", "assets/cavemusic.wav");
+				this.load.audio("dig_dirt", "assets/soundfx/dig.wav");
+				this.load.audio("dig_mineral", "assets/soundfx/dig-gold.wav");
 			},
 
 			create: function()
 			{
 				this.music = this.sound.add("music");
 				this.music.loop = true;
+				this.dig_dirt = this.sound.add("dig_dirt");
+				this.dig_mineral = this.sound.add("dig_mineral");
 
 				const player = {
 					falling: true,
@@ -821,10 +825,19 @@ document.addEventListener("DOMContentLoaded", function()
 					const index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
 					const index_col = Math.floor(player.sprite.x/SIZE_TILE) + (player.facing === "right" ? 1 : -1);
 
-					if(dig(level, this, player, index_row + (level.tiles[index_row][index_col] ? 0 : 1), index_col))
+					const dug = dig(level, this, player, index_row + (level.tiles[index_row][index_col] ? 0 : 1), index_col)
+					if(dug !== false)
 					{
 						player.cooldown_dig = COOLDOWN_DIG;
 						player.sprite.anims.play("dig");
+						if(dug === "dirt")
+						{
+							this.dig_dirt.play();
+						}
+						else
+						{
+							this.dig_mineral.play();
+						}
 					}
 				}
 			}
@@ -890,7 +903,9 @@ document.addEventListener("DOMContentLoaded", function()
 			scene.emitter_mineral.explode(10, x_particle, y_particle);
 		}
 		else
+		{
 			scene.emitter_dirt.explode(20, x_particle, y_particle);
+		}	
 
 		const old_energy = scene.data.values.energy_current;
 		scene.data.set("energy_current", --scene.data.values.energy_current);
@@ -900,7 +915,11 @@ document.addEventListener("DOMContentLoaded", function()
 		}
 		setEnergy(scene, player, scene.data.values.energy_current, old_energy);
 
-		return true;
+		if(isMineral)
+		{
+			return "mineral";
+		}
+		return "dirt";
 	}
 
 	window.addEventListener("resize", resize);
