@@ -10,6 +10,7 @@ const HEIGHT_PLAYER = 14;
 const SIZE_TILE = 16;
 const EPSILON = 0.00000000001;
 const COOLDOWN_DIG = 30;
+const COOLDOWN_SHOP = 30;
 
 // PHYSICS
 const JUMPSPEED = 3.4;
@@ -305,7 +306,7 @@ function handleCollision(player, level, scene)
 				const old_energy = scene.data.values.energy_current;
 				scene.tweens.addCounter({
 					duration: 75,
-					onUpdate: function ()
+					onUpdate: function()
 					{
 						player.sprite.setTintFill(0xFFFFFF);
 					},
@@ -622,8 +623,11 @@ document.addEventListener("DOMContentLoaded", function()
 				button_home.scale = 0.3;
 				button_home.scaleY = button_home.scaleX;
 				button_home.depth = 4;
+
+				console.log("defining home");
 				button_home.on("pointerup", function()
 				{
+					console.log("clicking on home");
 					if(!home_open)
 					{
 						home_open = true;
@@ -662,6 +666,8 @@ document.addEventListener("DOMContentLoaded", function()
 							button_no.destroy();
 							no_text.destroy();
 							home_open = false;
+							console.log(game);
+							game.scene.switch("main", "shop");
 						});
 
 						button_no.on("pointerup", function()
@@ -848,7 +854,7 @@ document.addEventListener("DOMContentLoaded", function()
 					const index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
 					const index_col = Math.floor(player.sprite.x/SIZE_TILE) + (player.facing === "right" ? 1 : -1);
 
-					const dug = dig(level, this, player, index_row + (level.tiles[index_row][index_col] ? 0 : 1), index_col)
+					const dug = dig(level, this, player, index_row + (level.tiles[index_row][index_col] ? 0 : 1), index_col);
 					if(dug !== false)
 					{
 						player.cooldown_dig = COOLDOWN_DIG;
@@ -866,18 +872,130 @@ document.addEventListener("DOMContentLoaded", function()
 			}
 		},
 		{
-			key: 'shop',
+			key: "shop",
 			preload: function()
 			{
+				console.log("preload shop");
+				this.load.image("shop", "assets/shop.png");
+				this.load.image("mineral_slot", "assets/mineral_slot.png");
 
 			},
+
 			create: function()
 			{
+				const shop = [
+					{
+						key: "max_energy",
+						curr_quantity: 3,
+						price: [1, 1, 1],
+						selected: true,
+						cooldown: 0
+					},
+					{
+						key: "double_jump",
+						curr_quantity: 1,
+						price: [1],
+						selected: false,
+						cooldown: 0
+					},
+					{
+						key: "shovel",
+						curr_quantity: 1,
+						price: [1],
+						selected: false,
+						cooldown: 0
+					},
+					{
+						key: "descend",
+						selected: false,
+						cooldown: 0
+					}
+				];
 
+				this.data.set("shop", shop);
+				this.data.set("cursors", this.input.keyboard.createCursorKeys());
+
+
+				this.add.text(25, 250, "SHOP", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+
+				const mineral_slot = this.add.image(240, 20, "mineral_slot");
+				mineral_slot.scale = 0.3;
+				mineral_slot.depth = 2;
+				mineral_display = this.add.text(240, 8, minerals, {fontSize: "12px", fill: "#fff", stroke: "#000", strokeThickness: 1});
+				mineral_display.depth = 2;
+
+				item_offset = 25;
+				for(let i = 0; i < shop.length; ++i)
+				{
+					item = shop[i];
+					this.add.text(50, 50 + item_offset, item.key, {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+					const item_outline = this.add.graphics();
+					if(item.selected)
+					{
+						console.log("selected item", item.key);
+						item_outline.lineStyle(2, 0xd2a60c, 1.0);
+						item_outline.strokeRect(50, 50 + item_offset, 190, 25);
+						item_outline.depth = 3;
+					}
+					else
+					{
+						console.log("not selected", item.key);
+						item_outline.lineStyle(2, 0xffffff, 1.0);
+						item_outline.strokeRect(50, 50 + item_offset, 190, 25);
+						item_outline.depth = 2;
+					}
+
+					item_outline.depth = 2;
+					item_offset += 25;
+				}
 			},
 			update: function()
 			{
+				this.cursors = this.input.keyboard.createCursorKeys();
+				const up = this.cursors.up.isDown;
+				const down = this.cursors.down.isDown;
 
+				shop = this.data.values.shop;
+				if(down)
+				{
+					for(let i = 0; i < shop.length; ++i)
+					{
+						item = shop[i];
+						if(item.cooldown > 0)
+						{
+							console.log('breaking')
+							item.cooldown--;
+							break;
+						}
+
+						if(item.selected === true)
+						{
+							item.selected = false;
+							console.log("item is selected", item.key);
+							if((i !== shop.length - 1))
+							{
+								console.log("i !== shop.length, setting to true", shop[i + 1].key);
+								shop[i + 1].selected = true;
+								shop[i+1].cooldown = COOLDOWN_SHOP;
+
+								const item_outline = this.add.graphics();
+								item_outline.lineStyle(2, 0xd2a60c, 1.0);
+								item_outline.strokeRect(50, 50 + item_offset, 190, 25);
+								item_outline.depth = 3;
+								break;
+							}
+							else
+							{
+								console.log("setting to true i === shoplength", item.key);
+								shop[0].selected = true;
+								shop[0].cooldown = COOLDOWN_SHOP;
+								break;
+							}
+						}
+					}
+					this.data.set("shop", shop);
+					console.log(this.data.values.shop);
+				}
 			}
 		}]
 	});
@@ -943,7 +1061,7 @@ document.addEventListener("DOMContentLoaded", function()
 		else
 		{
 			scene.emitter_dirt.explode(20, x_particle, y_particle);
-		}	
+		}
 
 		const old_energy = scene.data.values.energy_current;
 		scene.data.set("energy_current", --scene.data.values.energy_current);
