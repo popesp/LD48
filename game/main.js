@@ -438,6 +438,10 @@ document.addEventListener("DOMContentLoaded", function()
 					"assets/dude3.png",
 					{frameWidth: 20, frameHeight: 16}
 				);
+				this.load.spritesheet("bug",
+				"assets/bug.png",
+				{frameWidth: 20, frameHeight: 16}
+				);
 				this.load.audio("music", "assets/cavemusic.wav");
 				this.load.image("button_home", "assets/btn_home.png");
 				this.load.image("button_bag", "assets/btn_backpack.png");
@@ -453,7 +457,7 @@ document.addEventListener("DOMContentLoaded", function()
 			create: function()
 			{
 				const level = new Level(randInt(40, 80), randInt(100, 140));
-				level.generate(0.5, 0.1);
+				level.generate(0.5, 0.1, 0.1);
 
 				level.images = [];
 				for(let index_row = 0; index_row < level.height; ++index_row)
@@ -498,6 +502,58 @@ document.addEventListener("DOMContentLoaded", function()
 
 				this.input.gamepad.start();
 				this.cursors = this.input.keyboard.createCursorKeys();
+
+
+				this.anims.create({
+					key: "turn",
+					frames: [{key: "dude", frame: 5}],
+					frameRate: 10
+				});
+
+				this.anims.create({
+					key: "run",
+					frames: this.anims.generateFrameNumbers("dude", {start: 0, end: 4}),
+					frameRate: 10,
+					repeat: -1
+				});
+
+				this.anims.create({
+					key: "dig",
+					frames: this.anims.generateFrameNumbers("dude", {start: 6, end: 10}),
+					frameRate: 20
+				});
+
+				this.anims.create({
+					key: "idle",
+					frames: this.anims.generateFrameNumbers("dude", {start: 11, end: 26}),
+					frameRate: 10
+				});
+
+				this.anims.create({
+					key: "jump",
+					frames: this.anims.generateFrameNumbers("dude", {start: 27, end: 30}),
+					frameRate: 10
+				});
+
+				this.anims.create({
+					key: "fall",
+					frames: this.anims.generateFrameNumbers("dude", {start: 31, end: 34}),
+					frameRate: 10,
+					repeat: -1
+				});
+
+				this.anims.create({
+					key: "die",
+					frames: this.anims.generateFrameNumbers("dude", {start: 35, end: 38}),
+					frameRate: 10
+				});
+
+				this.anims.create({
+					key: "move",
+					frames: this.anims.generateFrameNumbers("bug", {start: 0, end: 9}),
+					frameRate: 10,
+					repeat: -1
+				});
 
 				this.emitter_dirt = this.add.particles("tiles", "morsel_dirt").createEmitter({
 					speed: {min: 20, max: 100},
@@ -548,11 +604,20 @@ document.addEventListener("DOMContentLoaded", function()
 				this.data.set("player", player);
 
 				level.images_minerals = [];
+				level.images_bugs = [];
 				for(let index_gem = 0; index_gem < level.gems.length; ++index_gem)
 				{
 					const gem = level.gems[index_gem];
 					const image = this.add.image(gem.index_col*SIZE_TILE, gem.index_row*SIZE_TILE, "tiles", "mineral").setOrigin(0, 0).setDisplaySize(SIZE_TILE, SIZE_TILE);
 					level.images_minerals.push(image);
+				}
+				
+				for(let index_bug = 0; index_bug < level.bugs.length; ++index_bug)
+				{
+					const bug = level.bugs[index_bug];
+					const sprite = this.add.sprite(bug.index_col*SIZE_TILE +SIZE_TILE/2, bug.index_row*SIZE_TILE + SIZE_TILE, "bug").setOrigin(0.5, 1).setDisplaySize(20, 16);
+					sprite.anims.play("move");
+					level.images_bugs.push(sprite);
 				}
 
 				const barbg = this.add.graphics();
@@ -677,50 +742,6 @@ document.addEventListener("DOMContentLoaded", function()
 							bag_open = false;
 						});
 					}
-				});
-
-				this.anims.create({
-					key: "turn",
-					frames: [{key: "dude", frame: 5}],
-					frameRate: 10
-				});
-
-				this.anims.create({
-					key: "run",
-					frames: this.anims.generateFrameNumbers("dude", {start: 0, end: 4}),
-					frameRate: 10,
-					repeat: -1
-				});
-
-				this.anims.create({
-					key: "dig",
-					frames: this.anims.generateFrameNumbers("dude", {start: 6, end: 10}),
-					frameRate: 20
-				});
-
-				this.anims.create({
-					key: "idle",
-					frames: this.anims.generateFrameNumbers("dude", {start: 11, end: 26}),
-					frameRate: 10
-				});
-
-				this.anims.create({
-					key: "jump",
-					frames: this.anims.generateFrameNumbers("dude", {start: 27, end: 30}),
-					frameRate: 10
-				});
-
-				this.anims.create({
-					key: "fall",
-					frames: this.anims.generateFrameNumbers("dude", {start: 31, end: 34}),
-					frameRate: 10,
-					repeat: -1
-				});
-
-				this.anims.create({
-					key: "die",
-					frames: this.anims.generateFrameNumbers("dude", {start: 35, end: 38}),
-					frameRate: 10
 				});
 			},
 
