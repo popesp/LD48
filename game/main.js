@@ -982,7 +982,7 @@ function restart_level(scene, player)
 	}
 
 	player.sprite.setOrigin(0.5, 1);
-	player.sprite.setDisplaySize(16, 16);
+	player.sprite.setDisplaySize(20, 16);
 	player.sprite.depth = 1;
 	scene.cameras.main.startFollow(player.sprite);
 	player.sprite.setPosition(132, 132);
