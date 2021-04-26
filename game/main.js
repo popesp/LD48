@@ -558,7 +558,13 @@ document.addEventListener("DOMContentLoaded", function()
 
 				this.anims.create({
 					key: "die",
-					frames: this.anims.generateFrameNumbers("dude", {start: 36, end: 39}),
+					frames: this.anims.generateFrameNumbers("dude", {start: 36, end: 38}),
+					frameRate: 10
+				});
+
+				this.anims.create({
+					key: "eat",
+					frames: this.anims.generateFrameNumbers("dude", {start: 39, end: 41}),
 					frameRate: 10
 				});
 
@@ -840,7 +846,7 @@ document.addEventListener("DOMContentLoaded", function()
 					if(dug !== false)
 					{
 						player.cooldown_dig = COOLDOWN_DIG;
-						player.sprite.anims.play("dig");
+						player.sprite.anims.play("eat");
 						if(dug === "dirt")
 						{
 							this.dig_dirt.play();
