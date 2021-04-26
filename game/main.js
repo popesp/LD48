@@ -19,7 +19,7 @@ const RUN_ACCEL = 0.3;
 const RUN_DECEL = 0.3;
 const MAX_SPEED = 2.4;
 const GRAVITY = 0.15;
-const FALL_DMG_THRESHOLD = 5;
+const FALL_DMG_THRESHOLD = 6;
 
 //PLAYER VARIABLES
 const ENERGY_MAX = 20;
@@ -348,18 +348,22 @@ function handleCollision(player, level, scene)
 			player.sprite.y = y_top;
 			if(player.yvel > FALL_DMG_THRESHOLD)
 			{
-				scene.tweens.addCounter({
-					duration: 75,
-					onUpdate: function()
-					{
-						player.sprite.setTintFill(0xFFFFFF);
-					},
-					onComplete: function()
-					{
-						player.sprite.clearTint();
-					}
-				});
-				setEnergy(scene, Math.round(scene.player.energy - (player.yvel - FALL_DMG_THRESHOLD)));
+				if(Math.round(scene.player.energy - (player.yvel - FALL_DMG_THRESHOLD)*2) > 0)
+				{
+					scene.tweens.addCounter({
+						duration: 75,
+						onUpdate: function()
+						{
+							player.sprite.setTintFill(0xFFFFFF);
+						},
+						onComplete: function()
+						{
+							player.sprite.clearTint();
+						}
+					});
+				}
+
+				setEnergy(scene, Math.round(scene.player.energy - (player.yvel - FALL_DMG_THRESHOLD)*2));
 			}
 
 			player.yvel = 0;
@@ -941,6 +945,23 @@ document.addEventListener("DOMContentLoaded", function()
 
 				handleCollision(player, level, this);
 
+
+				const index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
+				const index_col = Math.floor(player.sprite.x/SIZE_TILE);
+
+				for(let i = 0; i < level.bugs.legnth; ++i)
+				{
+					const bug = level.bugs[i];
+					if((bug.index_row === index_row && bug.index_col === index_col) && bug.collected === false)
+					{
+						bug.collected = true;
+						console.log("over a bug");
+						level.sprites_bugs[i].destroy();
+						setEnergy();
+					}
+				}
+
+
 				const index_row_under = Math.floor(player.sprite.y/SIZE_TILE);
 				const index_col_left = Math.floor((player.sprite.x - WIDTH_PLAYER/2)/SIZE_TILE);
 				const index_col_right = Math.floor((player.sprite.x + WIDTH_PLAYER/2 - EPSILON)/SIZE_TILE);
@@ -956,9 +977,9 @@ document.addEventListener("DOMContentLoaded", function()
 					if(!player.falling && !player.digging && player.energy > 0)
 					{
 						const index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
-						const index_col = Math.floor(player.sprite.x/SIZE_TILE) + (player.facing === "right" ? 1 : -1);
+						const index_col_facing = Math.floor(player.sprite.x/SIZE_TILE) + (player.facing === "right" ? 1 : -1);
 
-						if(dig(level, this, index_row + (level.tiles[index_row][index_col] ? 0 : 1), index_col))
+						if(dig(level, this, index_row + (level.tiles[index_row][index_col_facing] ? 0 : 1), index_col_facing))
 						{
 							player.cooldown_dig = COOLDOWN_DIG;
 							player.sprite.anims.play("dig");
@@ -1249,6 +1270,9 @@ function setEnergy(scene, energy)
 	}
 	else
 	{
+		if(energy >= scene.player.energy_max)
+			energy = scene.player.energy_max;
+
 		scene.ui.energy_display.setText("Stamina: " + energy);
 		scene.ui.bar.scaleX = energy/scene.player.energy_max;
 		scene.player.energy = energy;

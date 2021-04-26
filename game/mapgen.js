@@ -208,7 +208,7 @@ Level.prototype.generate = function(density_tile, density_resource, density_bug)
 				if(randFloat(0, 1) < density_resource)
 					level.gems.push({index_col: index_col, index_row: index_row});
 				if(index_row > 0 && randFloat(0, 1) < density_bug && level.tiles[index_row - 1][index_col] === 0)
-					level.bugs.push({index_col: index_col, index_row: index_row - 1});
+					level.bugs.push({index_col: index_col, index_row: index_row - 1, collected: false});
 			}
 		}
 };
