@@ -1,8 +1,10 @@
-/* global randFloat */
+/* global randFloat, randInt*/
 /* exported generate */
 
 
 const NUM_SMOOTHPASSES = 3;
+const NUM_MAINCAVERNS = 3;
+const NUM_DOORCANDIDATES = 20;
 
 
 // // guassian 5x5
@@ -60,67 +62,155 @@ Level.prototype.filter = function(index_row, index_col)
 	return acc;
 };
 
-Level.prototype.region = function(index_row_start, index_col_start)
+Level.prototype.region = function(index_row_start, index_col_start, visited)
 {
-	// const type = this.tiles[index_row_start][index_col_start];
+	const type = this.tiles[index_row_start][index_col_start];
 	const queue = [{index_row: index_row_start, index_col: index_col_start}];
-	const tiles = [];
+	const level = this;
+	const coords = [];
 
-	const visited = [];
-	for(let index_row = 0; index_row < this.height; ++index_row)
-		visited.push(new Array(this.width).fill(false));
 	visited[index_row_start][index_col_start] = true;
+
+	function testcoord(index_row, index_col)
+	{
+		if(level.tiles[index_row][index_col] === type && level.inbounds(index_row, index_col) && !visited[index_row][index_col])
+		{
+			visited[index_row][index_col] = true;
+			queue.push({index_row: index_row, index_col: index_col});
+		}
+	}
 
 	while(queue.length > 0)
 	{
-		const tile = queue.shift();
-		tiles.push(tile);
+		const coord = queue.shift();
+		coords.push(coord);
+
+		testcoord(coord.index_row - 1, coord.index_col);
+		testcoord(coord.index_row, coord.index_col - 1);
+		testcoord(coord.index_row, coord.index_col + 1);
+		testcoord(coord.index_row + 1, coord.index_col);
 	}
-	// console.log(visited);
 
+	return coords;
+};
 
+Level.prototype.regions = function(type)
+{
+	const regions = [];
+	const visited = [];
 
-	// return tiles;
+	for(let index_row = 0; index_row < this.height; ++index_row)
+		visited.push(new Array(this.width).fill(false));
+
+	for(let index_row = 0; index_row < this.height; ++index_row)
+		for(let index_col = 0; index_col < this.width; ++index_col)
+			if(!visited[index_row][index_col] && this.tiles[index_row][index_col] === type)
+				regions.push(this.region(index_row, index_col, visited));
+
+	return regions;
 };
 
 Level.prototype.generate = function(density_tile, density_resource, density_bug)
 {
+	const level = this;
+
 	// initialize with noise
-	for(let index_row = 0; index_row < this.height; ++index_row)
-		for(let index_col = 0; index_col < this.width; ++index_col)
-			this.tiles[index_row][index_col] = randFloat(0, 1) < density_tile ? 1 : 0;
+	for(let index_row = 0; index_row < level.height; ++index_row)
+		for(let index_col = 0; index_col < level.width; ++index_col)
+			level.tiles[index_row][index_col] = randFloat(0, 1) < density_tile ? 1 : 0;
 
 	// apply filtering passes
 	for(let index_pass = 0; index_pass < NUM_SMOOTHPASSES; ++index_pass)
-		for(let index_row = 0; index_row < this.height; ++index_row)
-			for(let index_col = 0; index_col < this.width; ++index_col)
+		for(let index_row = 0; index_row < level.height; ++index_row)
+			for(let index_col = 0; index_col < level.width; ++index_col)
 			{
 				// border of bedrock
-				if(index_row === 0 || index_row === this.height - 1 || index_col === 0 || index_col === this.width - 1)
-					this.tiles[index_row][index_col] = -1;
+				if(index_row === 0 || index_row === level.height - 1 || index_col === 0 || index_col === level.width - 1)
+					level.tiles[index_row][index_col] = -1;
 				else
 				{
-					const filter = this.filter(index_row, index_col);
+					const filter = level.filter(index_row, index_col);
 
 					if(filter > 0.5)
-						this.tiles[index_row][index_col] = 1;
+						level.tiles[index_row][index_col] = 1;
 					else if(filter < 0.5)
-						this.tiles[index_row][index_col] = 0;
+						level.tiles[index_row][index_col] = 0;
 				}
 			}
 
-	// randomly place items
-	this.gems = [];
-	this.bugs = [];
-	for(let index_row = 0; index_row < this.height; ++index_row)
-		for(let index_col = 0; index_col < this.width; ++index_col)
+	function doorcheck(index_row, index_col)
+	{
+		if(level.tiles[index_row - 1][index_col - 1] !== 0)
+			return false;
+		if(level.tiles[index_row - 1][index_col] !== 0)
+			return false;
+		if(level.tiles[index_row - 1][index_col + 1] !== 0)
+			return false;
+		if(level.tiles[index_row][index_col - 1] !== 0)
+			return false;
+		if(level.tiles[index_row][index_col + 1] !== 0)
+			return false;
+		if(level.tiles[index_row + 1][index_col - 1] !== 1)
+			return false;
+		if(level.tiles[index_row + 1][index_col] !== 1)
+			return false;
+		if(level.tiles[index_row + 1][index_col + 1] !== 1)
+			return false;
+
+		return true;
+	}
+
+	const caverns = level.regions(0);
+	caverns.sort(function(a, b)
+	{
+		return b.length - a.length;
+	});
+	const caverns_main = caverns.slice(0, NUM_MAINCAVERNS);
+
+	const coords_doors = [];
+	for(let index_cavern = 0; index_cavern < caverns_main.length; ++index_cavern)
+	{
+		const cavern = caverns_main[index_cavern];
+
+		// find all door candidates
+		for(let index_coord = 0; index_coord < cavern.length; ++index_coord)
 		{
-			if(this.tiles[index_row][index_col] === 1)
+			const coord = cavern[index_coord];
+			if(doorcheck(coord.index_row, coord.index_col))
+				coords_doors.push(coord);
+		}
+	}
+
+	coords_doors.sort(function(a, b)
+	{
+		return a.index_row - b.index_row;
+	});
+
+	level.coord_entrance = coords_doors.slice(0, NUM_DOORCANDIDATES)[randInt(0, NUM_DOORCANDIDATES - 1)];
+	level.coord_exit = coords_doors.slice(-NUM_DOORCANDIDATES)[randInt(0, NUM_DOORCANDIDATES - 1)];
+
+	// replace floor by doors with bedrock
+	level.tiles[level.coord_entrance.index_row + 1][level.coord_entrance.index_col - 1] = -1;
+	level.tiles[level.coord_entrance.index_row + 1][level.coord_entrance.index_col] = -1;
+	level.tiles[level.coord_entrance.index_row + 1][level.coord_entrance.index_col + 1] = -1;
+	level.tiles[level.coord_exit.index_row + 1][level.coord_exit.index_col - 1] = -1;
+	level.tiles[level.coord_exit.index_row + 1][level.coord_exit.index_col] = -1;
+	level.tiles[level.coord_exit.index_row + 1][level.coord_exit.index_col + 1] = -1;
+
+	console.log(level);
+
+	// randomly place items
+	level.gems = [];
+	level.bugs = [];
+	for(let index_row = 0; index_row < level.height; ++index_row)
+		for(let index_col = 0; index_col < level.width; ++index_col)
+		{
+			if(level.tiles[index_row][index_col] === 1)
 			{
 				if(randFloat(0, 1) < density_resource)
-					this.gems.push({index_col: index_col, index_row: index_row});
-				if(index_row > 0 && randFloat(0, 1) < density_bug && this.tiles[index_row - 1][index_col] === 0)
-					this.bugs.push({index_col: index_col, index_row: index_row - 1});
+					level.gems.push({index_col: index_col, index_row: index_row});
+				if(index_row > 0 && randFloat(0, 1) < density_bug && level.tiles[index_row - 1][index_col] === 0)
+					level.bugs.push({index_col: index_col, index_row: index_row - 1});
 			}
 		}
 };

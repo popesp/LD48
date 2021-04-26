@@ -1,0 +1,12 @@
+{
+	"frames": [
+		{
+			"filename": "entrance",
+			"frame": {"x": 1, "y": 1, "w": 24, "h": 16}
+		},
+		{
+			"filename": "exit",
+			"frame": {"x": 1, "y": 19, "w": 24, "h": 16}
+		}
+	]
+}

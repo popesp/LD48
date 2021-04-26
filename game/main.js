@@ -1,4 +1,4 @@
-/* global randInt, Level*/
+/* global randFloat, randInt, Level*/
 
 
 const WIDTH_CANVAS = 800;
@@ -27,8 +27,10 @@ const shovel = {
 	dig_energy: 3
 };
 
-let minerals = 0;
-let bar = "";
+const player = {
+	energy_max: ENERGY_MAX,
+	minerals: 0
+};
 
 const map_tile = {
 	"111111111": {frame: "solid", flipped: false},
@@ -300,16 +302,11 @@ function handleCollision(player, level, scene)
 
 		if(player.sprite.y - EPSILON > y_top && player.y_old - EPSILON <= y_top)
 		{
-			if(player.yvel > FALL_DMG_THRESHOLD)
-			{
-				const old_energy = scene.data.values.energy_current;
-				scene.data.set("energy_current", Math.round(scene.data.values.energy_current - (player.yvel - FALL_DMG_THRESHOLD)));
-				setEnergy(scene, player, scene.data.values.energy_current, old_energy);
-			}
-
-			player.falling = false;
-			player.yvel = 0;
 			player.sprite.y = y_top;
+			if(player.yvel > FALL_DMG_THRESHOLD)
+				setEnergy(scene, Math.round(scene.player.energy - (player.yvel - FALL_DMG_THRESHOLD)));
+			player.yvel = 0;
+			player.falling = false;
 			return;
 		}
 
@@ -391,7 +388,7 @@ function getSurrounding(level, index_row, index_col)
 			if(index_row_check < 0 || index_row_check >= level.height || index_col_check < 0 || index_col_check >= level.width)
 				surrounding += "1";
 			else
-				surrounding += level.tiles[index_row_check][index_col_check] ? 1 : 0;
+				surrounding += level.tiles[index_row_check][index_col_check] === 1 ? 1 : 0;
 
 	return surrounding;
 }
@@ -443,6 +440,7 @@ document.addEventListener("DOMContentLoaded", function()
 			preload: function()
 			{
 				this.load.atlas("tiles", "assets/tiles-extruded.png", "assets/tiles-extruded.json");
+				this.load.atlas("doors", "assets/doors-extruded.png", "assets/doors-extruded.json");
 
 				this.load.spritesheet("dude",
 					"assets/dude3.png",
@@ -471,37 +469,28 @@ document.addEventListener("DOMContentLoaded", function()
 				this.music = this.sound.add("music");
 				this.music.loop = true;
 
-				const player = {
-					falling: true,
-					xvel: 0,
-					yvel: 0,
-					cooldown_dig: 0,
-					facing: "right",
-					sprite: this.add.sprite(0, 0, "dude")
-				};
-
-				this.data.set("energy_max", ENERGY_MAX);
+				this.player = player;
+				player.energy = player.energy_max;
+				player.facing = "right";
+				player.sprite = this.add.sprite(0, 0, "dude").setOrigin(0.5, 1).setDisplaySize(20, 16).setDepth(1);
 
 				const group_ui = this.add.group();
-
 				this.ui = {
-					energy_display: this.add.text(84, 16, "Energy:" + this.data.values.energy_max, {fontSize: "12px", fill: "#000"}),
-					mineral_display: this.add.text(240, 8, minerals, {fontSize: "12px", fill: "#fff", stroke: "#000", strokeThickness: 1})
+					bar_bg: this.add.graphics().fillStyle(0xcc2418, 1).fillRect(14, 14, 204, 19),
+					bar: this.add.graphics().fillStyle(0xebb134, 1).fillRect(0, 0, 200, 15).setPosition(16, 16),
+					energy_display: this.add.text(84, 16, "Energy:" + ENERGY_MAX, {fontSize: "12px", fill: "#000"}),
+					mineral_display: this.add.text(240, 8, player.minerals, {fontSize: "12px", fill: "#fff", stroke: "#000", strokeThickness: 1})
 				};
-
-				group_ui.add(this.ui.energy_display.setScrollFactor(0));
-				group_ui.add(this.ui.mineral_display.setScrollFactor(0));
+				for(const key_object in this.ui)
+					group_ui.add(this.ui[key_object].setScrollFactor(0));
 				group_ui.setDepth(4);
-
 
 				const parent = this;
 				let home_open = false;
 				let bag_open = false;
 
 				this.input.gamepad.start();
-				this.data.set("cursors", this.input.keyboard.createCursorKeys());
 				this.cursors = this.input.keyboard.createCursorKeys();
-
 
 				this.anims.create({
 					key: "turn",
@@ -554,7 +543,7 @@ document.addEventListener("DOMContentLoaded", function()
 					repeat: -1
 				});
 
-				restart_level(this, player);
+				restart_level(this);
 
 				this.emitter_dirt = this.add.particles("tiles", "morsel_dirt").createEmitter({
 					speed: {min: 20, max: 100},
@@ -590,12 +579,6 @@ document.addEventListener("DOMContentLoaded", function()
 
 				const screenCenterX = this.cameras.main.worldView.x + this.cameras.main.width/2;
 				const screenCenterY = this.cameras.main.worldView.y + this.cameras.main.height/2;
-
-				const barbg = this.add.graphics();
-				barbg.fillStyle(0xcc2418, 1);
-				barbg.fillRect(14, 14, 204, 19);
-				barbg.setScrollFactor(0);
-				barbg.depth = 2;
 
 				const mineral_slot = this.add.image(240, 20, "mineral_slot");
 				mineral_slot.setScrollFactor(0);
@@ -699,7 +682,7 @@ document.addEventListener("DOMContentLoaded", function()
 						{
 							bag.destroy();
 							bag_close.destroy();
-							slots.forEach(slot =>
+							slots.forEach(function(slot)
 							{
 								slot.destroy();
 							});
@@ -718,8 +701,11 @@ document.addEventListener("DOMContentLoaded", function()
 				const jump = this.cursors.up.isDown || (gamepad && gamepad.A);
 				const action = this.cursors.space.isDown || (gamepad && gamepad.X);
 
-				const player = this.data.get("player");
-				const level = this.data.get("level");
+				if(this.cursors.shift.isDown)
+					restart_level(this);
+
+				const player = this.player;
+				const level = this.level;
 
 				//shawns a nerd
 				if(jump && !player.falling)
@@ -814,24 +800,32 @@ document.addEventListener("DOMContentLoaded", function()
 				if(!level.tiles[index_row_under][index_col_left] && !level.tiles[index_row_under][index_col_right])
 					player.falling = true;
 
-				if(player.cooldown_dig)
-					player.cooldown_dig--;
-				else if(action && !player.falling)
-				{
-					const index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
-					const index_col = Math.floor(player.sprite.x/SIZE_TILE) + (player.facing === "right" ? 1 : -1);
+				if(player.cooldown_dig > 0)
+					--player.cooldown_dig;
 
-					if(dig(level, this, player, index_row + (level.tiles[index_row][index_col] ? 0 : 1), index_col))
+				if(action)
+				{
+					if(!player.falling && !player.digging && player.energy > 0)
 					{
-						player.cooldown_dig = COOLDOWN_DIG;
-						player.sprite.anims.play("dig");
+						const index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
+						const index_col = Math.floor(player.sprite.x/SIZE_TILE) + (player.facing === "right" ? 1 : -1);
+
+						if(dig(level, this, index_row + (level.tiles[index_row][index_col] ? 0 : 1), index_col))
+						{
+							player.cooldown_dig = COOLDOWN_DIG;
+							player.sprite.anims.play("dig");
+						}
 					}
+
+					player.digging = true;
 				}
+				else
+					player.digging = false;
 			}
 		}
 	});
 
-	function dig(level, scene, player, index_row, index_col)
+	function dig(level, scene, index_row, index_col)
 	{
 		if(index_row < 0 || index_row >= level.height || index_col < 0 || index_col >= level.width)
 			return false;
@@ -858,7 +852,14 @@ document.addEventListener("DOMContentLoaded", function()
 
 				if(t !== undefined)
 				{
-					s.setFrame(t.frame);
+					if(t.frame === "solid")
+					{
+						const r = randFloat(0, 1);
+						s.setFrame("solid" + (r < 0.9 ? 0 : (r < 0.95 ? 1 : 2)));
+					}
+					else
+						s.setFrame(t.frame);
+
 					s.flipX = t.flipped;
 				}
 			}
@@ -875,9 +876,7 @@ document.addEventListener("DOMContentLoaded", function()
 				image_mineral.destroy();
 				isMineral = true;
 
-				minerals += 10;
-				scene.ui.mineral_display.setText(minerals);
-
+				setMinerals(scene, player.minerals + 10);
 			}
 		}
 
@@ -892,13 +891,7 @@ document.addEventListener("DOMContentLoaded", function()
 		else
 			scene.emitter_dirt.explode(20, x_particle, y_particle);
 
-		const old_energy = scene.data.values.energy_current;
-		scene.data.set("energy_current", --scene.data.values.energy_current);
-		if(scene.data.values.energy_current <= 0)
-		{
-			restart_level(scene, player);
-		}
-		setEnergy(scene, player, scene.data.values.energy_current, old_energy);
+		setEnergy(scene, scene.player.energy - 1);
 
 		return true;
 	}
@@ -908,49 +901,45 @@ document.addEventListener("DOMContentLoaded", function()
 });
 
 /* exported upgrade_shovel */
-function upgrade_shovel(scene, player)
+function upgrade_shovel(scene)
 {
-	if(minerals >= 50 && shovel.level < 3)
+	if(scene.player.minerals >= 50 && shovel.level < 3)
 	{
 		shovel.level++;
 		shovel.dig_energy--;
-		minerals -= 50;
+		setMinerals(scene.player.minerals - 50);
+		restart_level(scene);
 	}
-	restart_level(scene, player);
+
 	return shovel;
 }
 
 /* exported upgrade_energy */
-function upgrade_energy(scene, player)
+function upgrade_energy(scene)
 {
-	if(minerals >= 20)
+	if(scene.player.minerals >= 20)
 	{
-		scene.data.set("energy_max", (scene.data.values.energy_max + 10));
-		scene.data.set("energy_current", (scene.data.values.energy_max + 10));
-		const old_energy = scene.data.values.energy_current;
-		setEnergy(scene, player, scene.data.values.energy_max, old_energy);
-		minerals -= 20;
+		scene.player.energy_max += 10;
+		setMinerals(scene.player.minerals - 20);
+		restart_level(scene);
 	}
 
-	restart_level(scene, player);
-	return scene.data.values.energy_max;
+	return scene.player.energy_max;
 }
 
-function restart_level(scene, player)
+function restart_level(scene)
 {
 	if(scene.group_world !== undefined)
 	{
 		scene.group_world.destroy(true);
 		delete scene.group_world;
 	}
-	bar.scaleX = 0;
-	bar.x = 0;
-	minerals = 0;
-	scene.ui.mineral_display.setText(minerals);
+
+	setMinerals(scene, 0);
 
 	scene.group_world = scene.add.group();
 
-	const level = new Level(randInt(40, 80), randInt(100, 140));
+	const level = scene.level = new Level(randInt(40, 80), randInt(100, 140));
 	level.generate(0.5, 0.1, 0.1);
 	level.images = [];
 	for(let index_row = 0; index_row < level.height; ++index_row)
@@ -964,7 +953,13 @@ function restart_level(scene, player)
 			else if(level.tiles[index_row][index_col])
 			{
 				const t = map_tile[getSurrounding(level, index_row, index_col)];
-				frame = t.frame;
+				if(t.frame === "solid")
+				{
+					const r = randFloat(0, 1);
+					frame = "solid" + (r < 0.9 ? 0 : (r < 0.95 ? 1 : 2));
+				}
+				else
+					frame = t.frame;
 				flipped = t.flipped;
 			}
 
@@ -981,26 +976,29 @@ function restart_level(scene, player)
 		level.images.push(row_images);
 	}
 
-	player.sprite.setOrigin(0.5, 1);
-	player.sprite.setDisplaySize(20, 16);
-	player.sprite.depth = 1;
+	const entrance = scene.add.image(level.coord_entrance.index_col*SIZE_TILE + SIZE_TILE/2, level.coord_entrance.index_row*SIZE_TILE + SIZE_TILE, "doors", "entrance");
+	entrance.setOrigin(0.5, 1);
+	entrance.setDisplaySize(SIZE_TILE*3, SIZE_TILE*2);
+	entrance.setAlpha(0.7);
+	scene.group_world.add(entrance);
+
+	const exit = scene.add.image(level.coord_exit.index_col*SIZE_TILE + SIZE_TILE/2, level.coord_exit.index_row*SIZE_TILE + SIZE_TILE, "doors", "exit");
+	exit.setOrigin(0.5, 1);
+	exit.setDisplaySize(SIZE_TILE*3, SIZE_TILE*2);
+	exit.setAlpha(0.7);
+	scene.group_world.add(exit);
+
+	const player = scene.player;
+	player.xvel = 0;
+	player.yvel = 0;
+	player.falling = true;
+	player.digging = false;
+	player.cooldown_dig = 0;
+	player.sprite.setPosition(entrance.x, entrance.y);
 	scene.cameras.main.startFollow(player.sprite);
-	player.sprite.setPosition(132, 132);
-	scene.data.set("player", player);
 	scene.cameras.main.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
 
-	scene.data.set("level", level);
-
-	bar = scene.add.graphics();
-	bar.depth = 3;
-	bar.fillStyle(0xebb134, 1);
-	bar.displayOriginX = 16;
-	bar.fillRect(16, 16, 200, 15);
-	bar.setScrollFactor(0);
-
-	const old_energy = scene.data.values.energy_current;
-	scene.data.set("energy_current", (scene.data.values.energy_current && scene.data.values.energy_current > 0) ? scene.data.values.energy_current : scene.data.values.energy_max);
-	setEnergy(scene, player, scene.data.values.energy_current, old_energy);
+	setEnergy(scene, player.energy_max);
 
 	scene.music.play();
 
@@ -1009,6 +1007,7 @@ function restart_level(scene, player)
 	{
 		const gem = level.gems[index_gem];
 		const image = scene.add.image(gem.index_col*SIZE_TILE, gem.index_row*SIZE_TILE, "tiles", "mineral").setOrigin(0, 0).setDisplaySize(SIZE_TILE, SIZE_TILE);
+		image.flipX = !!randInt(0, 1);
 		scene.group_world.add(image);
 		level.images_minerals.push(image);
 	}
@@ -1024,16 +1023,20 @@ function restart_level(scene, player)
 	}
 }
 
-function setEnergy(scene, player, energy, old_energy)
+function setEnergy(scene, energy)
 {
-	if(energy <= 0)
-	{
-		restart_level(scene, player);
-	}
+	if(energy < 0)
+		restart_level(scene);
 	else
 	{
 		scene.ui.energy_display.setText("Energy: " + energy);
-		bar.scaleX = scene.data.values.energy_current/scene.data.values.energy_max;
-		bar.x += (scene.data.values.energy_max !== scene.data.values.energy_current) ? 16 * ((old_energy-energy)/scene.data.values.energy_max) : 0;
+		scene.ui.bar.scaleX = energy/scene.player.energy_max;
+		scene.player.energy = energy;
 	}
+}
+
+function setMinerals(scene, minerals)
+{
+	scene.player.minerals = minerals;
+	scene.ui.mineral_display.setText(minerals);
 }
