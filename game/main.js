@@ -49,7 +49,7 @@ const shop = {
 		},
 		{
 			key: "double_jump",
-			name: "Gain a second",
+			name: "Gain a 2nd jump",
 			curr_quantity: 1,
 			price: 100,
 			purchase: function(player)
@@ -955,7 +955,6 @@ document.addEventListener("DOMContentLoaded", function()
 					if((bug.index_row === index_row && bug.index_col === index_col) && bug.collected === false)
 					{
 						bug.collected = true;
-						console.log("over a bug");
 						level.sprites_bugs[i].destroy();
 						setEnergy();
 					}
@@ -1002,6 +1001,7 @@ document.addEventListener("DOMContentLoaded", function()
 				this.load.audio("upgrade", "assets/soundfx/upgrade.wav");
 				this.load.audio("clink", "assets/soundfx/dig-clink.wav");
 				this.load.audio("shoptheme", "assets/soundfx/shoptheme.wav");
+				//this.load.image('shop_bg', 'assets/shop_bg.png');
 			},
 
 			create: function()
@@ -1016,6 +1016,8 @@ document.addEventListener("DOMContentLoaded", function()
 				scene.sound.add("upgrade");
 				scene.sound.add("clink");
 
+				//this.add.image(20, 20, "shop_bg");
+
 				scene.input.gamepad.start();
 				scene.cursors = scene.input.keyboard.createCursorKeys();
 
@@ -1029,7 +1031,7 @@ document.addEventListener("DOMContentLoaded", function()
 				};
 
 				scene.ui = {
-					title: scene.add.text(160, 40, "SHOP", {fontSize: "32px", fill: "#fff"}),
+					title: scene.add.text(200, 60, "SURFACE SHOP", {fontSize: "32px", fill: "#ba9756"}).setOrigin(0.5),
 					mineral_icon: scene.add.image(200, 20, "mineral_slot").setScale(0.3),
 					mineral_display: scene.add.text(200, 8, scene.player.minerals, {fontSize: "12px", fill: "#fff", stroke: "#000", strokeThickness: 1})
 				};
@@ -1039,13 +1041,22 @@ document.addEventListener("DOMContentLoaded", function()
 					const item = shop.items[index_item];
 
 					if(item.key !== "descend")
-						scene.ui["item_" + item.key] = scene.add.text(130, 105 + index_item*MENU_SPACING, item.curr_quantity + " | " + item.name + " | $" + item.price, {fontSize: "12px", fill: "#fff"});
+					{
+						scene.add.rectangle(200, 112 + index_item*MENU_SPACING, 300, 25, 0x4788ad).setOrigin(0.5);
+						scene.ui["item_" + item.key] = scene.add.text(60, 105 + index_item*MENU_SPACING, item.curr_quantity + " | ", {fontSize: "12px", fill: "#fff"});
+						scene.ui["item_" + item.key] = scene.add.text(200, 112 + index_item*MENU_SPACING, item.name, {fontSize: "12px", fill: "#fff"}).setOrigin(0.5);
+						scene.ui["item_" + item.key] = scene.add.text(290, 105 + index_item*MENU_SPACING, " | " + item.price + "g", {fontSize: "12px", fill: "#fff"});
+
+					}
 					else
-						scene.ui["item_" + item.key] = scene.add.text(170, 105 + index_item*MENU_SPACING, item.name, {fontSize: "12px", fill: "#fff"});
+					{
+						scene.add.rectangle(200, 110 + index_item*MENU_SPACING, 300, 25, 0xc940406).setOrigin(0.5);
+						scene.ui["item_" + item.key] = scene.add.text(200, 112 + index_item*MENU_SPACING, item.name, {fontSize: "12px", fill: "#fff"}).setOrigin(0.5);
+					}
 
 					scene.ui["outline_" + item.key] = scene.add.graphics().lineStyle(2, 0xffffff, 1.0).strokeRect(50, 100 + index_item*MENU_SPACING, 300, 25);
 				}
-				scene.ui.outline_selection = scene.add.graphics().lineStyle(2, 0xd2a60c, 1.0).strokeRect(0, 0, 300, 25);
+				scene.ui.outline_selection = scene.add.graphics().lineStyle(4, 0xba9756, 1.0).strokeRect(0, 0, 300, 26);
 				scene.ui.outline_selection.setPosition(50, 100 + shop.index_selected*MENU_SPACING);
 
 				for(const key_object in scene.ui)
