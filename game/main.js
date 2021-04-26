@@ -994,7 +994,7 @@ document.addEventListener("DOMContentLoaded", function()
 						{
 							if(player.falling)
 							{
-								if(player.cooldown_eat > 0)
+								if(!player.cooldown_eat)
 								{
 									player.sprite.anims.play("fall", true);
 								}
