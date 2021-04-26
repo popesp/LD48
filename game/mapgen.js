@@ -197,8 +197,6 @@ Level.prototype.generate = function(density_tile, density_resource, density_bug)
 	level.tiles[level.coord_exit.index_row + 1][level.coord_exit.index_col] = -1;
 	level.tiles[level.coord_exit.index_row + 1][level.coord_exit.index_col + 1] = -1;
 
-	console.log(level);
-
 	// randomly place items
 	level.gems = [];
 	level.bugs = [];
