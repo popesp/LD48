@@ -559,7 +559,13 @@ document.addEventListener("DOMContentLoaded", function()
 
 				this.anims.create({
 					key: "die",
-					frames: this.anims.generateFrameNumbers("dude", {start: 36, end: 39}),
+					frames: this.anims.generateFrameNumbers("dude", {start: 36, end: 38}),
+					frameRate: 10
+				});
+
+				this.anims.create({
+					key: "eat",
+					frames: this.anims.generateFrameNumbers("dude", {start: 39, end: 41}),
 					frameRate: 10
 				});
 
@@ -859,14 +865,6 @@ document.addEventListener("DOMContentLoaded", function()
 					{
 						player.cooldown_dig = COOLDOWN_DIG;
 						player.sprite.anims.play("dig");
-						if(dug === "dirt")
-						{
-							this.dig_dirt.play();
-						}
-						else
-						{
-							this.dig_mineral.play();
-						}
 					}
 				}
 			}
@@ -1073,9 +1071,13 @@ document.addEventListener("DOMContentLoaded", function()
 
 		if(isMineral)
 		{
-			return "mineral";
+			scene.dig_mineral.play();
 		}
-		return "dirt";
+		else
+		{
+			scene.dig_dirt.play();
+		}
+		return true;
 	}
 
 	window.addEventListener("resize", resize);
