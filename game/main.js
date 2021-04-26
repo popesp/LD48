@@ -434,15 +434,16 @@ document.addEventListener("DOMContentLoaded", function()
 			preload: function()
 			{
 				this.load.atlas("tiles", "assets/tiles-extruded.png", "assets/tiles-extruded.json");
+
 				this.load.spritesheet("dude",
 					"assets/dude3.png",
 					{frameWidth: 20, frameHeight: 16}
 				);
 				this.load.spritesheet("bug",
-				"assets/bug.png",
-				{frameWidth: 20, frameHeight: 16}
+					"assets/bug.png",
+					{frameWidth: 20, frameHeight: 16}
 				);
-				this.load.audio("music", "assets/cavemusic.wav");
+
 				this.load.image("button_home", "assets/btn_home.png");
 				this.load.image("button_bag", "assets/btn_backpack.png");
 				this.load.image("button_success", "assets/btn_success.png");
@@ -452,6 +453,8 @@ document.addEventListener("DOMContentLoaded", function()
 				this.load.image("bag_close", "assets/btn_close.png");
 				this.load.image("item_slot", "assets/item_slot.png");
 				this.load.image("mineral_slot", "assets/mineral_slot.png");
+
+				this.load.audio("music", "assets/cavemusic.wav");
 			},
 
 			create: function()
@@ -611,7 +614,7 @@ document.addEventListener("DOMContentLoaded", function()
 					const image = this.add.image(gem.index_col*SIZE_TILE, gem.index_row*SIZE_TILE, "tiles", "mineral").setOrigin(0, 0).setDisplaySize(SIZE_TILE, SIZE_TILE);
 					level.images_minerals.push(image);
 				}
-				
+
 				for(let index_bug = 0; index_bug < level.bugs.length; ++index_bug)
 				{
 					const bug = level.bugs[index_bug];
