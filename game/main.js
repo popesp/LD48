@@ -846,7 +846,7 @@ document.addEventListener("DOMContentLoaded", function()
 					if(dug !== false)
 					{
 						player.cooldown_dig = COOLDOWN_DIG;
-						player.sprite.anims.play("eat");
+						player.sprite.anims.play("dig");
 						if(dug === "dirt")
 						{
 							this.dig_dirt.play();
