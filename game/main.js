@@ -1332,9 +1332,9 @@ function restart_level(scene)
 	const density_cave = Math.min(0.5 + 0.01*player.level, 0.6);
 	const density_bug = Math.max(0.03 - 0.002*player.level, 0.01);
 	const width = 40 + player.level*10;
-	const height = 50 + player.level*10;
+	const height = 40 + player.level*15;
 
-	const level = scene.level = new Level(randInt(Math.max(30, width - 20), width + 20), randInt(Math.max(40, height - 20), height + 20));
+	const level = scene.level = new Level(randInt(Math.max(30, width - 20), width + 20), randInt(Math.max(30, height - 20), height + 20));
 	level.generate(density_cave, 0.05, density_bug);
 
 	scene.group_world = scene.add.group();
