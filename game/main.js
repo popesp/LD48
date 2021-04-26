@@ -34,6 +34,7 @@ const player = {
 	stamina_max: STAMINA_MAX,
 	canDoubleJump: false,
 	minerals: 0,
+	rejuv: 0,
 	shovel: {
 		level: 1,
 		dig_stamina: 3
@@ -71,14 +72,13 @@ const shop = {
 			}
 		},
 		{
-			key: "shovel",
-			name: "Shovel upgrade",
+			key: "bug_energy",
+			name: "Energy from eating +2",
 			curr_quantity: 2,
 			price: 10,
 			purchase: function(player)
 			{
-				player.shovel.level++;
-				player.shovel.dig_stamina--;
+				player.rejuv++;
 			}
 		},
 		{
@@ -1103,7 +1103,7 @@ document.addEventListener("DOMContentLoaded", function()
 								this.sound.play("munch");
 								player.cooldown_eat = COOLDOWN_EAT;
 								level.sprites_bugs[index_bug].destroy();
-								setStamina(scene, player.stamina + BUG_REJUVENATION);
+								setStamina(scene, player.stamina + BUG_REJUVENATION + player.rejuv);
 							}
 						}
 
