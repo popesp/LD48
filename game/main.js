@@ -17,6 +17,7 @@ const BUG_REJUVENATION = 3;
 // PHYSICS
 const JUMPSPEED = 3.4;
 const JUMPSPEED_CANCEL = 1.2;
+const JUMPSPEED_DOUBLE = 2.8;
 const RUN_ACCEL = 0.3;
 const RUN_DECEL = 0.3;
 const MAX_SPEED = 2.4;
@@ -25,15 +26,20 @@ const FALL_DMG_THRESHOLD = 6;
 
 //PLAYER VARIABLES
 const ENERGY_MAX = 5;
-const BUG_DENSITY = 0.015;
 
 const player = {
+	level: 1,
+	damage: 0,
 	energy_max: ENERGY_MAX,
 	canDoubleJump: false,
 	minerals: 0,
 	shovel: {
 		level: 1,
 		dig_energy: 3
+	},
+	input: {
+		jump: false,
+		dig: false
 	}
 };
 
@@ -42,18 +48,18 @@ const shop = {
 	items: [
 		{
 			key: "max_energy",
-			name: "Maximum energy +10",
+			name: "Maximum energy +2",
 			curr_quantity: 3,
 			price: 10,
 			purchase: function(player, item)
 			{
-				player.energy_max += 5;
+				player.energy_max += 2;
 				item.price += 20;
 			}
 		},
 		{
 			key: "double_jump",
-			name: "Gain a second",
+			name: "Double jump",
 			curr_quantity: 1,
 			price: 100,
 			purchase: function(player)
@@ -338,8 +344,11 @@ const map_tile = {
 	"000010000": {frame: "island", flipped: false}
 };
 
-function handleCollision(player, level, scene)
+function handleCollision(scene)
 {
+	const player = scene.player;
+	const level = scene.level;
+
 	function collideTile(index_row, index_col)
 	{
 		const y_top = index_row*SIZE_TILE;
@@ -353,7 +362,7 @@ function handleCollision(player, level, scene)
 
 			if(player.yvel > FALL_DMG_THRESHOLD)
 			{
-				const damage = Math.ceil((player.yvel - FALL_DMG_THRESHOLD)*2);
+				player.damage = Math.ceil((player.yvel - FALL_DMG_THRESHOLD)*2);
 
 				scene.tweens.addCounter({
 					duration: 75,
@@ -366,12 +375,11 @@ function handleCollision(player, level, scene)
 						player.sprite.clearTint();
 					}
 				});
-
-				setEnergy(scene, scene.player.energy - damage);
 			}
 
 			player.yvel = 0;
 			player.falling = false;
+			player.djumped = false;
 			return;
 		}
 
@@ -524,7 +532,7 @@ document.addEventListener("DOMContentLoaded", function()
 						repeat: -1
 					});
 
-					sprite.play('idle');
+					sprite.play("idle");
 
 					start_text.setInteractive({useHandCursor: true});
 					start_text.on("pointerup", function()
@@ -590,7 +598,8 @@ document.addEventListener("DOMContentLoaded", function()
 						mineral_icon: scene.add.image(240, 20, "mineral_slot").setScale(0.3),
 						energy_display: scene.add.text(84, 16, "Stamina:" + ENERGY_MAX, {fontSize: "12px", fill: "#000"}),
 						mineral_display: scene.add.text(240, 8, player.minerals, {fontSize: "12px", fill: "#fff", stroke: "#000", strokeThickness: 1}),
-						button_home: scene.add.image(372, 23, "button_home").setInteractive().setScale(0.3)
+						button_home: scene.add.image(372, 23, "button_home").setInteractive().setScale(0.3),
+						text_level: scene.add.text(16, 276, "Level " + player.level, {fontSize: "14px", fill: "#ffffff"})
 					};
 					const screenCenterX = scene.cameras.main.worldView.x + scene.cameras.main.width/2;
 					const screenCenterY = scene.cameras.main.worldView.y + scene.cameras.main.height/2;
@@ -903,20 +912,46 @@ document.addEventListener("DOMContentLoaded", function()
 					}
 
 					//shawns a nerd
-					if(jump && !player.falling)
+					if(jump)
 					{
-						player.sprite.anims.play("jump", true);
-						player.yvel = -JUMPSPEED;
-						player.falling = true;
+						if(!player.input.jump)
+						{
+							if(player.falling)
+							{
+								if(player.canDoubleJump && !player.djumped)
+								{
+									player.sprite.anims.play("jump", true);
+									player.yvel = -JUMPSPEED_DOUBLE;
+									player.djumped = true;
 
-						const vel = player.xvel*5;
-						this.emitter_dust.setSpeedX({min: vel - 10, max: vel + 10});
-						this.emitter_dust.explode(10, player.sprite.x, player.sprite.y);
+									const vel = player.xvel*5;
+									this.emitter_dust.setSpeedX({min: vel - 10, max: vel + 10});
+									this.emitter_dust.explode(10, player.sprite.x, player.sprite.y);
+								}
+							}
+							else
+							{
+								player.sprite.anims.play("jump", true);
+								player.yvel = -JUMPSPEED;
+								player.falling = true;
+
+								const vel = player.xvel*5;
+								this.emitter_dust.setSpeedX({min: vel - 10, max: vel + 10});
+								this.emitter_dust.explode(10, player.sprite.x, player.sprite.y);
+							}
+						}
+
+						player.input.jump = true;
 					}
-					if(!jump && player.falling)
+					else
 					{
-						player.sprite.anims.play("fall", true);
-						player.yvel = Math.max(player.yvel, -JUMPSPEED_CANCEL);
+						if(player.falling)
+						{
+							player.sprite.anims.play("fall", true);
+							player.yvel = Math.max(player.yvel, -JUMPSPEED_CANCEL);
+						}
+
+						player.input.jump = false;
 					}
 
 					if(left === right)
@@ -986,8 +1021,7 @@ document.addEventListener("DOMContentLoaded", function()
 						player.xvel = 0;
 					}
 
-					handleCollision(player, level, this);
-
+					handleCollision(this);
 
 					// player coordinates
 					const index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
@@ -1015,21 +1049,35 @@ document.addEventListener("DOMContentLoaded", function()
 
 					if(action)
 					{
-						if(!player.falling && !player.digging && player.energy > 0)
+						if(!player.input.dig)
 						{
-							const index_col_facing = index_col + (player.facing === "right" ? 1 : -1);
-
-							if(dig(level, this, index_row + (level.tiles[index_row][index_col_facing] ? 0 : 1), index_col_facing))
+							if(index_row === level.coord_exit.index_row && index_col === level.coord_exit.index_col)
 							{
-								player.cooldown_dig = COOLDOWN_DIG;
-								player.sprite.anims.play("dig");
+								setLevel(this, player.level + 1);
+								restart_level(this);
+							}
+							else if(!player.falling && player.energy > 0)
+							{
+								const index_col_facing = index_col + (player.facing === "right" ? 1 : -1);
+
+								if(dig(level, this, index_row + (level.tiles[index_row][index_col_facing] ? 0 : 1), index_col_facing))
+								{
+									player.cooldown_dig = COOLDOWN_DIG;
+									player.sprite.anims.play("dig");
+								}
 							}
 						}
 
-						player.digging = true;
+						player.input.dig = true;
 					}
 					else
-						player.digging = false;
+						player.input.dig = false;
+
+					if(player.damage > 0)
+					{
+						setEnergy(this, player.energy - player.damage);
+						player.damage = 0;
+					}
 				}
 			},
 			{
@@ -1183,33 +1231,6 @@ document.addEventListener("DOMContentLoaded", function()
 	resize();
 });
 
-/* exported upgrade_shovel */
-function upgrade_shovel(scene)
-{
-	if(scene.player.minerals >= 50 && scene.player.shovel.level < 3)
-	{
-		scene.player.shovel.level++;
-		scene.player.shovel.dig_energy--;
-		setMinerals(scene.player.minerals - 50);
-		restart_level(scene);
-	}
-
-	return scene.player.shovel;
-}
-
-/* exported upgrade_energy */
-function upgrade_energy(scene)
-{
-	if(scene.player.minerals >= 20)
-	{
-		scene.player.energy_max += 10;
-		setMinerals(scene.player.minerals - 20);
-		restart_level(scene);
-	}
-
-	return scene.player.energy_max;
-}
-
 function restart_level(scene)
 {
 	if(scene.group_world !== undefined)
@@ -1218,10 +1239,24 @@ function restart_level(scene)
 		delete scene.group_world;
 	}
 
+	const player = scene.player;
+	player.xvel = 0;
+	player.yvel = 0;
+	player.falling = true;
+	player.input.jump = false;
+	player.input.dig = false;
+	player.cooldown_dig = 0;
+
+	const density_cave = Math.min(0.5 + 0.01*player.level, 0.6);
+	const density_bug = Math.max(0.02 - 0.002*player.level, 0.01);
+	const width = 40 + player.level*10;
+	const height = 80 + player.level*10;
+
+	const level = scene.level = new Level(randInt(width - 20, width + 20), randInt(height - 20, height + 20));
+	level.generate(density_cave, 0.05, density_bug);
+
 	scene.group_world = scene.add.group();
 
-	const level = scene.level = new Level(randInt(40, 80), randInt(100, 140));
-	level.generate(0.5, 0.1, BUG_DENSITY);
 	level.images = [];
 	for(let index_row = 0; index_row < level.height; ++index_row)
 	{
@@ -1269,12 +1304,6 @@ function restart_level(scene)
 	exit.setAlpha(0.7);
 	scene.group_world.add(exit);
 
-	const player = scene.player;
-	player.xvel = 0;
-	player.yvel = 0;
-	player.falling = true;
-	player.digging = false;
-	player.cooldown_dig = 0;
 	player.sprite.setPosition(entrance.x, entrance.y);
 	scene.cameras.main.startFollow(player.sprite);
 	scene.cameras.main.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
@@ -1309,6 +1338,7 @@ function setEnergy(scene, energy)
 	if(energy < 0)
 	{
 		setMinerals(scene, 0);
+		setLevel(scene, 1);
 		restart_level(scene);
 	}
 	else
@@ -1326,4 +1356,10 @@ function setMinerals(scene, minerals)
 {
 	scene.player.minerals = minerals;
 	scene.ui.mineral_display.setText(minerals);
+}
+
+function setLevel(scene, level)
+{
+	scene.player.level = level;
+	scene.ui.text_level.setText("Level " + level);
 }
