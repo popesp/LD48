@@ -521,7 +521,6 @@ document.addEventListener("DOMContentLoaded", function()
 					);
 
 					this.load.audio("shoptheme", "assets/soundfx/shoptheme.wav");
-
 				},
 				create: function()
 				{
@@ -554,11 +553,21 @@ document.addEventListener("DOMContentLoaded", function()
 						scene.music.stop();
 						game.scene.start("main");
 					});
+					scene.input.keyboard.on("keydown", function()
+					{
+						title_text.destroy();
+						start_text.destroy();
+						credit_text.destroy();
+						game.scene.stop("title");
+						scene.music.stop();
+						game.scene.start("main");
+					});
 				},
 				update: function()
 				{
 				}
-			}, {
+			},
+			{
 				key: "main",
 				preload: function()
 				{
@@ -587,6 +596,8 @@ document.addEventListener("DOMContentLoaded", function()
 					this.load.audio("music", "assets/soundfx/cavemusic.wav");
 					this.load.audio("dig_dirt", "assets/soundfx/dig.wav");
 					this.load.audio("dig_mineral", "assets/soundfx/dig-gold.wav");
+
+
 				},
 
 				create: function()
@@ -742,7 +753,7 @@ document.addEventListener("DOMContentLoaded", function()
 					// let bag_open = false;
 
 					scene.input.gamepad.start();
-					scene.cursors = scene.input.keyboard.addKeys("UP,LEFT,DOWN,RIGHT,R,SPACE");
+					scene.cursors = scene.input.keyboard.addKeys("UP,LEFT,DOWN,RIGHT,W,A,S,D,R,SPACE");
 
 					scene.anims.create({
 						key: "turn",
@@ -843,9 +854,9 @@ document.addEventListener("DOMContentLoaded", function()
 
 					const gamepad = scene.input.gamepad.gamepads[0];
 
-					const left = scene.cursors.LEFT.isDown || (gamepad && (gamepad.left || gamepad.leftStick.x < -0.1));
-					const right = scene.cursors.RIGHT.isDown || (gamepad && (gamepad.right || gamepad.leftStick.x > 0.1));
-					const jump = scene.cursors.UP.isDown || (gamepad && gamepad.A);
+					const left = scene.cursors.A.isDown || scene.cursors.LEFT.isDown || (gamepad && (gamepad.left || gamepad.leftStick.x < -0.1));
+					const right = scene.cursors.D.isDown || scene.cursors.RIGHT.isDown || (gamepad && (gamepad.right || gamepad.leftStick.x > 0.1));
+					const jump = scene.cursors.W.isDown || scene.cursors.UP.isDown || (gamepad && gamepad.A);
 					const action = scene.cursors.SPACE.isDown || (gamepad && gamepad.X);
 					const reset = scene.cursors.R.isDown; // TODO(shawn): gamepad binding
 
@@ -937,20 +948,6 @@ document.addEventListener("DOMContentLoaded", function()
 					}
 					else
 					{
-						if(reset)
-						{
-							if(!pressReset)
-							{
-								setLevel(scene, 1);
-								setMinerals(scene, 0);
-								restart_level(scene);
-							}
-
-							pressReset = true;
-						}
-						else
-							pressReset = false;
-
 						//shawns a nerd
 						if(jump)
 						{
@@ -1063,6 +1060,20 @@ document.addEventListener("DOMContentLoaded", function()
 
 						handleCollision(scene);
 
+						if(reset)
+						{
+							if(!pressReset)
+							{
+								setLevel(scene, 1);
+								setMinerals(scene, 0);
+								restart_level(scene);
+							}
+
+							pressReset = true;
+						}
+						else
+							pressReset = false;
+
 						// player coordinates
 						const index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
 						const index_col = Math.floor(player.sprite.x/SIZE_TILE);
@@ -1146,7 +1157,7 @@ document.addEventListener("DOMContentLoaded", function()
 					scene.sound.add("clink");
 
 					scene.input.gamepad.start();
-					scene.cursors = scene.input.keyboard.createCursorKeys();
+					scene.cursors = scene.input.keyboard.addKeys("UP,LEFT,DOWN,RIGHT,W,A,S,D,R,SPACE");
 
 					scene.player = player;
 					scene.shop = shop;
@@ -1158,7 +1169,7 @@ document.addEventListener("DOMContentLoaded", function()
 					};
 
 					scene.ui = {
-						title: scene.add.text(160, 40, "SHOP", {fontSize: "32px", fill: "#fff"}),
+						title: scene.add.text(200, 60, "SURFACE SHOP", {fontSize: "32px", fill: "#ba9756"}).setOrigin(0.5),
 						mineral_icon: scene.add.image(200, 20, "mineral_slot").setScale(0.3),
 						mineral_display: scene.add.text(200, 8, scene.player.minerals, {fontSize: "12px", fill: "#fff", stroke: "#000", strokeThickness: 1})
 					};
@@ -1194,9 +1205,9 @@ document.addEventListener("DOMContentLoaded", function()
 
 					const gamepad = scene.input.gamepad.gamepads[0];
 
-					const down = scene.cursors.down.isDown || (gamepad && (gamepad.down || gamepad.leftStick.y < -0.1));
-					const up = scene.cursors.up.isDown || (gamepad && (gamepad.up || gamepad.leftStick.y < 0.1));
-					const action = scene.cursors.space.isDown || (gamepad && gamepad.X);
+					const down = scene.cursors.S.isDown || scene.cursors.DOWN.isDown || (gamepad && (gamepad.down || gamepad.leftStick.y < -0.1));
+					const up = scene.cursors.W.isDown || scene.cursors.UP.isDown || (gamepad && (gamepad.up || gamepad.leftStick.y < 0.1));
+					const action = scene.cursors.SPACE.isDown || (gamepad && gamepad.A);
 
 					const shop = scene.shop;
 
@@ -1206,7 +1217,7 @@ document.addEventListener("DOMContentLoaded", function()
 						scene.sound.play("dig_dirt");
 					}
 
-					if(down)
+					if(down || key_s.isDown)
 					{
 						if(!scene.state.down)
 						{
@@ -1222,7 +1233,7 @@ document.addEventListener("DOMContentLoaded", function()
 					else
 						scene.state.down = false;
 
-					if(up)
+					if(up || key_w.isDown)
 					{
 						if(!scene.state.up)
 						{
@@ -1356,10 +1367,12 @@ function restart_level(scene)
 	player.sprite.setPosition(entrance.x, entrance.y);
 	scene.cameras.main.startFollow(player.sprite);
 	scene.cameras.main.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
+	scene.cameras.main.setZoom(1);
 
 	setStamina(scene, player.stamina_max);
 
-	scene.music.play();
+	if(!scene.music.isPlaying)
+		scene.music.play();
 
 	level.images_minerals = [];
 	for(let index_gem = 0; index_gem < level.gems.length; ++index_gem)
