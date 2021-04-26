@@ -10,7 +10,6 @@ const HEIGHT_PLAYER = 14;
 const SIZE_TILE = 16;
 const EPSILON = 0.00000000001;
 const COOLDOWN_DIG = 30;
-const COOLDOWN_SHOP = 30;
 
 // PHYSICS
 const JUMPSPEED = 3.4;
@@ -30,6 +29,8 @@ const shovel = {
 
 let minerals = 0;
 let bar = "";
+let cd_shop = 5;
+
 
 const map_tile = {
 	"111111111": {frame: "solid", flipped: false},
@@ -672,7 +673,6 @@ document.addEventListener("DOMContentLoaded", function()
 							button_no.destroy();
 							no_text.destroy();
 							home_open = false;
-							console.log(game);
 							game.scene.switch("main", "shop");
 						});
 
@@ -874,11 +874,8 @@ document.addEventListener("DOMContentLoaded", function()
 			preload: function()
 			{
 				console.log("preload shop");
-				this.load.image("shop", "assets/shop.png");
 				this.load.image("mineral_slot", "assets/mineral_slot.png");
-
 			},
-
 			create: function()
 			{
 				const shop = [
@@ -886,33 +883,27 @@ document.addEventListener("DOMContentLoaded", function()
 						key: "max_energy",
 						curr_quantity: 3,
 						price: [1, 1, 1],
-						selected: true,
-						cooldown: 0
+						selected: true
 					},
 					{
 						key: "double_jump",
 						curr_quantity: 1,
 						price: [1],
-						selected: false,
-						cooldown: 0
+						selected: false
 					},
 					{
 						key: "shovel",
 						curr_quantity: 1,
 						price: [1],
-						selected: false,
-						cooldown: 0
+						selected: false
 					},
 					{
 						key: "descend",
-						selected: false,
-						cooldown: 0
+						selected: false
 					}
 				];
 
-				this.data.set("shop", shop);
 				this.data.set("cursors", this.input.keyboard.createCursorKeys());
-
 
 				this.add.text(25, 250, "SHOP", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
 
@@ -922,74 +913,69 @@ document.addEventListener("DOMContentLoaded", function()
 				mineral_display = this.add.text(240, 8, minerals, {fontSize: "12px", fill: "#fff", stroke: "#000", strokeThickness: 1});
 				mineral_display.depth = 2;
 
-				item_offset = 25;
+				let item_offset = 25;
 				for(let i = 0; i < shop.length; ++i)
 				{
-					item = shop[i];
+					const item = shop[i];
 					this.add.text(50, 50 + item_offset, item.key, {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
-					const item_outline = this.add.graphics();
+					item.outline = this.add.graphics();
 					if(item.selected)
 					{
-						console.log("selected item", item.key);
-						item_outline.lineStyle(2, 0xd2a60c, 1.0);
-						item_outline.strokeRect(50, 50 + item_offset, 190, 25);
-						item_outline.depth = 3;
+						this.data.set("selected_item", item.key);
+						item.outline.lineStyle(2, 0xd2a60c, 1.0);
+						item.outline.strokeRect(50, 50 + item_offset, 190, 25);
+						item.outline.depth = 3;
 					}
 					else
 					{
 						console.log("not selected", item.key);
-						item_outline.lineStyle(2, 0xffffff, 1.0);
-						item_outline.strokeRect(50, 50 + item_offset, 190, 25);
-						item_outline.depth = 2;
+						item.outline.lineStyle(2, 0xffffff, 1.0);
+						item.outline.strokeRect(50, 50 + item_offset, 190, 25);
+						item.outline.depth = 2;
 					}
-
-					item_outline.depth = 2;
+					item.y = 50 + item_offset;
 					item_offset += 25;
 				}
+
+				this.data.set("shop", shop);
 			},
 			update: function()
 			{
 				this.cursors = this.input.keyboard.createCursorKeys();
-				const up = this.cursors.up.isDown;
 				const down = this.cursors.down.isDown;
 
-				shop = this.data.values.shop;
+				const shop = this.data.values.shop;
 				if(down)
 				{
+					cd_shop--;
+					console.log(this.data.values.selected_item);
 					for(let i = 0; i < shop.length; ++i)
 					{
-						item = shop[i];
-						if(item.cooldown > 0)
-						{
-							console.log('breaking')
-							item.cooldown--;
+						const item = shop[i];
+						if(cd_shop > 0)
 							break;
-						}
 
+						item.outline.destroy();
+						shop[(i+1)%shop.length].outline.destroy();
+
+						item.outline = this.add.graphics();
+						const next_item = shop[(i+1)%shop.length];
+						next_item.outline = this.add.graphics();
 						if(item.selected === true)
 						{
+							console.log('setting item to false', item.key)
 							item.selected = false;
-							console.log("item is selected", item.key);
-							if((i !== shop.length - 1))
-							{
-								console.log("i !== shop.length, setting to true", shop[i + 1].key);
-								shop[i + 1].selected = true;
-								shop[i+1].cooldown = COOLDOWN_SHOP;
+							cd_shop = 5;
 
-								const item_outline = this.add.graphics();
-								item_outline.lineStyle(2, 0xd2a60c, 1.0);
-								item_outline.strokeRect(50, 50 + item_offset, 190, 25);
-								item_outline.depth = 3;
-								break;
-							}
-							else
-							{
-								console.log("setting to true i === shoplength", item.key);
-								shop[0].selected = true;
-								shop[0].cooldown = COOLDOWN_SHOP;
-								break;
-							}
+							console.log('selecting item', shop[(i+1)%shop.length].key)
+							next_item.outline.lineStyle(2, 0xd2a60c, 1.0);
+							next_item.outline.strokeRect(50, shop[(i+1)%shop.length].y, 190, 25);
+							shop[(i+1)%shop.length].selected = true;
+							next_item.outline.depth = 3;
 						}
+						item.outline.lineStyle(2, 0xffffff, 1.0);
+						item.outline.strokeRect(50, item.y, 190, 25);
+						item.outline.depth = 2;
 					}
 					this.data.set("shop", shop);
 					console.log(this.data.values.shop);
