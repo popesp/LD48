@@ -29,7 +29,7 @@ const shovel = {
 
 let minerals = 0;
 let bar = "";
-let cd_shop = 5;
+let cd_shop = 15;
 
 
 const map_tile = {
@@ -943,12 +943,11 @@ document.addEventListener("DOMContentLoaded", function()
 			{
 				this.cursors = this.input.keyboard.createCursorKeys();
 				const down = this.cursors.down.isDown;
+				const up = this.cursors.up.isDown;
 
 				const shop = this.data.values.shop;
 				if(down)
 				{
-					cd_shop--;
-					console.log(this.data.values.selected_item);
 					for(let i = 0; i < shop.length; ++i)
 					{
 						const item = shop[i];
@@ -963,11 +962,10 @@ document.addEventListener("DOMContentLoaded", function()
 						next_item.outline = this.add.graphics();
 						if(item.selected === true)
 						{
-							console.log('setting item to false', item.key)
-							item.selected = false;
-							cd_shop = 5;
 
-							console.log('selecting item', shop[(i+1)%shop.length].key)
+							item.selected = false;
+							cd_shop = 15;
+
 							next_item.outline.lineStyle(2, 0xd2a60c, 1.0);
 							next_item.outline.strokeRect(50, shop[(i+1)%shop.length].y, 190, 25);
 							shop[(i+1)%shop.length].selected = true;
@@ -978,7 +976,52 @@ document.addEventListener("DOMContentLoaded", function()
 						item.outline.depth = 2;
 					}
 					this.data.set("shop", shop);
-					console.log(this.data.values.shop);
+				}
+
+				if(up)
+				{
+					for(let i = shop.length -1; i >= 0; --i)
+					{
+						const item = shop[i];
+						if(cd_shop > 0)
+							break;
+
+						item.outline.destroy();
+						let next_index;
+						if(i == 0)
+						{
+							next_index = shop.length-1;
+						}
+						else
+						{
+							next_index = i-1;
+						}
+						shop[next_index].outline.destroy();
+
+						item.outline = this.add.graphics();
+						const next_item = shop[next_index];
+						next_item.outline = this.add.graphics();
+						if(item.selected === true)
+						{
+
+							item.selected = false;
+							cd_shop = 15;
+
+							next_item.outline.lineStyle(2, 0xd2a60c, 1.0);
+							next_item.outline.strokeRect(50, shop[next_index].y, 190, 25);
+							shop[next_index].selected = true;
+							next_item.outline.depth = 3;
+						}
+						item.outline.lineStyle(2, 0xffffff, 1.0);
+						item.outline.strokeRect(50, item.y, 190, 25);
+						item.outline.depth = 2;
+					}
+					this.data.set("shop", shop);
+				}
+
+				if(cd_shop > 0)
+				{
+					cd_shop--;
 				}
 			}
 		}]
