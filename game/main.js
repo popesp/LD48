@@ -12,6 +12,8 @@ const EPSILON = 0.00000000001;
 const COOLDOWN_DIG = 30;
 const MENU_SPACING = 40;
 
+const BUG_REJUVENATION = 3;
+
 // PHYSICS
 const JUMPSPEED = 3.4;
 const JUMPSPEED_CANCEL = 1.2;
@@ -958,7 +960,7 @@ document.addEventListener("DOMContentLoaded", function()
 					{
 						bug.collected = true;
 						level.sprites_bugs[index_bug].destroy();
-						setEnergy(this, player.energy + 3);
+						setEnergy(this, player.energy + BUG_REJUVENATION);
 					}
 				}
 
