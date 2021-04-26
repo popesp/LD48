@@ -1,3 +1,6 @@
+/* global randInt, Level*/
+
+
 const WIDTH_CANVAS = 800;
 const HEIGHT_CANVAS = 600;
 
@@ -11,8 +14,8 @@ const COOLDOWN_DIG = 30;
 // PHYSICS
 const JUMPSPEED = 3.4;
 const JUMPSPEED_CANCEL = 1.2;
-const RUN_ACCEL = 0.4;
-const RUN_DECEL = 0.4;
+const RUN_ACCEL = 0.3;
+const RUN_DECEL = 0.3;
 const MAX_SPEED = 2.4;
 const GRAVITY = 0.15;
 const FALL_DMG_THRESHOLD = 5;
@@ -446,6 +449,10 @@ document.addEventListener("DOMContentLoaded", function()
 					"assets/dude3.png",
 					{frameWidth: 20, frameHeight: 16}
 				);
+				this.load.spritesheet("bug",
+				"assets/bug.png",
+				{frameWidth: 20, frameHeight: 16}
+				);
 				this.load.audio("music", "assets/cavemusic.wav");
 				this.load.image("button_home", "assets/btn_home.png");
 				this.load.image("button_bag", "assets/btn_backpack.png");
@@ -482,7 +489,6 @@ document.addEventListener("DOMContentLoaded", function()
 				mineral_display.setScrollFactor(0);
 				mineral_display.depth = 4;
 
-				restart_level(this, player);
 
 				const parent = this;
 				let home_open = false;
@@ -490,7 +496,63 @@ document.addEventListener("DOMContentLoaded", function()
 
 				this.input.gamepad.start();
 				this.data.set("cursors", this.input.keyboard.createCursorKeys());
-				this.data.set("emitter", this.add.particles("tiles", "morsel_dirt").createEmitter({
+				this.cursors = this.input.keyboard.createCursorKeys();
+
+
+				this.anims.create({
+					key: "turn",
+					frames: [{key: "dude", frame: 5}],
+					frameRate: 10
+				});
+
+				this.anims.create({
+					key: "run",
+					frames: this.anims.generateFrameNumbers("dude", {start: 0, end: 4}),
+					frameRate: 10,
+					repeat: -1
+				});
+
+				this.anims.create({
+					key: "dig",
+					frames: this.anims.generateFrameNumbers("dude", {start: 6, end: 11}),
+					frameRate: 20
+				});
+
+				this.anims.create({
+					key: "idle",
+					frames: this.anims.generateFrameNumbers("dude", {start: 12, end: 27}),
+					frameRate: 10
+				});
+
+				this.anims.create({
+					key: "jump",
+					frames: this.anims.generateFrameNumbers("dude", {start: 28, end: 31}),
+					frameRate: 10
+				});
+
+				this.anims.create({
+					key: "fall",
+					frames: this.anims.generateFrameNumbers("dude", {start: 32, end: 35}),
+					frameRate: 10,
+					repeat: -1
+				});
+
+				this.anims.create({
+					key: "die",
+					frames: this.anims.generateFrameNumbers("dude", {start: 36, end: 39}),
+					frameRate: 10
+				});
+
+				this.anims.create({
+					key: "move",
+					frames: this.anims.generateFrameNumbers("bug", {start: 0, end: 9}),
+					frameRate: 10,
+					repeat: -1
+				});
+
+				restart_level(this, player);
+
+				this.emitter_dirt = this.add.particles("tiles", "morsel_dirt").createEmitter({
 					speed: {min: 20, max: 100},
 					angle: {min: 200, max: 340},
 					alpha: {start: 1, end: 0},
@@ -499,7 +561,28 @@ document.addEventListener("DOMContentLoaded", function()
 					on: false,
 					lifespan: 1000,
 					gravityY: 300
-				}));
+				});
+
+				this.emitter_mineral = this.add.particles("tiles", "morsel_gold").createEmitter({
+					speed: {min: 20, max: 100},
+					angle: {min: 200, max: 340},
+					alpha: {start: 1, end: 0},
+					scale: 3,
+					blendMode: "NORMAL",
+					on: false,
+					lifespan: 1000,
+					gravityY: 300
+				});
+
+				this.emitter_dust = this.add.particles("tiles", "morsel_dirt").createEmitter({
+					speedY: {min: -20, max: -10},
+					alpha: {start: 1, end: 0},
+					scale: {start: 2, end: 5},
+					blendMode: "NORMAL",
+					on: false,
+					lifespan: 1000,
+					gravityY: 20
+				});
 
 
 				const screenCenterX = this.cameras.main.worldView.x + this.cameras.main.width / 2;
@@ -515,6 +598,7 @@ document.addEventListener("DOMContentLoaded", function()
 					lifespan: 1000,
 					gravityY: 300
 				}));
+
 
 				const barbg = this.add.graphics();
 				barbg.fillStyle(0xcc2418, 1);
@@ -630,42 +714,16 @@ document.addEventListener("DOMContentLoaded", function()
 						});
 					}
 				});
-
-				this.anims.create({
-					key: "turn",
-					frames: [{key: "dude", frame: 5}],
-					frameRate: 10
-				});
-
-				this.anims.create({
-					key: "run",
-					frames: this.anims.generateFrameNumbers("dude", {start: 0, end: 4}),
-					frameRate: 10,
-					repeat: -1
-				});
-
-				this.anims.create({
-					key: "dig",
-					frames: this.anims.generateFrameNumbers("dude", {start: 6, end: 10}),
-					frameRate: 20
-				});
-
-				this.anims.create({
-					key: "idle",
-					frames: this.anims.generateFrameNumbers("dude", {start: 11, end: 26}),
-					frameRate: 10
-				});
 			},
 
 			update: function()
 			{
 				const gamepad = this.input.gamepad.gamepads[0];
-				const cursors = this.data.get("cursors");
 
-				const left = cursors.left.isDown || (gamepad && (gamepad.left || gamepad.leftStick.x < -0.1));
-				const right = cursors.right.isDown || (gamepad && (gamepad.right || gamepad.leftStick.x > 0.1));
-				const jump = cursors.up.isDown || (gamepad && gamepad.A);
-				const action = cursors.space.isDown;
+				const left = this.cursors.left.isDown || (gamepad && (gamepad.left || gamepad.leftStick.x < -0.1));
+				const right = this.cursors.right.isDown || (gamepad && (gamepad.right || gamepad.leftStick.x > 0.1));
+				const jump = this.cursors.up.isDown || (gamepad && gamepad.A);
+				const action = this.cursors.space.isDown || (gamepad && gamepad.X);
 
 				const player = this.data.get("player");
 				const level = this.data.get("level");
@@ -675,11 +733,19 @@ document.addEventListener("DOMContentLoaded", function()
 				//shawns a nerd
 				if(jump && !player.falling)
 				{
+					player.sprite.anims.play("jump", true);
 					player.yvel = -JUMPSPEED;
 					player.falling = true;
+
+					const vel = player.xvel*5;
+					this.emitter_dust.setSpeedX({min: vel - 10, max: vel + 10});
+					this.emitter_dust.explode(10, player.sprite.x, player.sprite.y);
 				}
 				if(!jump && player.falling)
+				{
+					player.sprite.anims.play("fall", true);
 					player.yvel = Math.max(player.yvel, -JUMPSPEED_CANCEL);
+				}
 
 				if(left === right)
 				{
@@ -693,6 +759,9 @@ document.addEventListener("DOMContentLoaded", function()
 				}
 				else if(left)
 				{
+					if(player.xvel > 0 && !player.falling)
+						this.emitter_dust.emitParticle(1, player.sprite.x, player.sprite.y);
+
 					player.xvel = Math.max(-MAX_SPEED, player.xvel - RUN_ACCEL);
 					if(!player.falling && !player.cooldown_dig)
 						player.sprite.anims.play("run", true);
@@ -702,6 +771,9 @@ document.addEventListener("DOMContentLoaded", function()
 				}
 				else if(right)
 				{
+					if(player.xvel < 0 && !player.falling)
+						this.emitter_dust.emitParticle(1, player.sprite.x, player.sprite.y);
+
 					player.xvel = Math.min(MAX_SPEED, player.xvel + RUN_ACCEL);
 					if(!player.falling && !player.cooldown_dig)
 						player.sprite.anims.play("run", true);
@@ -823,11 +895,11 @@ document.addEventListener("DOMContentLoaded", function()
 		const y_particle = image.y + SIZE_TILE/2;
 		if(isMineral)
 		{
-			emitter.explode(10, x_particle, y_particle);
-			mineral_emitter.explode(10, x_particle, y_particle);
+			scene.emitter_dirt.explode(10, x_particle, y_particle);
+			scene.emitter_mineral.explode(10, x_particle, y_particle);
 		}
 		else
-			emitter.explode(20, x_particle, y_particle);
+			scene.emitter_dirt.explode(20, x_particle, y_particle);
 
 		old_energy = scene.data.values.energy_current;
 		scene.data.set("energy_current", --scene.data.values.energy_current);
@@ -886,7 +958,8 @@ function restart_level(scene, player)
 	scene.group_world = scene.add.group();
 	console.log("scene", scene);
 
-	const level = generate(0.5, 0.1);
+	const level = new Level(randInt(40, 80), randInt(100, 140));
+	level.generate(0.5, 0.1, 0.1);
 	level.images = [];
 	for(let index_row = 0; index_row < level.height; ++index_row)
 	{
@@ -948,6 +1021,16 @@ function restart_level(scene, player)
 		scene.group_world.add(image);
 		level.images_minerals.push(image);
 	}
+
+	level.sprites_bugs = [];
+	for(let index_bug = 0; index_bug < level.bugs.length; ++index_bug)
+	{
+		const bug = level.bugs[index_bug];
+		const sprite = scene.add.sprite(bug.index_col*SIZE_TILE +SIZE_TILE/2, bug.index_row*SIZE_TILE + SIZE_TILE, "bug").setOrigin(0.5, 1).setDisplaySize(20, 16);
+		sprite.anims.play("move");
+		scene.group_world.add(sprite);
+		level.sprites_bugs.push(sprite);
+	}
 }
 
 function setEnergy(scene, player, energy, old_energy)
@@ -962,5 +1045,4 @@ function setEnergy(scene, player, energy, old_energy)
 		bar.scaleX = scene.data.values.energy_current/scene.data.values.energy_max;
 		bar.x += (scene.data.values.energy_max !== scene.data.values.energy_current) ? 16 * ((old_energy-energy)/scene.data.values.energy_max) : 0;
 	}
-
 }
