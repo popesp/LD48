@@ -525,7 +525,7 @@ document.addEventListener("DOMContentLoaded", function()
 				create: function()
 				{
 					const scene = this;
-					const title_text = scene.add.text(0, 24, "Going Deep", {fontFamily: "nightie", fontSize: "27px", fixedWidth: scene.game.canvas.width, fixedHeight: 32, align: "center"}).setOrigin(0, 0);
+					const title_text = scene.add.text(0, 24, "GOING DEEP...", {fontFamily: "nightie", fontSize: "27px", fixedWidth: scene.game.canvas.width, fixedHeight: 32, align: "center"}).setOrigin(0, 0);
 					const start_text = scene.add.text(0, 200, "Start Game", {fontFamily: "nightie", fontSize: "27px", fixedWidth: scene.game.canvas.width, fixedHeight: 32, align: "center"}).setOrigin(0, 0);
 					const credit_text = scene.add.text(0, 250, "By: Shawn, Dan, Vishnu", {fontFamily: "nightie", fontSize: "15px", fixedWidth: scene.game.canvas.width, fixedHeight: 32, align: "center"}).setOrigin(0, 0);
 					const sprite = scene.add.sprite(scene.game.canvas.width/2, scene.game.canvas.height/2, "dude").setOrigin(0.5, 1).setDisplaySize(80, 64).setDepth(2);
@@ -1265,7 +1265,7 @@ document.addEventListener("DOMContentLoaded", function()
 								item_selected.purchase(scene.player, item_selected);
 
 								item_selected.curr_quantity--;
-								scene.ui["item_" + item_selected.key].setText(item_selected.curr_quantity + " | " + item_selected.name + " | $" + item_selected.price);
+								scene.ui["item_" + item_selected.key].setText(" | $" + item_selected.price);
 
 								scene.sound.play("upgrade");
 							}
@@ -1305,7 +1305,7 @@ function restart_level(scene)
 	player.dead = false;
 
 	const density_cave = Math.min(0.5 + 0.01*player.level, 0.6);
-	const density_bug = Math.max(0.02 - 0.002*player.level, 0.11);
+	const density_bug = Math.max(0.05 - 0.002*player.level, 0.01);
 	const width = 40 + player.level*10;
 	const height = 80 + player.level*10;
 
