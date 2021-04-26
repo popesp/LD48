@@ -552,11 +552,20 @@ document.addEventListener("DOMContentLoaded", function()
 						scene.music.stop();
 						game.scene.start("main");
 					});
+					scene.input.keyboard.on('keydown', function (event) { 
+						title_text.destroy();
+						start_text.destroy();
+						credit_text.destroy();
+						game.scene.stop("title");
+						scene.music.stop();
+						game.scene.start("main");
+					});
 				},
 				update: function()
 				{
 				}
-			}, {
+			},
+			{
 				key: "main",
 				preload: function()
 				{
@@ -585,6 +594,8 @@ document.addEventListener("DOMContentLoaded", function()
 					this.load.audio("music", "assets/soundfx/cavemusic.wav");
 					this.load.audio("dig_dirt", "assets/soundfx/dig.wav");
 					this.load.audio("dig_mineral", "assets/soundfx/dig-gold.wav");
+
+
 				},
 
 				create: function()
@@ -602,6 +613,11 @@ document.addEventListener("DOMContentLoaded", function()
 					player.facing = "right";
 					player.sprite = scene.add.sprite(0, 0, "dude").setOrigin(0.5, 1).setDisplaySize(20, 16).setDepth(1);
 
+					key_w = this.input.keyboard.addKey("W");
+					key_a = this.input.keyboard.addKey("A");
+					key_s = this.input.keyboard.addKey("S");
+					key_d = this.input.keyboard.addKey("D");
+					key_b = this.input.keyboard.addKey("B");
 					scene.ui = {
 						bar_bg: scene.add.graphics().fillStyle(0xcc2418, 1).fillRect(0, 0, 204, 19).setPosition(14, 14),
 						bar: scene.add.graphics().fillStyle(0xebb134, 1).fillRect(0, 0, 200, 15).setPosition(16, 16),
@@ -836,11 +852,12 @@ document.addEventListener("DOMContentLoaded", function()
 
 				update: function()
 				{
+
 					const gamepad = this.input.gamepad.gamepads[0];
 
-					const left = this.cursors.left.isDown || (gamepad && (gamepad.left || gamepad.leftStick.x < -0.1));
-					const right = this.cursors.right.isDown || (gamepad && (gamepad.right || gamepad.leftStick.x > 0.1));
-					const jump = this.cursors.up.isDown || (gamepad && gamepad.A);
+					const left = this.cursors.left.isDown || key_a.isDown || (gamepad && (gamepad.left || gamepad.leftStick.x < -0.1));
+					const right = this.cursors.right.isDown || key_d.isDown ||(gamepad && (gamepad.right || gamepad.leftStick.x > 0.1));
+					const jump = this.cursors.up.isDown || key_w.isDown || (gamepad && gamepad.A);
 					const action = this.cursors.space.isDown || (gamepad && gamepad.X);
 
 					const player = this.player;
@@ -1113,7 +1130,8 @@ document.addEventListener("DOMContentLoaded", function()
 				create: function()
 				{
 					const scene = this;
-
+					key_w = this.input.keyboard.addKey("W");
+					key_s = this.input.keyboard.addKey("S");
 					scene.music = scene.sound.add("shoptheme");
 					scene.music.loop = true;
 					scene.music.play();
@@ -1135,7 +1153,7 @@ document.addEventListener("DOMContentLoaded", function()
 					};
 
 					scene.ui = {
-						title: scene.add.text(160, 40, "SHOP", {fontSize: "32px", fill: "#fff"}),
+						title: scene.add.text(200, 60, "SURFACE SHOP", {fontSize: "32px", fill: "#ba9756"}).setOrigin(0.5),
 						mineral_icon: scene.add.image(200, 20, "mineral_slot").setScale(0.3),
 						mineral_display: scene.add.text(200, 8, scene.player.minerals, {fontSize: "12px", fill: "#fff", stroke: "#000", strokeThickness: 1})
 					};
@@ -1183,7 +1201,7 @@ document.addEventListener("DOMContentLoaded", function()
 						scene.sound.play("dig_dirt");
 					}
 
-					if(down)
+					if(down || key_s.isDown)
 					{
 						if(!scene.state.down)
 						{
@@ -1199,7 +1217,7 @@ document.addEventListener("DOMContentLoaded", function()
 					else
 						scene.state.down = false;
 
-					if(up)
+					if(up || key_w.isDown)
 					{
 						if(!scene.state.up)
 						{
