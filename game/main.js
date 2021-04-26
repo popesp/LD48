@@ -35,10 +35,6 @@ const player = {
 	canDoubleJump: false,
 	minerals: 0,
 	rejuv: 0,
-	shovel: {
-		level: 1,
-		dig_stamina: 3
-	},
 	input: {
 		jump: false,
 		dig: false
@@ -75,10 +71,11 @@ const shop = {
 			key: "bug_energy",
 			name: "Energy from eating +2",
 			curr_quantity: 2,
-			price: 10,
-			purchase: function(player)
+			price: 25,
+			purchase: function(player, item)
 			{
 				player.rejuv++;
+				item.price += 25;
 			}
 		},
 		{
@@ -1190,7 +1187,7 @@ document.addEventListener("DOMContentLoaded", function()
 					};
 
 					scene.ui = {
-						title: scene.add.text(200, 60, "SURFACE SHOP", {fontSize: "32px", fill: "#ba9756"}).setOrigin(0.5),
+						title: scene.add.text(200, 60, "CAVERN SHOP", {fontSize: "32px", fill: "#ba9756"}).setOrigin(0.5),
 						mineral_icon: scene.add.image(200, 20, "mineral_slot").setScale(0.3),
 						mineral_display: scene.add.text(200, 8, scene.player.minerals, {fontSize: "12px", fill: "#fff", stroke: "#000", strokeThickness: 1})
 					};
@@ -1201,10 +1198,12 @@ document.addEventListener("DOMContentLoaded", function()
 
 						if(item.key !== "descend")
 						{
+							const text_cost = item.curr_quantity > 0 ? " | " + item.price + "g" : " | N/A";
+
 							scene.add.rectangle(200, 112 + index_item*MENU_SPACING, 300, 25, 0x4788ad).setOrigin(0.5);
-							scene.ui["item_" + item.key] = scene.add.text(60, 105 + index_item*MENU_SPACING, item.curr_quantity + " | ", {fontSize: "12px", fill: "#fff"});
-							scene.ui["item_" + item.key] = scene.add.text(200, 112 + index_item*MENU_SPACING, item.name, {fontSize: "12px", fill: "#fff"}).setOrigin(0.5);
-							scene.ui["item_" + item.key] = scene.add.text(290, 105 + index_item*MENU_SPACING, " | " + item.price + "g", {fontSize: "12px", fill: "#fff"});
+							scene.ui["item_" + item.key + "_inventory"] = scene.add.text(60, 105 + index_item*MENU_SPACING, item.curr_quantity + " | ", {fontSize: "12px", fill: "#fff"});
+							scene.ui["item_" + item.key + "_name"] = scene.add.text(200, 112 + index_item*MENU_SPACING, item.name, {fontSize: "12px", fill: "#fff"}).setOrigin(0.5);
+							scene.ui["item_" + item.key + "_cost"] = scene.add.text(290, 105 + index_item*MENU_SPACING, text_cost, {fontSize: "12px", fill: "#fff"});
 						}
 						else
 						{
@@ -1290,7 +1289,9 @@ document.addEventListener("DOMContentLoaded", function()
 								item_selected.purchase(scene.player, item_selected);
 
 								item_selected.curr_quantity--;
-								scene.ui["item_" + item_selected.key].setText(" | $" + item_selected.price);
+								const text_cost = item_selected.curr_quantity > 0 ? " | " + item_selected.price + "g" : " | N/A";
+								scene.ui["item_" + item_selected.key + "_cost"].setText(text_cost);
+								scene.ui["item_" + item_selected.key + "_inventory"].setText(item_selected.curr_quantity + " | ");
 
 								scene.sound.play("upgrade");
 							}
