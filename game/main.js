@@ -52,11 +52,11 @@ const shop = {
 		{
 			key: "max_stamina",
 			name: "Maximum stamina +2",
-			curr_quantity: 3,
+			curr_quantity: 4,
 			price: 10,
 			purchase: function(player, item)
 			{
-				player.stamina_max += 2;
+				player.stamina_max += 3;
 				item.price += 20;
 			}
 		},
@@ -920,9 +920,9 @@ document.addEventListener("DOMContentLoaded", function()
 								if(gem.mineral_type === 0)
 									mineral_amount = 10;
 								else if(gem.mineral_type === 1)
-									mineral_amount = 6;
+									mineral_amount = 8;
 								else if(gem.mineral_type === 2)
-									mineral_amount = 4;
+									mineral_amount = 6;
 
 								setMinerals(scene, player.minerals + mineral_amount);
 							}
@@ -1330,11 +1330,11 @@ function restart_level(scene)
 	player.dead = false;
 
 	const density_cave = Math.min(0.5 + 0.01*player.level, 0.6);
-	const density_bug = Math.max(0.03 - 0.002*player.level, 0.01);
-	const width = 40 + player.level*10;
-	const height = 40 + player.level*15;
+	const density_bug = Math.max(0.03 - 0.0015*player.level, 0.02);
+	const width = 40 + player.level*8;
+	const height = 40 + player.level*10;
 
-	const level = scene.level = new Level(randInt(Math.max(30, width - 20), width + 20), randInt(Math.max(30, height - 20), height + 20));
+	const level = scene.level = new Level(randInt(Math.max(30, width - 10), width + 10), randInt(Math.max(30, height - 10), height + 10));
 	level.generate(density_cave, 0.05, density_bug);
 
 	scene.group_world = scene.add.group();
