@@ -10,6 +10,7 @@ const HEIGHT_PLAYER = 14;
 const SIZE_TILE = 16;
 const EPSILON = 0.00000000001;
 const COOLDOWN_DIG = 30;
+const COOLDOWN_EAT = 20;
 const MENU_SPACING = 40;
 
 const BUG_REJUVENATION = 3;
@@ -525,7 +526,7 @@ document.addEventListener("DOMContentLoaded", function()
 				create: function()
 				{
 					const scene = this;
-					const title_text = scene.add.text(0, 24, "Going Deep", {fontFamily: "nightie", fontSize: "27px", fixedWidth: scene.game.canvas.width, fixedHeight: 32, align: "center"}).setOrigin(0, 0);
+					const title_text = scene.add.text(0, 24, "GOING DEEP...", {fontFamily: "nightie", fontSize: "27px", fixedWidth: scene.game.canvas.width, fixedHeight: 32, align: "center"}).setOrigin(0, 0);
 					const start_text = scene.add.text(0, 200, "Start Game", {fontFamily: "nightie", fontSize: "27px", fixedWidth: scene.game.canvas.width, fixedHeight: 32, align: "center"}).setOrigin(0, 0);
 					const credit_text = scene.add.text(0, 250, "By: Shawn, Dan, Vishnu", {fontFamily: "nightie", fontSize: "15px", fixedWidth: scene.game.canvas.width, fixedHeight: 32, align: "center"}).setOrigin(0, 0);
 					const sprite = scene.add.sprite(scene.game.canvas.width/2, scene.game.canvas.height/2, "dude").setOrigin(0.5, 1).setDisplaySize(80, 64).setDepth(2);
@@ -596,6 +597,7 @@ document.addEventListener("DOMContentLoaded", function()
 					this.load.audio("music", "assets/soundfx/cavemusic.wav");
 					this.load.audio("dig_dirt", "assets/soundfx/dig.wav");
 					this.load.audio("dig_mineral", "assets/soundfx/dig-gold.wav");
+					this.load.audio("munch", "assets/soundfx/eating-notdan.wav");
 
 
 				},
@@ -609,6 +611,7 @@ document.addEventListener("DOMContentLoaded", function()
 
 					scene.sound.add("dig_dirt");
 					scene.sound.add("dig_mineral");
+					scene.sound.add("munch");
 
 					scene.player = player;
 					player.stamina = player.stamina_max;
@@ -913,8 +916,15 @@ document.addEventListener("DOMContentLoaded", function()
 
 								image_mineral.destroy();
 								isMineral = true;
+								let mineral_amount = 0;
+								if(gem.mineral_type === 0)
+									mineral_amount = 10;
+								else if(gem.mineral_type === 1)
+									mineral_amount = 6;
+								else if(gem.mineral_type === 2)
+									mineral_amount = 4;
 
-								setMinerals(scene, player.minerals + 10);
+								setMinerals(scene, player.minerals + mineral_amount);
 							}
 						}
 
@@ -968,10 +978,10 @@ document.addEventListener("DOMContentLoaded", function()
 								}
 								else
 								{
-									player.sprite.anims.play("jump", true);
+
 									player.yvel = -JUMPSPEED;
 									player.falling = true;
-
+									player.sprite.anims.play("jump", true);
 									const vel = player.xvel*5;
 									scene.emitter_dust.setSpeedX({min: vel - 10, max: vel + 10});
 									scene.emitter_dust.explode(10, player.sprite.x, player.sprite.y);
@@ -984,7 +994,10 @@ document.addEventListener("DOMContentLoaded", function()
 						{
 							if(player.falling)
 							{
-								player.sprite.anims.play("fall", true);
+								if(player.cooldown_eat > 0)
+								{
+									player.sprite.anims.play("fall", true);
+								}
 								player.yvel = Math.max(player.yvel, -JUMPSPEED_CANCEL);
 							}
 
@@ -993,7 +1006,7 @@ document.addEventListener("DOMContentLoaded", function()
 
 						if(left === right)
 						{
-							if(!player.falling && !player.cooldown_dig)
+							if(!player.falling && !player.cooldown_dig && !player.cooldown_eat)
 								player.sprite.anims.play("idle", true);
 
 							if(player.xvel > 0)
@@ -1007,7 +1020,7 @@ document.addEventListener("DOMContentLoaded", function()
 								scene.emitter_dust.emitParticle(1, player.sprite.x, player.sprite.y);
 
 							player.xvel = Math.max(-MAX_SPEED, player.xvel - RUN_ACCEL);
-							if(!player.falling && !player.cooldown_dig)
+							if(!player.falling && !player.cooldown_dig && !player.cooldown_eat)
 								player.sprite.anims.play("run", true);
 
 							player.facing = "left";
@@ -1019,7 +1032,7 @@ document.addEventListener("DOMContentLoaded", function()
 								scene.emitter_dust.emitParticle(1, player.sprite.x, player.sprite.y);
 
 							player.xvel = Math.min(MAX_SPEED, player.xvel + RUN_ACCEL);
-							if(!player.falling && !player.cooldown_dig)
+							if(!player.falling && !player.cooldown_dig && !player.cooldown_eat)
 								player.sprite.anims.play("run", true);
 
 							player.facing = "right";
@@ -1084,7 +1097,11 @@ document.addEventListener("DOMContentLoaded", function()
 
 							if((bug.index_row === index_row && bug.index_col === index_col) && !bug.collected)
 							{
+								//xxx
 								bug.collected = true;
+								player.sprite.anims.play("eat");
+								this.sound.play("munch");
+								player.cooldown_eat = COOLDOWN_EAT;
 								level.sprites_bugs[index_bug].destroy();
 								setStamina(scene, player.stamina + BUG_REJUVENATION);
 							}
@@ -1097,6 +1114,8 @@ document.addEventListener("DOMContentLoaded", function()
 
 						if(player.cooldown_dig > 0)
 							--player.cooldown_dig;
+						if(player.cooldown_eat > 0)
+							--player.cooldown_eat;
 
 						if(action)
 						{
@@ -1269,7 +1288,7 @@ document.addEventListener("DOMContentLoaded", function()
 								item_selected.purchase(scene.player, item_selected);
 
 								item_selected.curr_quantity--;
-								scene.ui["item_" + item_selected.key].setText(item_selected.curr_quantity + " | " + item_selected.name + " | $" + item_selected.price);
+								scene.ui["item_" + item_selected.key].setText(" | $" + item_selected.price);
 
 								scene.sound.play("upgrade");
 							}
@@ -1305,10 +1324,11 @@ function restart_level(scene)
 	player.input.jump = false;
 	player.input.dig = false;
 	player.cooldown_dig = 0;
+	player.cooldown_eat = 0;
 	player.dead = false;
 
 	const density_cave = Math.min(0.5 + 0.01*player.level, 0.6);
-	const density_bug = Math.max(0.02 - 0.002*player.level, 0.01);
+	const density_bug = Math.max(0.05 - 0.002*player.level, 0.01);
 	const width = 40 + player.level*10;
 	const height = 50 + player.level*10;
 
@@ -1378,7 +1398,8 @@ function restart_level(scene)
 	for(let index_gem = 0; index_gem < level.gems.length; ++index_gem)
 	{
 		const gem = level.gems[index_gem];
-		const image = scene.add.image(gem.index_col*SIZE_TILE, gem.index_row*SIZE_TILE, "tiles", "mineral").setOrigin(0, 0).setDisplaySize(SIZE_TILE, SIZE_TILE);
+		const mineral_type = gem.mineral_type;
+		const image = scene.add.image(gem.index_col*SIZE_TILE, gem.index_row*SIZE_TILE, "tiles", "mineral" + mineral_type).setOrigin(0, 0).setDisplaySize(SIZE_TILE, SIZE_TILE);
 		image.flipX = !!randInt(0, 1);
 		scene.group_world.add(image);
 		level.images_minerals.push(image);
