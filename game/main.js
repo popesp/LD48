@@ -1145,13 +1145,20 @@ document.addEventListener("DOMContentLoaded", function()
 						const item = shop.items[index_item];
 
 						if(item.key !== "descend")
-							scene.ui["item_" + item.key] = scene.add.text(130, 105 + index_item*MENU_SPACING, item.curr_quantity + " | " + item.name + " | $" + item.price, {fontSize: "12px", fill: "#fff"});
+						{
+							scene.add.rectangle(200, 112 + index_item*MENU_SPACING, 300, 25, 0x4788ad).setOrigin(0.5);
+							scene.ui["item_" + item.key] = scene.add.text(60, 105 + index_item*MENU_SPACING, item.curr_quantity + " | ", {fontSize: "12px", fill: "#fff"});
+							scene.ui["item_" + item.key] = scene.add.text(200, 112 + index_item*MENU_SPACING, item.name, {fontSize: "12px", fill: "#fff"}).setOrigin(0.5);
+							scene.ui["item_" + item.key] = scene.add.text(290, 105 + index_item*MENU_SPACING, " | " + item.price + "g", {fontSize: "12px", fill: "#fff"});
+						}
 						else
-							scene.ui["item_" + item.key] = scene.add.text(170, 105 + index_item*MENU_SPACING, item.name, {fontSize: "12px", fill: "#fff"});
-
+						{
+							scene.add.rectangle(200, 110 + index_item*MENU_SPACING, 300, 25, 0xc940406).setOrigin(0.5);
+							scene.ui["item_" + item.key] = scene.add.text(200, 112 + index_item*MENU_SPACING, item.name, {fontSize: "12px", fill: "#fff"}).setOrigin(0.5);
+						}
 						scene.ui["outline_" + item.key] = scene.add.graphics().lineStyle(2, 0xffffff, 1.0).strokeRect(50, 100 + index_item*MENU_SPACING, 300, 25);
 					}
-					scene.ui.outline_selection = scene.add.graphics().lineStyle(2, 0xd2a60c, 1.0).strokeRect(0, 0, 300, 25);
+					scene.ui.outline_selection = scene.add.graphics().lineStyle(4, 0xba9756, 1.0).strokeRect(0, 0, 300, 26);
 					scene.ui.outline_selection.setPosition(50, 100 + shop.index_selected*MENU_SPACING);
 
 					for(const key_object in scene.ui)
