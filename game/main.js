@@ -28,8 +28,6 @@ const shovel = {
 };
 
 let minerals = 0;
-let energy_display = "";
-let mineral_display = "";
 let bar = "";
 
 const map_tile = {
@@ -470,27 +468,30 @@ document.addEventListener("DOMContentLoaded", function()
 
 			create: function()
 			{
-				music = this.sound.add("music");
+				this.music = this.sound.add("music");
+				this.music.loop = true;
 
 				const player = {
 					falling: true,
-					jump: false,
-					jumpCancel: false,
 					xvel: 0,
 					yvel: 0,
 					cooldown_dig: 0,
 					facing: "right",
-					sprite: this.add.sprite(132, 132, "dude")
+					sprite: this.add.sprite(0, 0, "dude")
 				};
 
 				this.data.set("energy_max", ENERGY_MAX);
 
-				energy_display = this.add.text(84, 16, "Energy:" + this.data.values.energy_max, {fontSize: "12px", fill: "#000"});
-				energy_display.setScrollFactor(0);
-				energy_display.depth = 4;
-				mineral_display = this.add.text(240, 8, minerals, {fontSize: "12px", fill: "#fff", stroke: "#000", strokeThickness: 1});
-				mineral_display.setScrollFactor(0);
-				mineral_display.depth = 4;
+				const group_ui = this.add.group();
+
+				this.ui = {
+					energy_display: this.add.text(84, 16, "Energy:" + this.data.values.energy_max, {fontSize: "12px", fill: "#000"}),
+					mineral_display: this.add.text(240, 8, minerals, {fontSize: "12px", fill: "#fff", stroke: "#000", strokeThickness: 1})
+				};
+
+				group_ui.add(this.ui.energy_display.setScrollFactor(0));
+				group_ui.add(this.ui.mineral_display.setScrollFactor(0));
+				group_ui.setDepth(4);
 
 
 				const parent = this;
@@ -587,21 +588,8 @@ document.addEventListener("DOMContentLoaded", function()
 					gravityY: 20
 				});
 
-
-				const screenCenterX = this.cameras.main.worldView.x + this.cameras.main.width / 2;
-				const screenCenterY = this.cameras.main.worldView.y + this.cameras.main.height / 2;
-
-				this.data.set("mineral_emitter", this.add.particles("tiles", "morsel_gold").createEmitter({
-					speed: {min: 20, max: 100},
-					angle: {min: 200, max: 340},
-					alpha: {start: 1, end: 0},
-					scale: 3,
-					blendMode: "NORMAL",
-					on: false,
-					lifespan: 1000,
-					gravityY: 300
-				}));
-
+				const screenCenterX = this.cameras.main.worldView.x + this.cameras.main.width/2;
+				const screenCenterY = this.cameras.main.worldView.y + this.cameras.main.height/2;
 
 				const barbg = this.add.graphics();
 				barbg.fillStyle(0xcc2418, 1);
@@ -609,7 +597,7 @@ document.addEventListener("DOMContentLoaded", function()
 				barbg.setScrollFactor(0);
 				barbg.depth = 2;
 
-				mineral_slot = this.add.image(240, 20, "mineral_slot");
+				const mineral_slot = this.add.image(240, 20, "mineral_slot");
 				mineral_slot.setScrollFactor(0);
 				mineral_slot.scale = 0.3;
 				mineral_slot.depth = 2;
@@ -711,8 +699,10 @@ document.addEventListener("DOMContentLoaded", function()
 						{
 							bag.destroy();
 							bag_close.destroy();
-							slots.forEach(slot => slot.destroy());
-							slots = [];
+							slots.forEach(slot =>
+							{
+								slot.destroy();
+							});
 							bag_open = false;
 						});
 					}
@@ -730,8 +720,6 @@ document.addEventListener("DOMContentLoaded", function()
 
 				const player = this.data.get("player");
 				const level = this.data.get("level");
-				const emitter = this.data.get("emitter");
-				const mineral_emitter = this.data.get("mineral_emitter");
 
 				//shawns a nerd
 				if(jump && !player.falling)
@@ -833,7 +821,7 @@ document.addEventListener("DOMContentLoaded", function()
 					const index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
 					const index_col = Math.floor(player.sprite.x/SIZE_TILE) + (player.facing === "right" ? 1 : -1);
 
-					if(dig(level, emitter, mineral_emitter, index_row + (level.tiles[index_row][index_col] ? 0 : 1), index_col, this, player))
+					if(dig(level, this, player, index_row + (level.tiles[index_row][index_col] ? 0 : 1), index_col))
 					{
 						player.cooldown_dig = COOLDOWN_DIG;
 						player.sprite.anims.play("dig");
@@ -843,7 +831,7 @@ document.addEventListener("DOMContentLoaded", function()
 		}
 	});
 
-	function dig(level, emitter, mineral_emitter, index_row, index_col, scene, player)
+	function dig(level, scene, player, index_row, index_col)
 	{
 		if(index_row < 0 || index_row >= level.height || index_col < 0 || index_col >= level.width)
 			return false;
@@ -888,7 +876,7 @@ document.addEventListener("DOMContentLoaded", function()
 				isMineral = true;
 
 				minerals += 10;
-				mineral_display.setText(minerals);
+				scene.ui.mineral_display.setText(minerals);
 
 			}
 		}
@@ -904,7 +892,7 @@ document.addEventListener("DOMContentLoaded", function()
 		else
 			scene.emitter_dirt.explode(20, x_particle, y_particle);
 
-		old_energy = scene.data.values.energy_current;
+		const old_energy = scene.data.values.energy_current;
 		scene.data.set("energy_current", --scene.data.values.energy_current);
 		if(scene.data.values.energy_current <= 0)
 		{
@@ -919,6 +907,7 @@ document.addEventListener("DOMContentLoaded", function()
 	resize();
 });
 
+/* exported upgrade_shovel */
 function upgrade_shovel(scene, player)
 {
 	if(minerals >= 50 && shovel.level < 3)
@@ -931,6 +920,7 @@ function upgrade_shovel(scene, player)
 	return shovel;
 }
 
+/* exported upgrade_energy */
 function upgrade_energy(scene, player)
 {
 	if(minerals >= 20)
@@ -956,10 +946,9 @@ function restart_level(scene, player)
 	bar.scaleX = 0;
 	bar.x = 0;
 	minerals = 0;
-	mineral_display.setText(minerals);
+	scene.ui.mineral_display.setText(minerals);
 
 	scene.group_world = scene.add.group();
-	console.log("scene", scene);
 
 	const level = new Level(randInt(40, 80), randInt(100, 140));
 	level.generate(0.5, 0.1, 0.1);
@@ -1009,12 +998,11 @@ function restart_level(scene, player)
 	bar.fillRect(16, 16, 200, 15);
 	bar.setScrollFactor(0);
 
-	old_energy = scene.data.values.energy_current;
+	const old_energy = scene.data.values.energy_current;
 	scene.data.set("energy_current", (scene.data.values.energy_current && scene.data.values.energy_current > 0) ? scene.data.values.energy_current : scene.data.values.energy_max);
 	setEnergy(scene, player, scene.data.values.energy_current, old_energy);
 
-	music.loop = true;
-	music.play();
+	scene.music.play();
 
 	level.images_minerals = [];
 	for(let index_gem = 0; index_gem < level.gems.length; ++index_gem)
@@ -1044,7 +1032,7 @@ function setEnergy(scene, player, energy, old_energy)
 	}
 	else
 	{
-		energy_display.setText("Energy: " + energy);
+		scene.ui.energy_display.setText("Energy: " + energy);
 		bar.scaleX = scene.data.values.energy_current/scene.data.values.energy_max;
 		bar.x += (scene.data.values.energy_max !== scene.data.values.energy_current) ? 16 * ((old_energy-energy)/scene.data.values.energy_max) : 0;
 	}
