@@ -552,7 +552,8 @@ document.addEventListener("DOMContentLoaded", function()
 						scene.music.stop();
 						game.scene.start("main");
 					});
-					scene.input.keyboard.on('keydown', function (event) { 
+					scene.input.keyboard.on("keydown", function(event)
+					{
 						title_text.destroy();
 						start_text.destroy();
 						credit_text.destroy();
@@ -913,8 +914,15 @@ document.addEventListener("DOMContentLoaded", function()
 
 								image_mineral.destroy();
 								isMineral = true;
+								let mineral_amount = 0;
+								if(gem.mineral_type === 0)
+									mineral_amount = 10;
+								else if(gem.mineral_type === 1)
+									mineral_amount = 6;
+								else if(gem.mineral_type === 2)
+									mineral_amount = 4;
 
-								setMinerals(scene, player.minerals + 10);
+								setMinerals(scene, player.minerals + mineral_amount);
 							}
 						}
 
@@ -1360,7 +1368,8 @@ function restart_level(scene)
 	for(let index_gem = 0; index_gem < level.gems.length; ++index_gem)
 	{
 		const gem = level.gems[index_gem];
-		const image = scene.add.image(gem.index_col*SIZE_TILE, gem.index_row*SIZE_TILE, "tiles", "mineral").setOrigin(0, 0).setDisplaySize(SIZE_TILE, SIZE_TILE);
+		const mineral_type = gem.mineral_type;
+		const image = scene.add.image(gem.index_col*SIZE_TILE, gem.index_row*SIZE_TILE, "tiles", "mineral" + mineral_type).setOrigin(0, 0).setDisplaySize(SIZE_TILE, SIZE_TILE);
 		image.flipX = !!randInt(0, 1);
 		scene.group_world.add(image);
 		level.images_minerals.push(image);

@@ -97,8 +97,16 @@
 			"frame": {"x": 31, "y": 1, "w": 8, "h": 8}
 		},
 		{
-			"filename": "mineral",
+			"filename": "mineral0",
 			"frame": {"x": 91, "y": 1, "w": 8, "h": 8}
+		},
+		{
+			"filename": "mineral1",
+			"frame": {"x": 91, "y": 11, "w": 8, "h": 8}
+		},
+		{
+			"filename": "mineral2",
+			"frame": {"x": 91, "y": 21, "w": 8, "h": 8}
 		}
 	]
 }
