@@ -842,19 +842,10 @@ document.addEventListener("DOMContentLoaded", function()
 					const index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
 					const index_col = Math.floor(player.sprite.x/SIZE_TILE) + (player.facing === "right" ? 1 : -1);
 
-					const dug = dig(level, this, player, index_row + (level.tiles[index_row][index_col] ? 0 : 1), index_col)
-					if(dug !== false)
+					if(dig(level, this, player, index_row + (level.tiles[index_row][index_col] ? 0 : 1), index_col))
 					{
 						player.cooldown_dig = COOLDOWN_DIG;
 						player.sprite.anims.play("dig");
-						if(dug === "dirt")
-						{
-							this.dig_dirt.play();
-						}
-						else
-						{
-							this.dig_mineral.play();
-						}
 					}
 				}
 			}
@@ -922,7 +913,7 @@ document.addEventListener("DOMContentLoaded", function()
 		else
 		{
 			scene.emitter_dirt.explode(20, x_particle, y_particle);
-		}	
+		}
 
 		const old_energy = scene.data.values.energy_current;
 		scene.data.set("energy_current", --scene.data.values.energy_current);
@@ -934,9 +925,13 @@ document.addEventListener("DOMContentLoaded", function()
 
 		if(isMineral)
 		{
-			return "mineral";
+			scene.dig_mineral.play();
 		}
-		return "dirt";
+		else
+		{
+			scene.dig_dirt.play();
+		}
+		return true;
 	}
 
 	window.addEventListener("resize", resize);
