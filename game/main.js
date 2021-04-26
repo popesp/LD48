@@ -10,6 +10,7 @@ const HEIGHT_PLAYER = 14;
 const SIZE_TILE = 16;
 const EPSILON = 0.00000000001;
 const COOLDOWN_DIG = 30;
+const MENU_SPACEING = 40;
 
 // PHYSICS
 const JUMPSPEED = 3.4;
@@ -21,7 +22,7 @@ const GRAVITY = 0.15;
 const FALL_DMG_THRESHOLD = 5;
 
 //PLAYER VARIABLES
-const ENERGY_MAX = 20;
+let ENERGY_MAX = 20;
 const shovel = {
 	level: 1,
 	dig_energy: 3
@@ -30,6 +31,7 @@ const shovel = {
 let minerals = 0;
 let bar = "";
 let cd_shop = 15;
+let pressing_space = false;
 
 
 const map_tile = {
@@ -476,9 +478,11 @@ document.addEventListener("DOMContentLoaded", function()
 				this.load.image("item_slot", "assets/item_slot.png");
 				this.load.image("mineral_slot", "assets/mineral_slot.png");
 
-				this.load.audio("music", "assets/cavemusic.wav");
+				this.load.audio("music", "assets/soundfx/cavemusic.wav");
 				this.load.audio("dig_dirt", "assets/soundfx/dig.wav");
 				this.load.audio("dig_mineral", "assets/soundfx/dig-gold.wav");
+				this.load.audio("clink", "assets/soundfx/dig-clink.wav");
+				
 			},
 
 			create: function()
@@ -487,6 +491,7 @@ document.addEventListener("DOMContentLoaded", function()
 				this.music.loop = true;
 				this.dig_dirt = this.sound.add("dig_dirt");
 				this.dig_mineral = this.sound.add("dig_mineral");
+				this.clink = this.sound.add("clink");
 
 				const player = {
 					falling: true,
@@ -502,7 +507,7 @@ document.addEventListener("DOMContentLoaded", function()
 				const group_ui = this.add.group();
 
 				this.ui = {
-					energy_display: this.add.text(84, 16, "Energy:" + this.data.values.energy_max, {fontSize: "12px", fill: "#000"}),
+					energy_display: this.add.text(84, 16, "Stamina:" + this.data.values.energy_max, {fontSize: "12px", fill: "#000"}),
 					mineral_display: this.add.text(240, 8, minerals, {fontSize: "12px", fill: "#fff", stroke: "#000", strokeThickness: 1})
 				};
 
@@ -631,10 +636,10 @@ document.addEventListener("DOMContentLoaded", function()
 				button_home.scaleY = button_home.scaleX;
 				button_home.depth = 4;
 
-				console.log("defining home");
+
 				button_home.on("pointerup", function()
 				{
-					console.log("clicking on home");
+
 					if(!home_open)
 					{
 						home_open = true;
@@ -642,10 +647,12 @@ document.addEventListener("DOMContentLoaded", function()
 						home_modal.depth = 4;
 						home_modal.setScrollFactor(0);
 						home_modal.scale = 0.8;
-						const confirm_text1 = parent.add.text(141, 120, "Are you sure you", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
-						const confirm_text2 = parent.add.text(128, 135, "want to return home?", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+						const confirm_text1 = parent.add.text(140, 105, "Are you sure you", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+						const confirm_text2 = parent.add.text(148, 120, "want to return", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+						const confirm_text3 = parent.add.text(145, 135, "to the surface?", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
 						confirm_text1.depth = 4;
 						confirm_text2.depth = 4;
+						confirm_text3.depth = 4;
 
 						const button_yes = parent.add.image(162, 178, "button_success").setInteractive();
 						const yes_text = parent.add.text(151, 170, "YES", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
@@ -668,6 +675,7 @@ document.addEventListener("DOMContentLoaded", function()
 							home_modal.destroy();
 							confirm_text1.destroy();
 							confirm_text2.destroy();
+							confirm_text3.destroy();
 							yes_text.destroy();
 							button_yes.destroy();
 							button_no.destroy();
@@ -681,6 +689,7 @@ document.addEventListener("DOMContentLoaded", function()
 							home_modal.destroy();
 							confirm_text1.destroy();
 							confirm_text2.destroy();
+							confirm_text3.destroy();
 							yes_text.destroy();
 							button_yes.destroy();
 							button_no.destroy();
@@ -870,82 +879,105 @@ document.addEventListener("DOMContentLoaded", function()
 			}
 		},
 		{
+			//buttz
 			key: "shop",
 			preload: function()
 			{
-				console.log("preload shop");
 				this.load.image("mineral_slot", "assets/mineral_slot.png");
+				this.load.audio("dig_dirt", "assets/soundfx/dig.wav");
+				this.load.audio("upgrade", "assets/soundfx/upgrade.wav");
+				this.load.audio("clink", "assets/soundfx/dig-clink.wav");
+				this.load.audio("shoptheme", "assets/soundfx/shoptheme.wav");
 			},
 			create: function()
 			{
 				const shop = [
 					{
 						key: "max_energy",
+						name: "Maximum energy +10",
 						curr_quantity: 3,
-						price: [1, 1, 1],
+						price: 10,
 						selected: true
 					},
 					{
 						key: "double_jump",
+						name: "Gain a second",
 						curr_quantity: 1,
-						price: [1],
+						price: 10,
 						selected: false
 					},
 					{
 						key: "shovel",
+						name: "Shovel upgrade",
 						curr_quantity: 1,
-						price: [1],
+						price: 10,
 						selected: false
 					},
 					{
 						key: "descend",
+						name: "Descend",
 						selected: false
 					}
 				];
 
+				this.dig_dirt = this.sound.add("dig_dirt");
+				this.upgrade = this.sound.add("upgrade");
+				this.clink = this.sound.add("clink");
+				this.shoptheme = this.sound.add("shoptheme");
+				this.shoptheme.loop = true;
+				//this.shoptheme.play();
+
 				this.data.set("cursors", this.input.keyboard.createCursorKeys());
 
-				this.add.text(25, 250, "SHOP", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+				this.add.text(160, 40, "SHOP", {fontSize: "32px", fill: "#fff"}).setScrollFactor(0);
 
-				const mineral_slot = this.add.image(240, 20, "mineral_slot");
+				const mineral_slot = this.add.image(200, 20, "mineral_slot");
 				mineral_slot.scale = 0.3;
 				mineral_slot.depth = 2;
-				mineral_display = this.add.text(240, 8, minerals, {fontSize: "12px", fill: "#fff", stroke: "#000", strokeThickness: 1});
+				mineral_display = this.add.text(200, 8, minerals, {fontSize: "12px", fill: "#fff", stroke: "#000", strokeThickness: 1});
 				mineral_display.depth = 2;
 
-				let item_offset = 25;
+				let item_offset = MENU_SPACEING;
 				for(let i = 0; i < shop.length; ++i)
 				{
 					const item = shop[i];
-					this.add.text(50, 50 + item_offset, item.key, {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+					if(item.key !== 'descend')
+					{
+						this.add.text(130, 55 + item_offset, item.curr_quantity + " | " + item.name + " | $" + item.price, {fontSize: "12px", fill: "#fff"}).setScrollFactor(0);
+					}
+					else
+					{
+						this.add.text(170, 55 + item_offset, item.name, {fontSize: "12px", fill: "#fff"}).setScrollFactor(0);
+					}
 					item.outline = this.add.graphics();
 					if(item.selected)
 					{
 						this.data.set("selected_item", item.key);
 						item.outline.lineStyle(2, 0xd2a60c, 1.0);
-						item.outline.strokeRect(50, 50 + item_offset, 190, 25);
+						item.outline.strokeRect(50, 50 + item_offset, 300, 25);
 						item.outline.depth = 3;
 					}
 					else
 					{
-						console.log("not selected", item.key);
 						item.outline.lineStyle(2, 0xffffff, 1.0);
-						item.outline.strokeRect(50, 50 + item_offset, 190, 25);
+						item.outline.strokeRect(50, 50 + item_offset, 300, 25);
 						item.outline.depth = 2;
 					}
 					item.y = 50 + item_offset;
-					item_offset += 25;
+					item_offset += MENU_SPACEING;
 				}
-
 				this.data.set("shop", shop);
 			},
 			update: function()
 			{
+				const gamepad = this.input.gamepad.gamepads[0];
 				this.cursors = this.input.keyboard.createCursorKeys();
-				const down = this.cursors.down.isDown;
-				const up = this.cursors.up.isDown;
+				const down = this.cursors.down.isDown || (gamepad && (gamepad.down || gamepad.leftStick.y < -0.1));
+				const up = this.cursors.up.isDown || (gamepad && (gamepad.up || gamepad.leftStick.y < 0.1));
+				const action = this.cursors.space.isDown || (gamepad && gamepad.X);
 
 				const shop = this.data.values.shop;
+
 				if(down)
 				{
 					for(let i = 0; i < shop.length; ++i)
@@ -954,6 +986,7 @@ document.addEventListener("DOMContentLoaded", function()
 						if(cd_shop > 0)
 							break;
 
+						this.dig_dirt.play();
 						item.outline.destroy();
 						shop[(i+1)%shop.length].outline.destroy();
 
@@ -967,12 +1000,12 @@ document.addEventListener("DOMContentLoaded", function()
 							cd_shop = 15;
 
 							next_item.outline.lineStyle(2, 0xd2a60c, 1.0);
-							next_item.outline.strokeRect(50, shop[(i+1)%shop.length].y, 190, 25);
+							next_item.outline.strokeRect(50, shop[(i+1)%shop.length].y, 300, 25);
 							shop[(i+1)%shop.length].selected = true;
 							next_item.outline.depth = 3;
 						}
 						item.outline.lineStyle(2, 0xffffff, 1.0);
-						item.outline.strokeRect(50, item.y, 190, 25);
+						item.outline.strokeRect(50, item.y, 300, 25);
 						item.outline.depth = 2;
 					}
 					this.data.set("shop", shop);
@@ -986,6 +1019,7 @@ document.addEventListener("DOMContentLoaded", function()
 						if(cd_shop > 0)
 							break;
 
+						this.dig_dirt.play();
 						item.outline.destroy();
 						let next_index;
 						if(i == 0)
@@ -1008,20 +1042,55 @@ document.addEventListener("DOMContentLoaded", function()
 							cd_shop = 15;
 
 							next_item.outline.lineStyle(2, 0xd2a60c, 1.0);
-							next_item.outline.strokeRect(50, shop[next_index].y, 190, 25);
+							next_item.outline.strokeRect(50, shop[next_index].y, 300, 25);
 							shop[next_index].selected = true;
 							next_item.outline.depth = 3;
 						}
 						item.outline.lineStyle(2, 0xffffff, 1.0);
-						item.outline.strokeRect(50, item.y, 190, 25);
+						item.outline.strokeRect(50, item.y, 300, 25);
 						item.outline.depth = 2;
 					}
 					this.data.set("shop", shop);
 				}
 
+				if(action && !pressing_space)
+				{
+					pressing_space = true;
+					for(let i = 0; i < shop.length; ++i)
+					{
+						if(shop[i].selected === true)
+						{
+							if(shop[i].key === "descend")
+							{
+								this.upgrade.play();
+								game.scene.switch("shop", "main");
+								break;
+							}
+							if(minerals > shop[i].price)
+							{
+								minerals -= shop[i].price;
+								this.add.text(240, 8, minerals, {fontSize: "12px", fill: "#fff", stroke: "#000", strokeThickness: 1});
+								shop[i].curr_quantity--;
+								if(shop[i].key === "max_energy")
+								{
+									ENERGY_MAX += 30;
+								}
+								this.upgrade.play();
+							}
+							else
+							{
+								this.clink.play();
+							}
+						}
+					}
+				}
 				if(cd_shop > 0)
 				{
 					cd_shop--;
+				}
+				if(pressing_space && !action)
+				{
+					pressing_space = false;
 				}
 			}
 		}]
@@ -1238,7 +1307,7 @@ function setEnergy(scene, player, energy, old_energy)
 	}
 	else
 	{
-		scene.ui.energy_display.setText("Energy: " + energy);
+		scene.ui.energy_display.setText("Stamina: " + energy);
 		bar.scaleX = scene.data.values.energy_current/scene.data.values.energy_max;
 		bar.x += (scene.data.values.energy_max !== scene.data.values.energy_current) ? 16 * ((old_energy-energy)/scene.data.values.energy_max) : 0;
 	}
