@@ -449,7 +449,7 @@ document.addEventListener("DOMContentLoaded", function()
 				debug: true
 			}
 		},
-		scene: {
+		scene: [{
 			key: "main",
 			preload: function()
 			{
@@ -621,28 +621,36 @@ document.addEventListener("DOMContentLoaded", function()
 				button_home.setScrollFactor(0);
 				button_home.scale = 0.3;
 				button_home.scaleY = button_home.scaleX;
-				button_home.depth = 2;
+				button_home.depth = 4;
 				button_home.on("pointerup", function()
 				{
 					if(!home_open)
 					{
 						home_open = true;
 						const home_modal = parent.add.image(screenCenterX, screenCenterY, "dialog");
+						home_modal.depth = 4;
 						home_modal.setScrollFactor(0);
 						home_modal.scale = 0.8;
 						const confirm_text1 = parent.add.text(141, 120, "Are you sure you", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
 						const confirm_text2 = parent.add.text(128, 135, "want to return home?", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+						confirm_text1.depth = 4;
+						confirm_text2.depth = 4;
 
 						const button_yes = parent.add.image(162, 178, "button_success").setInteractive();
 						const yes_text = parent.add.text(151, 170, "YES", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
 						button_yes.setScrollFactor(0);
 						button_yes.scale = 0.3;
 						button_yes.scaleY = button_home.scaleX;
+						button_yes.depth = 4;
+						yes_text.depth = 4;
+
 						const button_no = parent.add.image(240, 178, "button_dirty").setInteractive();
 						const no_text = parent.add.text(233, 170, "NO", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
 						button_no.setScrollFactor(0);
 						button_no.scale = 0.3;
 						button_no.scaleY = button_home.scaleX;
+						button_no.depth = 4;
+						no_text.depth = 4;
 
 						button_yes.on("pointerup", function()
 						{
@@ -674,7 +682,7 @@ document.addEventListener("DOMContentLoaded", function()
 				button_bag.setScrollFactor(0);
 				button_bag.scale = 0.3;
 				button_bag.scaleY = button_home.scaleX;
-				button_bag.depth = 2;
+				button_bag.depth = 4;
 				button_bag.on("pointerup", function()
 				{
 					if(!bag_open)
@@ -683,10 +691,12 @@ document.addEventListener("DOMContentLoaded", function()
 						const bag = parent.add.image(screenCenterX, screenCenterY, "bag");
 						bag.setScrollFactor(0);
 						bag.scale = 0.75;
+						bag.depth = 4;
 
 						const bag_close = parent.add.image(screenCenterX, screenCenterY + 50, "bag_close").setInteractive();
 						bag_close.setScrollFactor(0);
 						bag_close.scale = 0.2;
+						bag_close.depth = 4;
 
 						const slots = [];
 						for(let grid_index = 1; grid_index <= 6; grid_index++)
@@ -697,6 +707,7 @@ document.addEventListener("DOMContentLoaded", function()
 								const item_slot = parent.add.image((screenCenterX + 60) - 30*grid_index, screenCenterY - 20, "item_slot");
 								item_slot.setScrollFactor(0);
 								item_slot.scale = 0.3;
+								item_slot.depth = 4;
 								slots.push(item_slot);
 
 							}
@@ -706,6 +717,7 @@ document.addEventListener("DOMContentLoaded", function()
 								const item_slot = parent.add.image((screenCenterX + 150) - 30*grid_index, screenCenterY + 15, "item_slot");
 								item_slot.setScrollFactor(0);
 								item_slot.scale = 0.3;
+								item_slot.depth = 4;
 								slots.push(item_slot);
 							}
 						}
@@ -852,7 +864,22 @@ document.addEventListener("DOMContentLoaded", function()
 					}
 				}
 			}
-		}
+		},
+		{
+			key: 'shop',
+			preload: function()
+			{
+
+			},
+			create: function()
+			{
+
+			},
+			update: function()
+			{
+
+			}
+		}]
 	});
 
 	function dig(level, scene, player, index_row, index_col)
