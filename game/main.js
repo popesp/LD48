@@ -12,9 +12,12 @@ const EPSILON = 0.00000000001;
 const COOLDOWN_DIG = 30;
 const MENU_SPACING = 40;
 
+const BUG_REJUVENATION = 3;
+
 // PHYSICS
 const JUMPSPEED = 3.4;
 const JUMPSPEED_CANCEL = 1.2;
+const JUMPSPEED_DOUBLE = 2.8;
 const RUN_ACCEL = 0.3;
 const RUN_DECEL = 0.3;
 const MAX_SPEED = 2.4;
@@ -22,15 +25,21 @@ const GRAVITY = 0.15;
 const FALL_DMG_THRESHOLD = 6;
 
 //PLAYER VARIABLES
-const ENERGY_MAX = 20;
+const ENERGY_MAX = 5;
 
 const player = {
+	level: 1,
+	damage: 0,
 	energy_max: ENERGY_MAX,
 	canDoubleJump: false,
 	minerals: 0,
 	shovel: {
 		level: 1,
 		dig_energy: 3
+	},
+	input: {
+		jump: false,
+		dig: false
 	}
 };
 
@@ -39,17 +48,18 @@ const shop = {
 	items: [
 		{
 			key: "max_energy",
-			name: "Maximum energy +10",
+			name: "Maximum energy +2",
 			curr_quantity: 3,
 			price: 10,
-			purchase: function(player)
+			purchase: function(player, item)
 			{
-				player.energy_max += 10;
+				player.energy_max += 2;
+				item.price += 20;
 			}
 		},
 		{
 			key: "double_jump",
-			name: "Gain a 2nd jump",
+			name: "Double jump",
 			curr_quantity: 1,
 			price: 100,
 			purchase: function(player)
@@ -334,8 +344,11 @@ const map_tile = {
 	"000010000": {frame: "island", flipped: false}
 };
 
-function handleCollision(player, level, scene)
+function handleCollision(scene)
 {
+	const player = scene.player;
+	const level = scene.level;
+
 	function collideTile(index_row, index_col)
 	{
 		const y_top = index_row*SIZE_TILE;
@@ -346,28 +359,27 @@ function handleCollision(player, level, scene)
 		if(player.sprite.y - EPSILON > y_top && player.y_old - EPSILON <= y_top)
 		{
 			player.sprite.y = y_top;
+
 			if(player.yvel > FALL_DMG_THRESHOLD)
 			{
-				if(Math.round(scene.player.energy - (player.yvel - FALL_DMG_THRESHOLD)*2) > 0)
-				{
-					scene.tweens.addCounter({
-						duration: 75,
-						onUpdate: function()
-						{
-							player.sprite.setTintFill(0xFFFFFF);
-						},
-						onComplete: function()
-						{
-							player.sprite.clearTint();
-						}
-					});
-				}
+				player.damage = Math.ceil((player.yvel - FALL_DMG_THRESHOLD)*2);
 
-				setEnergy(scene, Math.round(scene.player.energy - (player.yvel - FALL_DMG_THRESHOLD)*2));
+				scene.tweens.addCounter({
+					duration: 75,
+					onUpdate: function()
+					{
+						player.sprite.setTintFill(0xFFFFFF);
+					},
+					onComplete: function()
+					{
+						player.sprite.clearTint();
+					}
+				});
 			}
 
 			player.yvel = 0;
 			player.falling = false;
+			player.djumped = false;
 			return;
 		}
 
@@ -496,687 +508,745 @@ document.addEventListener("DOMContentLoaded", function()
 				debug: true
 			}
 		},
-		scene: [{
-			key: "main",
-			preload: function()
+		scene: [
 			{
-				this.load.atlas("tiles", "assets/tiles-extruded.png", "assets/tiles-extruded.json");
-				this.load.atlas("doors", "assets/doors-extruded.png", "assets/doors-extruded.json");
-
-				this.load.spritesheet("dude",
-					"assets/dude3.png",
-					{frameWidth: 20, frameHeight: 16}
-				);
-				this.load.spritesheet("bug",
-					"assets/bug.png",
-					{frameWidth: 20, frameHeight: 16}
-				);
-
-				this.load.image("button_home", "assets/btn_home.png");
-				this.load.image("button_bag", "assets/btn_backpack.png");
-				this.load.image("button_success", "assets/btn_success.png");
-				this.load.image("button_dirty", "assets/btn_dirty.png");
-				this.load.image("dialog", "assets/dialog.png");
-				this.load.image("bag", "assets/bag.png");
-				this.load.image("bag_close", "assets/btn_close.png");
-				this.load.image("item_slot", "assets/item_slot.png");
-				this.load.image("mineral_slot", "assets/mineral_slot.png");
-
-				this.load.audio("music", "assets/soundfx/cavemusic.wav");
-				this.load.audio("dig_dirt", "assets/soundfx/dig.wav");
-				this.load.audio("dig_mineral", "assets/soundfx/dig-gold.wav");
-			},
-
-			create: function()
-			{
-				const scene = this;
-
-				scene.music = scene.sound.add("music");
-				scene.music.loop = true;
-
-				scene.sound.add("dig_dirt");
-				scene.sound.add("dig_mineral");
-
-				scene.player = player;
-				player.energy = player.energy_max;
-				player.facing = "right";
-				player.sprite = scene.add.sprite(0, 0, "dude").setOrigin(0.5, 1).setDisplaySize(20, 16).setDepth(1);
-
-				scene.ui = {
-					bar_bg: scene.add.graphics().fillStyle(0xcc2418, 1).fillRect(0, 0, 204, 19).setPosition(14, 14),
-					bar: scene.add.graphics().fillStyle(0xebb134, 1).fillRect(0, 0, 200, 15).setPosition(16, 16),
-					mineral_icon: scene.add.image(240, 20, "mineral_slot").setScale(0.3),
-					energy_display: scene.add.text(84, 16, "Stamina:" + ENERGY_MAX, {fontSize: "12px", fill: "#000"}),
-					mineral_display: scene.add.text(240, 8, player.minerals, {fontSize: "12px", fill: "#fff", stroke: "#000", strokeThickness: 1}),
-					button_home: scene.add.image(372, 23, "button_home").setInteractive().setScale(0.3)
-				};
-				const screenCenterX = scene.cameras.main.worldView.x + scene.cameras.main.width/2;
-				const screenCenterY = scene.cameras.main.worldView.y + scene.cameras.main.height/2;
-
-				scene.ui.button_home.on("pointerup", function()
+				key: "title",
+				preload: function()
 				{
-					if(!home_open)
+					this.load.spritesheet("dude",
+						"assets/dude3.png",
+						{frameWidth: 20, frameHeight: 16}
+					);
+
+					this.load.audio("shoptheme", "assets/soundfx/shoptheme.wav");
+
+				},
+				create: function()
+				{
+					const scene = this;
+					const title_text = scene.add.text(0, 24, "Going Deep", {fontFamily: "nightie", fontSize: "27px", fixedWidth: scene.game.canvas.width, fixedHeight: 32, align: "center"}).setOrigin(0, 0);
+					const start_text = scene.add.text(0, 200, "Start Game", {fontFamily: "nightie", fontSize: "27px", fixedWidth: scene.game.canvas.width, fixedHeight: 32, align: "center"}).setOrigin(0, 0);
+					const credit_text = scene.add.text(0, 250, "By: Shawn, Dan, Vishnu", {fontFamily: "nightie", fontSize: "15px", fixedWidth: scene.game.canvas.width, fixedHeight: 32, align: "center"}).setOrigin(0, 0);
+					const sprite = scene.add.sprite(scene.game.canvas.width/2, scene.game.canvas.height/2, "dude").setOrigin(0.5, 1).setDisplaySize(80, 64).setDepth(2);
+
+					scene.anims.create({
+						key: "idle",
+						frames: scene.anims.generateFrameNumbers("dude", {start: 12, end: 27}),
+						frameRate: 10,
+						repeat: -1
+					});
+
+					scene.music = scene.sound.add("shoptheme");
+					scene.music.loop = true;
+					scene.music.play();
+
+					sprite.play("idle");
+
+					start_text.setInteractive({useHandCursor: true});
+					start_text.on("pointerup", function()
 					{
-						home_open = true;
-						const home_modal = parent.add.image(screenCenterX, screenCenterY, "dialog");
-						home_modal.depth = 4;
-						home_modal.setScrollFactor(0);
-						home_modal.scale = 0.8;
-						const confirm_text1 = parent.add.text(140, 105, "Are you sure you", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
-						const confirm_text2 = parent.add.text(148, 120, "want to return", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
-						const confirm_text3 = parent.add.text(145, 135, "to the surface?", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
-						confirm_text1.depth = 4;
-						confirm_text2.depth = 4;
-						confirm_text3.depth = 4;
-
-						const button_yes = parent.add.image(162, 178, "button_success").setInteractive();
-						const yes_text = parent.add.text(151, 170, "YES", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
-						button_yes.setScrollFactor(0);
-						button_yes.setScale(0.3);
-						button_yes.depth = 4;
-						yes_text.depth = 4;
-
-						const button_no = parent.add.image(240, 178, "button_dirty").setInteractive();
-						const no_text = parent.add.text(233, 170, "NO", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
-						button_no.setScrollFactor(0);
-						button_no.setScale(0.3);
-						button_no.depth = 4;
-						no_text.depth = 4;
-
-						button_yes.on("pointerup", function()
-						{
-							home_modal.destroy();
-							confirm_text1.destroy();
-							confirm_text2.destroy();
-							confirm_text3.destroy();
-							yes_text.destroy();
-							button_yes.destroy();
-							button_no.destroy();
-							no_text.destroy();
-							home_open = false;
-							scene.music.stop();
-							game.scene.stop("main");
-							game.scene.start("shop");
-						});
-
-						button_no.on("pointerup", function()
-						{
-							home_modal.destroy();
-							confirm_text1.destroy();
-							confirm_text2.destroy();
-							confirm_text3.destroy();
-							yes_text.destroy();
-							button_yes.destroy();
-							button_no.destroy();
-							no_text.destroy();
-							home_open = false;
-						});
-					}
-				});
-
-				// const button_bag = scene.add.image(330, 23, "button_bag").setInteractive();
-				// button_bag.setScrollFactor(0);
-				// button_bag.scale = 0.3;
-				// button_bag.scaleY = button_home.scaleX;
-				// button_bag.depth = 4;
-				// button_bag.on("pointerup", function()
-				// {
-				// 	if(!bag_open)
-				// 	{
-				// 		bag_open = true;
-				// 		const bag = parent.add.image(screenCenterX, screenCenterY, "bag");
-				// 		bag.setScrollFactor(0);
-				// 		bag.scale = 0.75;
-				// 		bag.depth = 4;
-
-				// 		const bag_close = parent.add.image(screenCenterX, screenCenterY + 50, "bag_close").setInteractive();
-				// 		bag_close.setScrollFactor(0);
-				// 		bag_close.scale = 0.2;
-				// 		bag_close.depth = 4;
-
-				// 		const slots = [];
-				// 		for(let grid_index = 1; grid_index <= 6; grid_index++)
-				// 		{
-				// 			if(grid_index <= 3)
-				// 			{
-				// 				// first row
-				// 				const item_slot = parent.add.image((screenCenterX + 60) - 30*grid_index, screenCenterY - 20, "item_slot");
-				// 				item_slot.setScrollFactor(0);
-				// 				item_slot.scale = 0.3;
-				// 				item_slot.depth = 4;
-				// 				slots.push(item_slot);
-
-				// 			}
-				// 			else
-				// 			{
-				// 				// second row
-				// 				const item_slot = parent.add.image((screenCenterX + 150) - 30*grid_index, screenCenterY + 15, "item_slot");
-				// 				item_slot.setScrollFactor(0);
-				// 				item_slot.scale = 0.3;
-				// 				item_slot.depth = 4;
-				// 				slots.push(item_slot);
-				// 			}
-				// 		}
-
-				// 		bag_close.on("pointerup", function()
-				// 		{
-				// 			bag.destroy();
-				// 			bag_close.destroy();
-				// 			slots.forEach(function(slot)
-				// 			{
-				// 				slot.destroy();
-				// 			});
-				// 			bag_open = false;
-				// 		});
-				// 	}
-				// });
-				for(const key_object in scene.ui)
-					scene.ui[key_object].setScrollFactor(0).setDepth(4);
-
-				const parent = scene;
-				let home_open = false;
-				// let bag_open = false;
-
-				scene.input.gamepad.start();
-				scene.cursors = scene.input.keyboard.createCursorKeys();
-
-				scene.anims.create({
-					key: "turn",
-					frames: [{key: "dude", frame: 5}],
-					frameRate: 10
-				});
-
-				scene.anims.create({
-					key: "run",
-					frames: scene.anims.generateFrameNumbers("dude", {start: 0, end: 4}),
-					frameRate: 10,
-					repeat: -1
-				});
-
-				scene.anims.create({
-					key: "dig",
-					frames: scene.anims.generateFrameNumbers("dude", {start: 6, end: 11}),
-					frameRate: 20
-				});
-
-				scene.anims.create({
-					key: "idle",
-					frames: scene.anims.generateFrameNumbers("dude", {start: 12, end: 27}),
-					frameRate: 10
-				});
-
-				scene.anims.create({
-					key: "jump",
-					frames: scene.anims.generateFrameNumbers("dude", {start: 28, end: 31}),
-					frameRate: 10
-				});
-
-				scene.anims.create({
-					key: "fall",
-					frames: scene.anims.generateFrameNumbers("dude", {start: 32, end: 35}),
-					frameRate: 10,
-					repeat: -1
-				});
-
-				scene.anims.create({
-					key: "die",
-					frames: scene.anims.generateFrameNumbers("dude", {start: 36, end: 38}),
-					frameRate: 10
-				});
-
-				scene.anims.create({
-					key: "eat",
-					frames: scene.anims.generateFrameNumbers("dude", {start: 39, end: 41}),
-					frameRate: 10
-				});
-
-				scene.anims.create({
-					key: "move",
-					frames: scene.anims.generateFrameNumbers("bug", {start: 0, end: 9}),
-					frameRate: 10,
-					repeat: -1
-				});
-
-				scene.emitter_dirt = scene.add.particles("tiles", "morsel_dirt").createEmitter({
-					speed: {min: 20, max: 100},
-					angle: {min: 200, max: 340},
-					alpha: {start: 1, end: 0},
-					scale: 3,
-					blendMode: "NORMAL",
-					on: false,
-					lifespan: 1000,
-					gravityY: 300
-				});
-
-				scene.emitter_mineral = scene.add.particles("tiles", "morsel_gold").createEmitter({
-					speed: {min: 20, max: 100},
-					angle: {min: 200, max: 340},
-					alpha: {start: 1, end: 0},
-					scale: 3,
-					blendMode: "NORMAL",
-					on: false,
-					lifespan: 1000,
-					gravityY: 300
-				});
-
-				scene.emitter_dust = scene.add.particles("tiles", "morsel_dirt").createEmitter({
-					speedY: {min: -20, max: -10},
-					alpha: {start: 1, end: 0},
-					scale: {start: 2, end: 5},
-					blendMode: "NORMAL",
-					on: false,
-					lifespan: 1000,
-					gravityY: 20
-				});
-
-				restart_level(scene);
-			},
-
-			update: function()
-			{
-				const gamepad = this.input.gamepad.gamepads[0];
-
-				const left = this.cursors.left.isDown || (gamepad && (gamepad.left || gamepad.leftStick.x < -0.1));
-				const right = this.cursors.right.isDown || (gamepad && (gamepad.right || gamepad.leftStick.x > 0.1));
-				const jump = this.cursors.up.isDown || (gamepad && gamepad.A);
-				const action = this.cursors.space.isDown || (gamepad && gamepad.X);
-
-				const player = this.player;
-				const level = this.level;
-
-				function dig(level, scene, index_row, index_col)
+						title_text.destroy();
+						start_text.destroy();
+						credit_text.destroy();
+						game.scene.stop("title");
+						scene.music.stop();
+						game.scene.start("main");
+					});
+				},
+				update: function()
 				{
-					if(index_row < 0 || index_row >= level.height || index_col < 0 || index_col >= level.width)
-						return false;
+				}
+			}, {
+				key: "main",
+				preload: function()
+				{
+					this.load.atlas("tiles", "assets/tiles-extruded.png", "assets/tiles-extruded.json");
+					this.load.atlas("doors", "assets/doors-extruded.png", "assets/doors-extruded.json");
 
-					if(level.tiles[index_row][index_col] !== 1)
-						return false;
+					this.load.spritesheet("dude",
+						"assets/dude3.png",
+						{frameWidth: 20, frameHeight: 16}
+					);
+					this.load.spritesheet("bug",
+						"assets/bug.png",
+						{frameWidth: 20, frameHeight: 16}
+					);
 
-					const image = level.images[index_row][index_col];
-					level.tiles[index_row][index_col] = 0;
-					image.setFrame("void");
+					this.load.image("button_home", "assets/btn_home.png");
+					this.load.image("button_bag", "assets/btn_backpack.png");
+					this.load.image("button_success", "assets/btn_success.png");
+					this.load.image("button_dirty", "assets/btn_dirty.png");
+					this.load.image("dialog", "assets/dialog.png");
+					this.load.image("bag", "assets/bag.png");
+					this.load.image("bag_close", "assets/btn_close.png");
+					this.load.image("item_slot", "assets/item_slot.png");
+					this.load.image("mineral_slot", "assets/mineral_slot.png");
 
-					for(let index_row_check = index_row - 1; index_row_check <= index_row + 1; ++index_row_check)
-						for(let index_col_check = index_col - 1; index_col_check <= index_col + 1; ++index_col_check)
+					this.load.audio("music", "assets/soundfx/cavemusic.wav");
+					this.load.audio("dig_dirt", "assets/soundfx/dig.wav");
+					this.load.audio("dig_mineral", "assets/soundfx/dig-gold.wav");
+				},
+
+				create: function()
+				{
+					const scene = this;
+
+					scene.music = scene.sound.add("music");
+					scene.music.loop = true;
+
+					scene.sound.add("dig_dirt");
+					scene.sound.add("dig_mineral");
+
+					scene.player = player;
+					player.energy = player.energy_max;
+					player.facing = "right";
+					player.sprite = scene.add.sprite(0, 0, "dude").setOrigin(0.5, 1).setDisplaySize(20, 16).setDepth(1);
+
+					scene.ui = {
+						bar_bg: scene.add.graphics().fillStyle(0xcc2418, 1).fillRect(0, 0, 204, 19).setPosition(14, 14),
+						bar: scene.add.graphics().fillStyle(0xebb134, 1).fillRect(0, 0, 200, 15).setPosition(16, 16),
+						mineral_icon: scene.add.image(240, 20, "mineral_slot").setScale(0.3),
+						energy_display: scene.add.text(84, 16, "Stamina:" + ENERGY_MAX, {fontSize: "12px", fill: "#000"}),
+						mineral_display: scene.add.text(240, 8, player.minerals, {fontSize: "12px", fill: "#fff", stroke: "#000", strokeThickness: 1}),
+						button_home: scene.add.image(372, 23, "button_home").setInteractive().setScale(0.3),
+						text_level: scene.add.text(16, 276, "Level " + player.level, {fontSize: "14px", fill: "#ffffff"})
+					};
+					const screenCenterX = scene.cameras.main.worldView.x + scene.cameras.main.width/2;
+					const screenCenterY = scene.cameras.main.worldView.y + scene.cameras.main.height/2;
+
+					scene.ui.button_home.on("pointerup", function()
+					{
+						if(!home_open)
 						{
-							if(level.tiles[index_row_check][index_col_check] === -1)
-								continue;
+							home_open = true;
+							const home_modal = parent.add.image(screenCenterX, screenCenterY, "dialog");
+							home_modal.depth = 4;
+							home_modal.setScrollFactor(0);
+							home_modal.scale = 0.8;
+							const confirm_text1 = parent.add.text(140, 105, "Are you sure you", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+							const confirm_text2 = parent.add.text(148, 120, "want to return", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+							const confirm_text3 = parent.add.text(145, 135, "to the surface?", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+							confirm_text1.depth = 4;
+							confirm_text2.depth = 4;
+							confirm_text3.depth = 4;
 
-							if(index_row_check < 0 || index_row_check >= level.height || index_col_check < 0 || index_col_check >= level.width)
-								continue;
+							const button_yes = parent.add.image(162, 178, "button_success").setInteractive();
+							const yes_text = parent.add.text(151, 170, "YES", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+							button_yes.setScrollFactor(0);
+							button_yes.setScale(0.3);
+							button_yes.depth = 4;
+							yes_text.depth = 4;
 
-							const surrounding = getSurrounding(level, index_row_check, index_col_check);
-							const t = map_tile[surrounding];
-							const s = level.images[index_row_check][index_col_check];
+							const button_no = parent.add.image(240, 178, "button_dirty").setInteractive();
+							const no_text = parent.add.text(233, 170, "NO", {fontSize: "12px", fill: "#000"}).setScrollFactor(0);
+							button_no.setScrollFactor(0);
+							button_no.setScale(0.3);
+							button_no.depth = 4;
+							no_text.depth = 4;
 
-							if(t !== undefined)
+							button_yes.on("pointerup", function()
 							{
-								if(t.frame === "solid")
-								{
-									const r = randFloat(0, 1);
-									s.setFrame("solid" + (r < 0.9 ? 0 : (r < 0.95 ? 1 : 2)));
-								}
-								else
-									s.setFrame(t.frame);
+								home_modal.destroy();
+								confirm_text1.destroy();
+								confirm_text2.destroy();
+								confirm_text3.destroy();
+								yes_text.destroy();
+								button_yes.destroy();
+								button_no.destroy();
+								no_text.destroy();
+								home_open = false;
+								scene.music.stop();
+								game.scene.stop("main");
+								game.scene.start("shop");
+							});
 
-								s.flipX = t.flipped;
+							button_no.on("pointerup", function()
+							{
+								home_modal.destroy();
+								confirm_text1.destroy();
+								confirm_text2.destroy();
+								confirm_text3.destroy();
+								yes_text.destroy();
+								button_yes.destroy();
+								button_no.destroy();
+								no_text.destroy();
+								home_open = false;
+							});
+						}
+					});
+
+					// const button_bag = scene.add.image(330, 23, "button_bag").setInteractive();
+					// button_bag.setScrollFactor(0);
+					// button_bag.scale = 0.3;
+					// button_bag.scaleY = button_home.scaleX;
+					// button_bag.depth = 4;
+					// button_bag.on("pointerup", function()
+					// {
+					// 	if(!bag_open)
+					// 	{
+					// 		bag_open = true;
+					// 		const bag = parent.add.image(screenCenterX, screenCenterY, "bag");
+					// 		bag.setScrollFactor(0);
+					// 		bag.scale = 0.75;
+					// 		bag.depth = 4;
+
+					// 		const bag_close = parent.add.image(screenCenterX, screenCenterY + 50, "bag_close").setInteractive();
+					// 		bag_close.setScrollFactor(0);
+					// 		bag_close.scale = 0.2;
+					// 		bag_close.depth = 4;
+
+					// 		const slots = [];
+					// 		for(let grid_index = 1; grid_index <= 6; grid_index++)
+					// 		{
+					// 			if(grid_index <= 3)
+					// 			{
+					// 				// first row
+					// 				const item_slot = parent.add.image((screenCenterX + 60) - 30*grid_index, screenCenterY - 20, "item_slot");
+					// 				item_slot.setScrollFactor(0);
+					// 				item_slot.scale = 0.3;
+					// 				item_slot.depth = 4;
+					// 				slots.push(item_slot);
+
+					// 			}
+					// 			else
+					// 			{
+					// 				// second row
+					// 				const item_slot = parent.add.image((screenCenterX + 150) - 30*grid_index, screenCenterY + 15, "item_slot");
+					// 				item_slot.setScrollFactor(0);
+					// 				item_slot.scale = 0.3;
+					// 				item_slot.depth = 4;
+					// 				slots.push(item_slot);
+					// 			}
+					// 		}
+
+					// 		bag_close.on("pointerup", function()
+					// 		{
+					// 			bag.destroy();
+					// 			bag_close.destroy();
+					// 			slots.forEach(function(slot)
+					// 			{
+					// 				slot.destroy();
+					// 			});
+					// 			bag_open = false;
+					// 		});
+					// 	}
+					// });
+					for(const key_object in scene.ui)
+						scene.ui[key_object].setScrollFactor(0).setDepth(4);
+
+					const parent = scene;
+					let home_open = false;
+					// let bag_open = false;
+
+					scene.input.gamepad.start();
+					scene.cursors = scene.input.keyboard.createCursorKeys();
+
+					scene.anims.create({
+						key: "turn",
+						frames: [{key: "dude", frame: 5}],
+						frameRate: 10
+					});
+
+					scene.anims.create({
+						key: "run",
+						frames: scene.anims.generateFrameNumbers("dude", {start: 0, end: 4}),
+						frameRate: 10,
+						repeat: -1
+					});
+
+					scene.anims.create({
+						key: "dig",
+						frames: scene.anims.generateFrameNumbers("dude", {start: 6, end: 11}),
+						frameRate: 20
+					});
+
+					scene.anims.create({
+						key: "idle",
+						frames: scene.anims.generateFrameNumbers("dude", {start: 12, end: 27}),
+						frameRate: 10,
+						repeat: -1
+					});
+
+					scene.anims.create({
+						key: "jump",
+						frames: scene.anims.generateFrameNumbers("dude", {start: 28, end: 31}),
+						frameRate: 10
+					});
+
+					scene.anims.create({
+						key: "fall",
+						frames: scene.anims.generateFrameNumbers("dude", {start: 32, end: 35}),
+						frameRate: 10,
+						repeat: -1
+					});
+
+					scene.anims.create({
+						key: "die",
+						frames: scene.anims.generateFrameNumbers("dude", {start: 36, end: 38}),
+						frameRate: 10
+					});
+
+					scene.anims.create({
+						key: "eat",
+						frames: scene.anims.generateFrameNumbers("dude", {start: 39, end: 41}),
+						frameRate: 10
+					});
+
+					scene.anims.create({
+						key: "move",
+						frames: scene.anims.generateFrameNumbers("bug", {start: 0, end: 9}),
+						frameRate: 10,
+						repeat: -1
+					});
+
+					scene.emitter_dirt = scene.add.particles("tiles", "morsel_dirt").createEmitter({
+						speed: {min: 20, max: 100},
+						angle: {min: 200, max: 340},
+						alpha: {start: 1, end: 0},
+						scale: 3,
+						blendMode: "NORMAL",
+						on: false,
+						lifespan: 1000,
+						gravityY: 300
+					});
+
+					scene.emitter_mineral = scene.add.particles("tiles", "morsel_gold").createEmitter({
+						speed: {min: 20, max: 100},
+						angle: {min: 200, max: 340},
+						alpha: {start: 1, end: 0},
+						scale: 3,
+						blendMode: "NORMAL",
+						on: false,
+						lifespan: 1000,
+						gravityY: 300
+					});
+
+					scene.emitter_dust = scene.add.particles("tiles", "morsel_dirt").createEmitter({
+						speedY: {min: -20, max: -10},
+						alpha: {start: 1, end: 0},
+						scale: {start: 2, end: 5},
+						blendMode: "NORMAL",
+						on: false,
+						lifespan: 1000,
+						gravityY: 20
+					});
+
+					restart_level(scene);
+				},
+
+				update: function()
+				{
+					const gamepad = this.input.gamepad.gamepads[0];
+
+					const left = this.cursors.left.isDown || (gamepad && (gamepad.left || gamepad.leftStick.x < -0.1));
+					const right = this.cursors.right.isDown || (gamepad && (gamepad.right || gamepad.leftStick.x > 0.1));
+					const jump = this.cursors.up.isDown || (gamepad && gamepad.A);
+					const action = this.cursors.space.isDown || (gamepad && gamepad.X);
+
+					const player = this.player;
+					const level = this.level;
+
+					function dig(level, scene, index_row, index_col)
+					{
+						if(index_row < 0 || index_row >= level.height || index_col < 0 || index_col >= level.width)
+							return false;
+
+						if(level.tiles[index_row][index_col] !== 1)
+							return false;
+
+						const image = level.images[index_row][index_col];
+						level.tiles[index_row][index_col] = 0;
+						image.setFrame("void");
+
+						for(let index_row_check = index_row - 1; index_row_check <= index_row + 1; ++index_row_check)
+							for(let index_col_check = index_col - 1; index_col_check <= index_col + 1; ++index_col_check)
+							{
+								if(level.tiles[index_row_check][index_col_check] === -1)
+									continue;
+
+								if(index_row_check < 0 || index_row_check >= level.height || index_col_check < 0 || index_col_check >= level.width)
+									continue;
+
+								const surrounding = getSurrounding(level, index_row_check, index_col_check);
+								const t = map_tile[surrounding];
+								const s = level.images[index_row_check][index_col_check];
+
+								if(t !== undefined)
+								{
+									if(t.frame === "solid")
+									{
+										const r = randFloat(0, 1);
+										s.setFrame("solid" + (r < 0.9 ? 0 : (r < 0.95 ? 1 : 2)));
+									}
+									else
+										s.setFrame(t.frame);
+
+									s.flipX = t.flipped;
+								}
+							}
+
+
+						let isMineral = false;
+						for(let index_gem = 0; index_gem < level.gems.length; ++index_gem)
+						{
+							const gem = level.gems[index_gem];
+							if(gem.index_col === index_col && gem.index_row === index_row)
+							{
+								const image_mineral = level.images_minerals[index_gem];
+
+								image_mineral.destroy();
+								isMineral = true;
+
+								setMinerals(scene, player.minerals + 10);
 							}
 						}
 
-
-					let isMineral = false;
-					for(let index_gem = 0; index_gem < level.gems.length; ++index_gem)
-					{
-						const gem = level.gems[index_gem];
-						if(gem.index_col === index_col && gem.index_row === index_row)
+						// particles
+						const x_particle = image.x + SIZE_TILE/2;
+						const y_particle = image.y + SIZE_TILE/2;
+						if(isMineral)
 						{
-							const image_mineral = level.images_minerals[index_gem];
-
-							image_mineral.destroy();
-							isMineral = true;
-
-							setMinerals(scene, player.minerals + 10);
-						}
-					}
-
-					// particles
-					const x_particle = image.x + SIZE_TILE/2;
-					const y_particle = image.y + SIZE_TILE/2;
-					if(isMineral)
-					{
-						scene.sound.play("dig_mineral");
-						scene.emitter_dirt.explode(10, x_particle, y_particle);
-						scene.emitter_mineral.explode(10, x_particle, y_particle);
-					}
-					else
-					{
-						scene.sound.play("dig_dirt");
-						scene.emitter_dirt.explode(20, x_particle, y_particle);
-					}
-
-					setEnergy(scene, scene.player.energy - 1);
-
-					return true;
-				}
-
-				//shawns a nerd
-				if(jump && !player.falling)
-				{
-					player.sprite.anims.play("jump", true);
-					player.yvel = -JUMPSPEED;
-					player.falling = true;
-
-					const vel = player.xvel*5;
-					this.emitter_dust.setSpeedX({min: vel - 10, max: vel + 10});
-					this.emitter_dust.explode(10, player.sprite.x, player.sprite.y);
-				}
-				if(!jump && player.falling)
-				{
-					player.sprite.anims.play("fall", true);
-					player.yvel = Math.max(player.yvel, -JUMPSPEED_CANCEL);
-				}
-
-				if(left === right)
-				{
-					if(!player.falling && !player.cooldown_dig)
-						player.sprite.anims.play("idle", true);
-
-					if(player.xvel > 0)
-						player.xvel = Math.max(0, player.xvel - RUN_DECEL);
-					else
-						player.xvel = Math.min(0, player.xvel + RUN_DECEL);
-				}
-				else if(left)
-				{
-					if(player.xvel > 0 && !player.falling)
-						this.emitter_dust.emitParticle(1, player.sprite.x, player.sprite.y);
-
-					player.xvel = Math.max(-MAX_SPEED, player.xvel - RUN_ACCEL);
-					if(!player.falling && !player.cooldown_dig)
-						player.sprite.anims.play("run", true);
-
-					player.facing = "left";
-					player.sprite.flipX = true;
-				}
-				else if(right)
-				{
-					if(player.xvel < 0 && !player.falling)
-						this.emitter_dust.emitParticle(1, player.sprite.x, player.sprite.y);
-
-					player.xvel = Math.min(MAX_SPEED, player.xvel + RUN_ACCEL);
-					if(!player.falling && !player.cooldown_dig)
-						player.sprite.anims.play("run", true);
-
-					player.facing = "right";
-					player.sprite.flipX = false;
-				}
-
-				player.x_old = player.sprite.x;
-				player.y_old = player.sprite.y;
-
-				if(player.falling)
-					player.yvel += GRAVITY;
-
-				player.sprite.x += player.xvel;
-				player.sprite.y += player.yvel;
-
-				if(player.sprite.y < HEIGHT_PLAYER)
-				{
-					player.sprite.y = HEIGHT_PLAYER;
-					player.yvel = 0;
-				}
-				else if(player.sprite.y > level.height*SIZE_TILE)
-				{
-					player.falling = false;
-					player.sprite.y = level.height*SIZE_TILE - EPSILON;
-					player.yvel = 0;
-				}
-
-				if(player.sprite.x < WIDTH_PLAYER/2)
-				{
-					player.sprite.x = WIDTH_PLAYER/2;
-					player.xvel = 0;
-				}
-				else if(player.sprite.x > level.width*SIZE_TILE - WIDTH_PLAYER/2)
-				{
-					player.sprite.x = level.width*SIZE_TILE - WIDTH_PLAYER/2 - EPSILON;
-					player.xvel = 0;
-				}
-
-				handleCollision(player, level, this);
-
-
-				const index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
-				const index_col = Math.floor(player.sprite.x/SIZE_TILE);
-
-				for(let i = 0; i < level.bugs.legnth; ++i)
-				{
-					const bug = level.bugs[i];
-					if((bug.index_row === index_row && bug.index_col === index_col) && bug.collected === false)
-					{
-						bug.collected = true;
-						level.sprites_bugs[i].destroy();
-						setEnergy();
-					}
-				}
-
-
-				const index_row_under = Math.floor(player.sprite.y/SIZE_TILE);
-				const index_col_left = Math.floor((player.sprite.x - WIDTH_PLAYER/2)/SIZE_TILE);
-				const index_col_right = Math.floor((player.sprite.x + WIDTH_PLAYER/2 - EPSILON)/SIZE_TILE);
-
-				if(!level.tiles[index_row_under][index_col_left] && !level.tiles[index_row_under][index_col_right])
-					player.falling = true;
-
-				if(player.cooldown_dig > 0)
-					--player.cooldown_dig;
-
-				if(action)
-				{
-					if(!player.falling && !player.digging && player.energy > 0)
-					{
-						const index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
-						const index_col_facing = Math.floor(player.sprite.x/SIZE_TILE) + (player.facing === "right" ? 1 : -1);
-
-						if(dig(level, this, index_row + (level.tiles[index_row][index_col_facing] ? 0 : 1), index_col_facing))
-						{
-							player.cooldown_dig = COOLDOWN_DIG;
-							player.sprite.anims.play("dig");
-						}
-					}
-
-					player.digging = true;
-				}
-				else
-					player.digging = false;
-			}
-		},
-		{
-			//buttz
-			key: "shop",
-			preload: function()
-			{
-				this.load.image("mineral_slot", "assets/mineral_slot.png");
-				this.load.audio("dig_dirt", "assets/soundfx/dig.wav");
-				this.load.audio("upgrade", "assets/soundfx/upgrade.wav");
-				this.load.audio("clink", "assets/soundfx/dig-clink.wav");
-				this.load.audio("shoptheme", "assets/soundfx/shoptheme.wav");
-				//this.load.image('shop_bg', 'assets/shop_bg.png');
-			},
-
-			create: function()
-			{
-				const scene = this;
-
-				scene.music = scene.sound.add("shoptheme");
-				scene.music.loop = true;
-				scene.music.play();
-
-				scene.sound.add("dig_dirt");
-				scene.sound.add("upgrade");
-				scene.sound.add("clink");
-
-				//this.add.image(20, 20, "shop_bg");
-
-				scene.input.gamepad.start();
-				scene.cursors = scene.input.keyboard.createCursorKeys();
-
-				scene.player = player;
-				scene.shop = shop;
-				scene.shop.index_selected = 0;
-				scene.state = {
-					up: false,
-					down: false,
-					action: false
-				};
-
-				scene.ui = {
-					title: scene.add.text(200, 60, "SURFACE SHOP", {fontSize: "32px", fill: "#ba9756"}).setOrigin(0.5),
-					mineral_icon: scene.add.image(200, 20, "mineral_slot").setScale(0.3),
-					mineral_display: scene.add.text(200, 8, scene.player.minerals, {fontSize: "12px", fill: "#fff", stroke: "#000", strokeThickness: 1})
-				};
-
-				for(let index_item = 0; index_item < shop.items.length; ++index_item)
-				{
-					const item = shop.items[index_item];
-
-					if(item.key !== "descend")
-					{
-						scene.add.rectangle(200, 112 + index_item*MENU_SPACING, 300, 25, 0x4788ad).setOrigin(0.5);
-						scene.ui["item_" + item.key] = scene.add.text(60, 105 + index_item*MENU_SPACING, item.curr_quantity + " | ", {fontSize: "12px", fill: "#fff"});
-						scene.ui["item_" + item.key] = scene.add.text(200, 112 + index_item*MENU_SPACING, item.name, {fontSize: "12px", fill: "#fff"}).setOrigin(0.5);
-						scene.ui["item_" + item.key] = scene.add.text(290, 105 + index_item*MENU_SPACING, " | " + item.price + "g", {fontSize: "12px", fill: "#fff"});
-
-					}
-					else
-					{
-						scene.add.rectangle(200, 110 + index_item*MENU_SPACING, 300, 25, 0xc940406).setOrigin(0.5);
-						scene.ui["item_" + item.key] = scene.add.text(200, 112 + index_item*MENU_SPACING, item.name, {fontSize: "12px", fill: "#fff"}).setOrigin(0.5);
-					}
-
-					scene.ui["outline_" + item.key] = scene.add.graphics().lineStyle(2, 0xffffff, 1.0).strokeRect(50, 100 + index_item*MENU_SPACING, 300, 25);
-				}
-				scene.ui.outline_selection = scene.add.graphics().lineStyle(4, 0xba9756, 1.0).strokeRect(0, 0, 300, 26);
-				scene.ui.outline_selection.setPosition(50, 100 + shop.index_selected*MENU_SPACING);
-
-				for(const key_object in scene.ui)
-					scene.ui[key_object].setScrollFactor(0).setDepth(4);
-			},
-
-			update: function()
-			{
-				const scene = this;
-
-				const gamepad = scene.input.gamepad.gamepads[0];
-
-				const down = scene.cursors.down.isDown || (gamepad && (gamepad.down || gamepad.leftStick.y < -0.1));
-				const up = scene.cursors.up.isDown || (gamepad && (gamepad.up || gamepad.leftStick.y < 0.1));
-				const action = scene.cursors.space.isDown || (gamepad && gamepad.X);
-
-				const shop = scene.shop;
-
-				function select()
-				{
-					scene.ui.outline_selection.setPosition(50, 100 + shop.index_selected*MENU_SPACING);
-					scene.sound.play("dig_dirt");
-				}
-
-				if(down)
-				{
-					if(!scene.state.down)
-					{
-						shop.index_selected = (shop.index_selected + 1);
-						if(shop.index_selected >= shop.items.length)
-							shop.index_selected = 0;
-
-						select();
-					}
-
-					scene.state.down = true;
-				}
-				else
-					scene.state.down = false;
-
-				if(up)
-				{
-					if(!scene.state.up)
-					{
-						shop.index_selected = (shop.index_selected - 1);
-						if(shop.index_selected < 0)
-							shop.index_selected = shop.items.length - 1;
-
-						select();
-					}
-
-					scene.state.up = true;
-				}
-				else
-					scene.state.up = false;
-
-				if(action)
-				{
-					if(!scene.state.action)
-					{
-						const item_selected = shop.items[shop.index_selected];
-
-						if(item_selected.key === "descend")
-						{
-							scene.sound.play("upgrade");
-							game.scene.stop("shop");
-							scene.music.stop();
-							game.scene.start("main");
-						}
-						else if(scene.player.minerals >= item_selected.price && item_selected.curr_quantity > 0)
-						{
-							setMinerals(scene, scene.player.minerals - item_selected.price);
-
-
-
-							item_selected.curr_quantity--;
-							scene.sound.play("upgrade");
+							scene.sound.play("dig_mineral");
+							scene.emitter_dirt.explode(10, x_particle, y_particle);
+							scene.emitter_mineral.explode(10, x_particle, y_particle);
 						}
 						else
-							scene.sound.play("clink");
+						{
+							scene.sound.play("dig_dirt");
+							scene.emitter_dirt.explode(20, x_particle, y_particle);
+						}
+
+						setEnergy(scene, scene.player.energy - 1);
+
+						return true;
 					}
 
-					scene.state.action = true;
+					//shawns a nerd
+					if(jump)
+					{
+						if(!player.input.jump)
+						{
+							if(player.falling)
+							{
+								if(player.canDoubleJump && !player.djumped)
+								{
+									player.sprite.anims.play("jump", true);
+									player.yvel = -JUMPSPEED_DOUBLE;
+									player.djumped = true;
+
+									const vel = player.xvel*5;
+									this.emitter_dust.setSpeedX({min: vel - 10, max: vel + 10});
+									this.emitter_dust.explode(10, player.sprite.x, player.sprite.y);
+								}
+							}
+							else
+							{
+								player.sprite.anims.play("jump", true);
+								player.yvel = -JUMPSPEED;
+								player.falling = true;
+
+								const vel = player.xvel*5;
+								this.emitter_dust.setSpeedX({min: vel - 10, max: vel + 10});
+								this.emitter_dust.explode(10, player.sprite.x, player.sprite.y);
+							}
+						}
+
+						player.input.jump = true;
+					}
+					else
+					{
+						if(player.falling)
+						{
+							player.sprite.anims.play("fall", true);
+							player.yvel = Math.max(player.yvel, -JUMPSPEED_CANCEL);
+						}
+
+						player.input.jump = false;
+					}
+
+					if(left === right)
+					{
+						if(!player.falling && !player.cooldown_dig)
+							player.sprite.anims.play("idle", true);
+
+						if(player.xvel > 0)
+							player.xvel = Math.max(0, player.xvel - RUN_DECEL);
+						else
+							player.xvel = Math.min(0, player.xvel + RUN_DECEL);
+					}
+					else if(left)
+					{
+						if(player.xvel > 0 && !player.falling)
+							this.emitter_dust.emitParticle(1, player.sprite.x, player.sprite.y);
+
+						player.xvel = Math.max(-MAX_SPEED, player.xvel - RUN_ACCEL);
+						if(!player.falling && !player.cooldown_dig)
+							player.sprite.anims.play("run", true);
+
+						player.facing = "left";
+						player.sprite.flipX = true;
+					}
+					else if(right)
+					{
+						if(player.xvel < 0 && !player.falling)
+							this.emitter_dust.emitParticle(1, player.sprite.x, player.sprite.y);
+
+						player.xvel = Math.min(MAX_SPEED, player.xvel + RUN_ACCEL);
+						if(!player.falling && !player.cooldown_dig)
+							player.sprite.anims.play("run", true);
+
+						player.facing = "right";
+						player.sprite.flipX = false;
+					}
+
+					player.x_old = player.sprite.x;
+					player.y_old = player.sprite.y;
+
+					if(player.falling)
+						player.yvel += GRAVITY;
+
+					player.sprite.x += player.xvel;
+					player.sprite.y += player.yvel;
+
+					if(player.sprite.y < HEIGHT_PLAYER)
+					{
+						player.sprite.y = HEIGHT_PLAYER;
+						player.yvel = 0;
+					}
+					else if(player.sprite.y > level.height*SIZE_TILE)
+					{
+						player.falling = false;
+						player.sprite.y = level.height*SIZE_TILE - EPSILON;
+						player.yvel = 0;
+					}
+
+					if(player.sprite.x < WIDTH_PLAYER/2)
+					{
+						player.sprite.x = WIDTH_PLAYER/2;
+						player.xvel = 0;
+					}
+					else if(player.sprite.x > level.width*SIZE_TILE - WIDTH_PLAYER/2)
+					{
+						player.sprite.x = level.width*SIZE_TILE - WIDTH_PLAYER/2 - EPSILON;
+						player.xvel = 0;
+					}
+
+					handleCollision(this);
+
+					// player coordinates
+					const index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
+					const index_col = Math.floor(player.sprite.x/SIZE_TILE);
+
+					for(let index_bug = 0; index_bug < level.bugs.length; ++index_bug)
+					{
+						const bug = level.bugs[index_bug];
+
+						if((bug.index_row === index_row && bug.index_col === index_col) && !bug.collected)
+						{
+							bug.collected = true;
+							level.sprites_bugs[index_bug].destroy();
+							setEnergy(this, player.energy + BUG_REJUVENATION);
+						}
+					}
+
+					const index_col_left = Math.floor((player.sprite.x - WIDTH_PLAYER/2)/SIZE_TILE);
+					const index_col_right = Math.floor((player.sprite.x + WIDTH_PLAYER/2 - EPSILON)/SIZE_TILE);
+					if(!level.tiles[index_row + 1][index_col_left] && !level.tiles[index_row + 1][index_col_right])
+						player.falling = true;
+
+					if(player.cooldown_dig > 0)
+						--player.cooldown_dig;
+
+					if(action)
+					{
+						if(!player.input.dig)
+						{
+							if(index_row === level.coord_exit.index_row && index_col === level.coord_exit.index_col)
+							{
+								setLevel(this, player.level + 1);
+								restart_level(this);
+							}
+							else if(!player.falling && player.energy > 0)
+							{
+								const index_col_facing = index_col + (player.facing === "right" ? 1 : -1);
+
+								if(dig(level, this, index_row + (level.tiles[index_row][index_col_facing] ? 0 : 1), index_col_facing))
+								{
+									player.cooldown_dig = COOLDOWN_DIG;
+									player.sprite.anims.play("dig");
+								}
+							}
+						}
+
+						player.input.dig = true;
+					}
+					else
+						player.input.dig = false;
+
+					if(player.damage > 0)
+					{
+						setEnergy(this, player.energy - player.damage);
+						player.damage = 0;
+					}
 				}
-				else
-					scene.state.action = false;
+			},
+			{
+			//buttz
+				key: "shop",
+				preload: function()
+				{
+					this.load.image("mineral_slot", "assets/mineral_slot.png");
+					this.load.audio("dig_dirt", "assets/soundfx/dig.wav");
+					this.load.audio("upgrade", "assets/soundfx/upgrade.wav");
+					this.load.audio("clink", "assets/soundfx/dig-clink.wav");
+					this.load.audio("shoptheme", "assets/soundfx/shoptheme.wav");
+				},
+
+				create: function()
+				{
+					const scene = this;
+
+					scene.music = scene.sound.add("shoptheme");
+					scene.music.loop = true;
+					scene.music.play();
+
+					scene.sound.add("dig_dirt");
+					scene.sound.add("upgrade");
+					scene.sound.add("clink");
+
+					scene.input.gamepad.start();
+					scene.cursors = scene.input.keyboard.createCursorKeys();
+
+					scene.player = player;
+					scene.shop = shop;
+					scene.shop.index_selected = 0;
+					scene.state = {
+						up: false,
+						down: false,
+						action: false
+					};
+
+					scene.ui = {
+						title: scene.add.text(160, 40, "SHOP", {fontSize: "32px", fill: "#fff"}),
+						mineral_icon: scene.add.image(200, 20, "mineral_slot").setScale(0.3),
+						mineral_display: scene.add.text(200, 8, scene.player.minerals, {fontSize: "12px", fill: "#fff", stroke: "#000", strokeThickness: 1})
+					};
+
+					for(let index_item = 0; index_item < shop.items.length; ++index_item)
+					{
+						const item = shop.items[index_item];
+
+						if(item.key !== "descend")
+						{
+							scene.add.rectangle(200, 112 + index_item*MENU_SPACING, 300, 25, 0x4788ad).setOrigin(0.5);
+							scene.ui["item_" + item.key] = scene.add.text(60, 105 + index_item*MENU_SPACING, item.curr_quantity + " | ", {fontSize: "12px", fill: "#fff"});
+							scene.ui["item_" + item.key] = scene.add.text(200, 112 + index_item*MENU_SPACING, item.name, {fontSize: "12px", fill: "#fff"}).setOrigin(0.5);
+							scene.ui["item_" + item.key] = scene.add.text(290, 105 + index_item*MENU_SPACING, " | " + item.price + "g", {fontSize: "12px", fill: "#fff"});
+						}
+						else
+						{
+							scene.add.rectangle(200, 110 + index_item*MENU_SPACING, 300, 25, 0xc940406).setOrigin(0.5);
+							scene.ui["item_" + item.key] = scene.add.text(200, 112 + index_item*MENU_SPACING, item.name, {fontSize: "12px", fill: "#fff"}).setOrigin(0.5);
+						}
+						scene.ui["outline_" + item.key] = scene.add.graphics().lineStyle(2, 0xffffff, 1.0).strokeRect(50, 100 + index_item*MENU_SPACING, 300, 25);
+					}
+					scene.ui.outline_selection = scene.add.graphics().lineStyle(4, 0xba9756, 1.0).strokeRect(0, 0, 300, 26);
+					scene.ui.outline_selection.setPosition(50, 100 + shop.index_selected*MENU_SPACING);
+
+					for(const key_object in scene.ui)
+						scene.ui[key_object].setScrollFactor(0).setDepth(4);
+				},
+
+				update: function()
+				{
+					const scene = this;
+
+					const gamepad = scene.input.gamepad.gamepads[0];
+
+					const down = scene.cursors.down.isDown || (gamepad && (gamepad.down || gamepad.leftStick.y < -0.1));
+					const up = scene.cursors.up.isDown || (gamepad && (gamepad.up || gamepad.leftStick.y < 0.1));
+					const action = scene.cursors.space.isDown || (gamepad && gamepad.X);
+
+					const shop = scene.shop;
+
+					function select()
+					{
+						scene.ui.outline_selection.setPosition(50, 100 + shop.index_selected*MENU_SPACING);
+						scene.sound.play("dig_dirt");
+					}
+
+					if(down)
+					{
+						if(!scene.state.down)
+						{
+							shop.index_selected = (shop.index_selected + 1);
+							if(shop.index_selected >= shop.items.length)
+								shop.index_selected = 0;
+
+							select();
+						}
+
+						scene.state.down = true;
+					}
+					else
+						scene.state.down = false;
+
+					if(up)
+					{
+						if(!scene.state.up)
+						{
+							shop.index_selected = (shop.index_selected - 1);
+							if(shop.index_selected < 0)
+								shop.index_selected = shop.items.length - 1;
+
+							select();
+						}
+
+						scene.state.up = true;
+					}
+					else
+						scene.state.up = false;
+
+					if(action)
+					{
+						if(!scene.state.action)
+						{
+							const item_selected = shop.items[shop.index_selected];
+
+							if(item_selected.key === "descend")
+							{
+								scene.sound.play("upgrade");
+								game.scene.stop("shop");
+								scene.music.stop();
+								game.scene.start("main");
+							}
+							else if(scene.player.minerals >= item_selected.price && item_selected.curr_quantity > 0)
+							{
+								setMinerals(scene, scene.player.minerals - item_selected.price);
+
+								item_selected.purchase(scene.player, item_selected);
+
+								item_selected.curr_quantity--;
+								scene.ui["item_" + item_selected.key].setText(item_selected.curr_quantity + " | " + item_selected.name + " | $" + item_selected.price);
+
+								scene.sound.play("upgrade");
+							}
+							else
+								scene.sound.play("clink");
+						}
+
+						scene.state.action = true;
+					}
+					else
+						scene.state.action = false;
+				}
 			}
-		}]
+		]
 	});
 
 	window.addEventListener("resize", resize);
 	resize();
 });
-
-/* exported upgrade_shovel */
-function upgrade_shovel(scene)
-{
-	if(scene.player.minerals >= 50 && scene.player.shovel.level < 3)
-	{
-		scene.player.shovel.level++;
-		scene.player.shovel.dig_energy--;
-		setMinerals(scene.player.minerals - 50);
-		restart_level(scene);
-	}
-
-	return scene.player.shovel;
-}
-
-/* exported upgrade_energy */
-function upgrade_energy(scene)
-{
-	if(scene.player.minerals >= 20)
-	{
-		scene.player.energy_max += 10;
-		setMinerals(scene.player.minerals - 20);
-		restart_level(scene);
-	}
-
-	return scene.player.energy_max;
-}
 
 function restart_level(scene)
 {
@@ -1186,10 +1256,24 @@ function restart_level(scene)
 		delete scene.group_world;
 	}
 
+	const player = scene.player;
+	player.xvel = 0;
+	player.yvel = 0;
+	player.falling = true;
+	player.input.jump = false;
+	player.input.dig = false;
+	player.cooldown_dig = 0;
+
+	const density_cave = Math.min(0.5 + 0.01*player.level, 0.6);
+	const density_bug = Math.max(0.02 - 0.002*player.level, 0.01);
+	const width = 40 + player.level*10;
+	const height = 80 + player.level*10;
+
+	const level = scene.level = new Level(randInt(width - 20, width + 20), randInt(height - 20, height + 20));
+	level.generate(density_cave, 0.05, density_bug);
+
 	scene.group_world = scene.add.group();
 
-	const level = scene.level = new Level(randInt(40, 80), randInt(100, 140));
-	level.generate(0.5, 0.1, 0.1);
 	level.images = [];
 	for(let index_row = 0; index_row < level.height; ++index_row)
 	{
@@ -1237,12 +1321,6 @@ function restart_level(scene)
 	exit.setAlpha(0.7);
 	scene.group_world.add(exit);
 
-	const player = scene.player;
-	player.xvel = 0;
-	player.yvel = 0;
-	player.falling = true;
-	player.digging = false;
-	player.cooldown_dig = 0;
 	player.sprite.setPosition(entrance.x, entrance.y);
 	scene.cameras.main.startFollow(player.sprite);
 	scene.cameras.main.setBounds(0, 0, level.width*SIZE_TILE, level.height*SIZE_TILE);
@@ -1277,6 +1355,7 @@ function setEnergy(scene, energy)
 	if(energy < 0)
 	{
 		setMinerals(scene, 0);
+		setLevel(scene, 1);
 		restart_level(scene);
 	}
 	else
@@ -1294,4 +1373,10 @@ function setMinerals(scene, minerals)
 {
 	scene.player.minerals = minerals;
 	scene.ui.mineral_display.setText(minerals);
+}
+
+function setLevel(scene, level)
+{
+	scene.player.level = level;
+	scene.ui.text_level.setText("Level " + level);
 }
