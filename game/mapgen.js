@@ -62,7 +62,7 @@ Level.prototype.filter = function(index_row, index_col)
 
 Level.prototype.region = function(index_row_start, index_col_start)
 {
-	const type = this.tiles[index_row_start][index_col_start];
+	// const type = this.tiles[index_row_start][index_col_start];
 	const queue = [{index_row: index_row_start, index_col: index_col_start}];
 	const tiles = [];
 
@@ -76,7 +76,7 @@ Level.prototype.region = function(index_row_start, index_col_start)
 		const tile = queue.shift();
 		tiles.push(tile);
 	}
-	console.log(visited);
+	// console.log(visited);
 
 
 
