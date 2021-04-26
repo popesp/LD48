@@ -920,173 +920,181 @@ document.addEventListener("DOMContentLoaded", function()
 
 						return true;
 					}
-
-					//shawns a nerd
-					if(jump)
+					if(player.dead)
 					{
-						if(!player.input.jump)
+						console.log("dude died");
+						if(action)
+							restart_level(this);
+					}
+					else
+					{
+						//shawns a nerd
+						if(jump)
 						{
-							if(player.falling)
+							if(!player.input.jump)
 							{
-								if(player.canDoubleJump && !player.djumped)
+								if(player.falling)
+								{
+									if(player.canDoubleJump && !player.djumped)
+									{
+										player.sprite.anims.play("jump", true);
+										player.yvel = -JUMPSPEED_DOUBLE;
+										player.djumped = true;
+
+										const vel = player.xvel*5;
+										this.emitter_dust.setSpeedX({min: vel - 10, max: vel + 10});
+										this.emitter_dust.explode(10, player.sprite.x, player.sprite.y);
+									}
+								}
+								else
 								{
 									player.sprite.anims.play("jump", true);
-									player.yvel = -JUMPSPEED_DOUBLE;
-									player.djumped = true;
+									player.yvel = -JUMPSPEED;
+									player.falling = true;
 
 									const vel = player.xvel*5;
 									this.emitter_dust.setSpeedX({min: vel - 10, max: vel + 10});
 									this.emitter_dust.explode(10, player.sprite.x, player.sprite.y);
 								}
 							}
-							else
-							{
-								player.sprite.anims.play("jump", true);
-								player.yvel = -JUMPSPEED;
-								player.falling = true;
 
-								const vel = player.xvel*5;
-								this.emitter_dust.setSpeedX({min: vel - 10, max: vel + 10});
-								this.emitter_dust.explode(10, player.sprite.x, player.sprite.y);
-							}
+							player.input.jump = true;
 						}
-
-						player.input.jump = true;
-					}
-					else
-					{
-						if(player.falling)
-						{
-							player.sprite.anims.play("fall", true);
-							player.yvel = Math.max(player.yvel, -JUMPSPEED_CANCEL);
-						}
-
-						player.input.jump = false;
-					}
-
-					if(left === right)
-					{
-						if(!player.falling && !player.cooldown_dig)
-							player.sprite.anims.play("idle", true);
-
-						if(player.xvel > 0)
-							player.xvel = Math.max(0, player.xvel - RUN_DECEL);
 						else
-							player.xvel = Math.min(0, player.xvel + RUN_DECEL);
-					}
-					else if(left)
-					{
-						if(player.xvel > 0 && !player.falling)
-							this.emitter_dust.emitParticle(1, player.sprite.x, player.sprite.y);
-
-						player.xvel = Math.max(-MAX_SPEED, player.xvel - RUN_ACCEL);
-						if(!player.falling && !player.cooldown_dig)
-							player.sprite.anims.play("run", true);
-
-						player.facing = "left";
-						player.sprite.flipX = true;
-					}
-					else if(right)
-					{
-						if(player.xvel < 0 && !player.falling)
-							this.emitter_dust.emitParticle(1, player.sprite.x, player.sprite.y);
-
-						player.xvel = Math.min(MAX_SPEED, player.xvel + RUN_ACCEL);
-						if(!player.falling && !player.cooldown_dig)
-							player.sprite.anims.play("run", true);
-
-						player.facing = "right";
-						player.sprite.flipX = false;
-					}
-
-					player.x_old = player.sprite.x;
-					player.y_old = player.sprite.y;
-
-					if(player.falling)
-						player.yvel += GRAVITY;
-
-					player.sprite.x += player.xvel;
-					player.sprite.y += player.yvel;
-
-					if(player.sprite.y < HEIGHT_PLAYER)
-					{
-						player.sprite.y = HEIGHT_PLAYER;
-						player.yvel = 0;
-					}
-					else if(player.sprite.y > level.height*SIZE_TILE)
-					{
-						player.falling = false;
-						player.sprite.y = level.height*SIZE_TILE - EPSILON;
-						player.yvel = 0;
-					}
-
-					if(player.sprite.x < WIDTH_PLAYER/2)
-					{
-						player.sprite.x = WIDTH_PLAYER/2;
-						player.xvel = 0;
-					}
-					else if(player.sprite.x > level.width*SIZE_TILE - WIDTH_PLAYER/2)
-					{
-						player.sprite.x = level.width*SIZE_TILE - WIDTH_PLAYER/2 - EPSILON;
-						player.xvel = 0;
-					}
-
-					handleCollision(this);
-
-					// player coordinates
-					const index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
-					const index_col = Math.floor(player.sprite.x/SIZE_TILE);
-
-					for(let index_bug = 0; index_bug < level.bugs.length; ++index_bug)
-					{
-						const bug = level.bugs[index_bug];
-
-						if((bug.index_row === index_row && bug.index_col === index_col) && !bug.collected)
 						{
-							bug.collected = true;
-							level.sprites_bugs[index_bug].destroy();
-							setEnergy(this, player.energy + BUG_REJUVENATION);
-						}
-					}
-
-					const index_col_left = Math.floor((player.sprite.x - WIDTH_PLAYER/2)/SIZE_TILE);
-					const index_col_right = Math.floor((player.sprite.x + WIDTH_PLAYER/2 - EPSILON)/SIZE_TILE);
-					if(!level.tiles[index_row + 1][index_col_left] && !level.tiles[index_row + 1][index_col_right])
-						player.falling = true;
-
-					if(player.cooldown_dig > 0)
-						--player.cooldown_dig;
-
-					if(action)
-					{
-						if(!player.input.dig)
-						{
-							if(index_row === level.coord_exit.index_row && index_col === level.coord_exit.index_col)
+							if(player.falling)
 							{
-								setLevel(this, player.level + 1);
-								restart_level(this);
+								player.sprite.anims.play("fall", true);
+								player.yvel = Math.max(player.yvel, -JUMPSPEED_CANCEL);
 							}
-							else if(!player.falling && player.energy > 0)
-							{
-								const index_col_facing = index_col + (player.facing === "right" ? 1 : -1);
 
-								if(dig(level, this, index_row + (level.tiles[index_row][index_col_facing] ? 0 : 1), index_col_facing))
+							player.input.jump = false;
+						}
+
+						if(left === right)
+						{
+							if(!player.falling && !player.cooldown_dig)
+								player.sprite.anims.play("idle", true);
+
+							if(player.xvel > 0)
+								player.xvel = Math.max(0, player.xvel - RUN_DECEL);
+							else
+								player.xvel = Math.min(0, player.xvel + RUN_DECEL);
+						}
+						else if(left)
+						{
+							if(player.xvel > 0 && !player.falling)
+								this.emitter_dust.emitParticle(1, player.sprite.x, player.sprite.y);
+
+							player.xvel = Math.max(-MAX_SPEED, player.xvel - RUN_ACCEL);
+							if(!player.falling && !player.cooldown_dig)
+								player.sprite.anims.play("run", true);
+
+							player.facing = "left";
+							player.sprite.flipX = true;
+						}
+						else if(right)
+						{
+							if(player.xvel < 0 && !player.falling)
+								this.emitter_dust.emitParticle(1, player.sprite.x, player.sprite.y);
+
+							player.xvel = Math.min(MAX_SPEED, player.xvel + RUN_ACCEL);
+							if(!player.falling && !player.cooldown_dig)
+								player.sprite.anims.play("run", true);
+
+							player.facing = "right";
+							player.sprite.flipX = false;
+						}
+
+						player.x_old = player.sprite.x;
+						player.y_old = player.sprite.y;
+
+						if(player.falling)
+							player.yvel += GRAVITY;
+
+						player.sprite.x += player.xvel;
+						player.sprite.y += player.yvel;
+
+						if(player.sprite.y < HEIGHT_PLAYER)
+						{
+							player.sprite.y = HEIGHT_PLAYER;
+							player.yvel = 0;
+						}
+						else if(player.sprite.y > level.height*SIZE_TILE)
+						{
+							player.falling = false;
+							player.sprite.y = level.height*SIZE_TILE - EPSILON;
+							player.yvel = 0;
+						}
+
+						if(player.sprite.x < WIDTH_PLAYER/2)
+						{
+							player.sprite.x = WIDTH_PLAYER/2;
+							player.xvel = 0;
+						}
+						else if(player.sprite.x > level.width*SIZE_TILE - WIDTH_PLAYER/2)
+						{
+							player.sprite.x = level.width*SIZE_TILE - WIDTH_PLAYER/2 - EPSILON;
+							player.xvel = 0;
+						}
+
+						handleCollision(this);
+
+						// player coordinates
+						const index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
+						const index_col = Math.floor(player.sprite.x/SIZE_TILE);
+
+						for(let index_bug = 0; index_bug < level.bugs.length; ++index_bug)
+						{
+							const bug = level.bugs[index_bug];
+
+							if((bug.index_row === index_row && bug.index_col === index_col) && !bug.collected)
+							{
+								bug.collected = true;
+								level.sprites_bugs[index_bug].destroy();
+								setEnergy(this, player.energy + BUG_REJUVENATION);
+							}
+						}
+
+						const index_col_left = Math.floor((player.sprite.x - WIDTH_PLAYER/2)/SIZE_TILE);
+						const index_col_right = Math.floor((player.sprite.x + WIDTH_PLAYER/2 - EPSILON)/SIZE_TILE);
+						if(!level.tiles[index_row + 1][index_col_left] && !level.tiles[index_row + 1][index_col_right])
+							player.falling = true;
+
+						if(player.cooldown_dig > 0)
+							--player.cooldown_dig;
+
+						if(action)
+						{
+							if(!player.input.dig)
+							{
+								if(index_row === level.coord_exit.index_row && index_col === level.coord_exit.index_col)
 								{
-									player.cooldown_dig = COOLDOWN_DIG;
-									player.sprite.anims.play("dig");
+									setLevel(this, player.level + 1);
+									restart_level(this);
+								}
+								else if(!player.falling && player.energy > 0)
+								{
+									const index_col_facing = index_col + (player.facing === "right" ? 1 : -1);
+
+									if(dig(level, this, index_row + (level.tiles[index_row][index_col_facing] ? 0 : 1), index_col_facing))
+									{
+										player.cooldown_dig = COOLDOWN_DIG;
+										player.sprite.anims.play("dig");
+									}
 								}
 							}
+
+							player.input.dig = true;
 						}
+						else
+							player.input.dig = false;
 
-						player.input.dig = true;
-					}
-					else
-						player.input.dig = false;
-
-					if(player.damage > 0)
-					{
-						setEnergy(this, player.energy - player.damage);
-						player.damage = 0;
+						if(player.damage > 0)
+						{
+							setEnergy(this, player.energy - player.damage);
+							player.damage = 0;
+						}
 					}
 				}
 			},
@@ -1256,6 +1264,7 @@ function restart_level(scene)
 	player.input.jump = false;
 	player.input.dig = false;
 	player.cooldown_dig = 0;
+	player.dead = false;
 
 	const density_cave = Math.min(0.5 + 0.01*player.level, 0.6);
 	const density_bug = Math.max(0.02 - 0.002*player.level, 0.01);
@@ -1345,20 +1354,22 @@ function restart_level(scene)
 
 function setEnergy(scene, energy)
 {
+	let energy_new = energy;
+
+	if(energy >= scene.player.energy_max)
+		energy_new = scene.player.energy_max;
+	else if(energy < 0)
+		energy_new = 0;
+
+	scene.ui.energy_display.setText("Stamina: " + energy_new);
+	scene.ui.bar.scaleX = energy_new/scene.player.energy_max;
+	scene.player.energy = energy_new;
 	if(energy < 0)
 	{
 		setMinerals(scene, 0);
 		setLevel(scene, 1);
-		restart_level(scene);
-	}
-	else
-	{
-		if(energy >= scene.player.energy_max)
-			energy = scene.player.energy_max;
-
-		scene.ui.energy_display.setText("Stamina: " + energy);
-		scene.ui.bar.scaleX = energy/scene.player.energy_max;
-		scene.player.energy = energy;
+		scene.player.dead = true;
+		scene.player.sprite.anims.play("die");
 	}
 }
 
