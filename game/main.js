@@ -1124,7 +1124,9 @@ document.addEventListener("DOMContentLoaded", function()
 								if(index_row === level.coord_exit.index_row && index_col === level.coord_exit.index_col)
 								{
 									setLevel(scene, player.level + 1);
-									restart_level(scene);
+									scene.music.stop();
+									game.scene.stop("main");
+									game.scene.start("shop");
 								}
 								else if(!player.falling && player.stamina > 0)
 								{
@@ -1236,7 +1238,7 @@ document.addEventListener("DOMContentLoaded", function()
 						scene.sound.play("dig_dirt");
 					}
 
-					if(down || key_s.isDown)
+					if(down)
 					{
 						if(!scene.state.down)
 						{
@@ -1252,7 +1254,7 @@ document.addEventListener("DOMContentLoaded", function()
 					else
 						scene.state.down = false;
 
-					if(up || key_w.isDown)
+					if(up)
 					{
 						if(!scene.state.up)
 						{
@@ -1328,7 +1330,7 @@ function restart_level(scene)
 	player.dead = false;
 
 	const density_cave = Math.min(0.5 + 0.01*player.level, 0.6);
-	const density_bug = Math.max(0.05 - 0.002*player.level, 0.01);
+	const density_bug = Math.max(0.03 - 0.002*player.level, 0.01);
 	const width = 40 + player.level*10;
 	const height = 50 + player.level*10;
 
