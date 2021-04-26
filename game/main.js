@@ -346,24 +346,24 @@ function handleCollision(player, level, scene)
 		if(player.sprite.y - EPSILON > y_top && player.y_old - EPSILON <= y_top)
 		{
 			player.sprite.y = y_top;
+
 			if(player.yvel > FALL_DMG_THRESHOLD)
 			{
-				if(Math.round(scene.player.energy - (player.yvel - FALL_DMG_THRESHOLD)*2) > 0)
-				{
-					scene.tweens.addCounter({
-						duration: 75,
-						onUpdate: function()
-						{
-							player.sprite.setTintFill(0xFFFFFF);
-						},
-						onComplete: function()
-						{
-							player.sprite.clearTint();
-						}
-					});
-				}
+				const damage = Math.ceil((player.yvel - FALL_DMG_THRESHOLD)*2);
 
-				setEnergy(scene, Math.round(scene.player.energy - (player.yvel - FALL_DMG_THRESHOLD)*2));
+				scene.tweens.addCounter({
+					duration: 75,
+					onUpdate: function()
+					{
+						player.sprite.setTintFill(0xFFFFFF);
+					},
+					onComplete: function()
+					{
+						player.sprite.clearTint();
+					}
+				});
+
+				setEnergy(scene, scene.player.energy - damage);
 			}
 
 			player.yvel = 0;
@@ -946,27 +946,25 @@ document.addEventListener("DOMContentLoaded", function()
 				handleCollision(player, level, this);
 
 
+				// player coordinates
 				const index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
 				const index_col = Math.floor(player.sprite.x/SIZE_TILE);
 
-				for(let i = 0; i < level.bugs.legnth; ++i)
+				for(let index_bug = 0; index_bug < level.bugs.length; ++index_bug)
 				{
-					const bug = level.bugs[i];
-					if((bug.index_row === index_row && bug.index_col === index_col) && bug.collected === false)
+					const bug = level.bugs[index_bug];
+
+					if((bug.index_row === index_row && bug.index_col === index_col) && !bug.collected)
 					{
 						bug.collected = true;
-						console.log("over a bug");
-						level.sprites_bugs[i].destroy();
-						setEnergy();
+						level.sprites_bugs[index_bug].destroy();
+						setEnergy(this, player.energy + 3);
 					}
 				}
 
-
-				const index_row_under = Math.floor(player.sprite.y/SIZE_TILE);
 				const index_col_left = Math.floor((player.sprite.x - WIDTH_PLAYER/2)/SIZE_TILE);
 				const index_col_right = Math.floor((player.sprite.x + WIDTH_PLAYER/2 - EPSILON)/SIZE_TILE);
-
-				if(!level.tiles[index_row_under][index_col_left] && !level.tiles[index_row_under][index_col_right])
+				if(!level.tiles[index_row + 1][index_col_left] && !level.tiles[index_row + 1][index_col_right])
 					player.falling = true;
 
 				if(player.cooldown_dig > 0)
@@ -976,8 +974,7 @@ document.addEventListener("DOMContentLoaded", function()
 				{
 					if(!player.falling && !player.digging && player.energy > 0)
 					{
-						const index_row = Math.floor((player.sprite.y - EPSILON)/SIZE_TILE);
-						const index_col_facing = Math.floor(player.sprite.x/SIZE_TILE) + (player.facing === "right" ? 1 : -1);
+						const index_col_facing = index_col + (player.facing === "right" ? 1 : -1);
 
 						if(dig(level, this, index_row + (level.tiles[index_row][index_col_facing] ? 0 : 1), index_col_facing))
 						{
