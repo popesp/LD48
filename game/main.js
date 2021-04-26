@@ -509,22 +509,30 @@ document.addEventListener("DOMContentLoaded", function()
 						"assets/dude3.png",
 						{frameWidth: 20, frameHeight: 16}
 					);
+
+					this.load.audio("shoptheme", "assets/soundfx/shoptheme.wav");
+
 				},
 				create: function()
 				{
-					const title_text = this.add.text(0, 24, "Going Deep", {fontFamily: "nightie", fontSize: "27px", fixedWidth: this.game.canvas.width, fixedHeight: 32, align: "center"}).setOrigin(0, 0);
-					const start_text = this.add.text(0, 200, "Start Game", {fontFamily: "nightie", fontSize: "27px", fixedWidth: this.game.canvas.width, fixedHeight: 32, align: "center"}).setOrigin(0, 0);
-					const credit_text = this.add.text(0, 250, "By: Shawn, Dan, Vishnu", {fontFamily: "nightie", fontSize: "15px", fixedWidth: this.game.canvas.width, fixedHeight: 32, align: "center"}).setOrigin(0, 0);
-					const sprite = this.add.sprite(this.game.canvas.width/2, this.game.canvas.height/2, "dude").setOrigin(0.5, 1).setDisplaySize(80, 64).setDepth(2);
+					const scene = this;
+					const title_text = scene.add.text(0, 24, "Going Deep", {fontFamily: "nightie", fontSize: "27px", fixedWidth: scene.game.canvas.width, fixedHeight: 32, align: "center"}).setOrigin(0, 0);
+					const start_text = scene.add.text(0, 200, "Start Game", {fontFamily: "nightie", fontSize: "27px", fixedWidth: scene.game.canvas.width, fixedHeight: 32, align: "center"}).setOrigin(0, 0);
+					const credit_text = scene.add.text(0, 250, "By: Shawn, Dan, Vishnu", {fontFamily: "nightie", fontSize: "15px", fixedWidth: scene.game.canvas.width, fixedHeight: 32, align: "center"}).setOrigin(0, 0);
+					const sprite = scene.add.sprite(scene.game.canvas.width/2, scene.game.canvas.height/2, "dude").setOrigin(0.5, 1).setDisplaySize(80, 64).setDepth(2);
 
-					this.anims.create({
+					scene.anims.create({
 						key: "idle",
-						frames: this.anims.generateFrameNumbers("dude", {start: 12, end: 27}),
+						frames: scene.anims.generateFrameNumbers("dude", {start: 12, end: 27}),
 						frameRate: 10,
 						repeat: -1
 					});
 
-					sprite.play('idle');
+					scene.music = scene.sound.add("shoptheme");
+					scene.music.loop = true;
+					scene.music.play();
+
+					sprite.play("idle");
 
 					start_text.setInteractive({useHandCursor: true});
 					start_text.on("pointerup", function()
@@ -532,7 +540,9 @@ document.addEventListener("DOMContentLoaded", function()
 						title_text.destroy();
 						start_text.destroy();
 						credit_text.destroy();
-						game.scene.switch("title", "main");
+						game.scene.stop("title");
+						scene.music.stop();
+						game.scene.start("main");
 					});
 				},
 				update: function()
