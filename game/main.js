@@ -44,9 +44,10 @@ const shop = {
 			name: "Maximum energy +10",
 			curr_quantity: 3,
 			price: 10,
-			purchase: function(player)
+			purchase: function(player, item)
 			{
 				player.energy_max += 10;
+				item.price += 20;
 			}
 		},
 		{
@@ -1118,9 +1119,11 @@ document.addEventListener("DOMContentLoaded", function()
 						{
 							setMinerals(scene, scene.player.minerals - item_selected.price);
 
-
+							item_selected.purchase(scene.player, item_selected);
 
 							item_selected.curr_quantity--;
+							scene.ui["item_" + item_selected.key].setText(item_selected.curr_quantity + " | " + item_selected.name + " | $" + item_selected.price);
+
 							scene.sound.play("upgrade");
 						}
 						else
