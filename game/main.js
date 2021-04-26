@@ -21,7 +21,7 @@ const GRAVITY = 0.15;
 const FALL_DMG_THRESHOLD = 5;
 
 //PLAYER VARIABLES
-const ENERGY_MAX = 5;
+const ENERGY_MAX = 20;
 const shovel = {
 	level: 1,
 	dig_energy: 3
@@ -305,7 +305,18 @@ function handleCollision(player, level, scene)
 			if(player.yvel > FALL_DMG_THRESHOLD)
 			{
 				const old_energy = scene.data.values.energy_current;
-				scene.data.set("energy_current", Math.round(scene.data.values.energy_current - (player.yvel - FALL_DMG_THRESHOLD)));
+				scene.tweens.addCounter({
+					duration: 75,
+					onUpdate: function ()
+					{
+						player.sprite.setTintFill(0xFFFFFF);
+					},
+					onComplete: function()
+					{
+						player.sprite.clearTint();
+					}
+				});
+				scene.data.set("energy_current", Math.floor(scene.data.values.energy_current - (player.yvel - FALL_DMG_THRESHOLD)));
 				setEnergy(scene, player, scene.data.values.energy_current, old_energy);
 			}
 
