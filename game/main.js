@@ -33,6 +33,7 @@ const player = {
 	damage: 0,
 	stamina_max: STAMINA_MAX,
 	canDoubleJump: false,
+	canDigJump: true,
 	minerals: 0,
 	rejuv: 0,
 	input: {
@@ -76,6 +77,16 @@ const shop = {
 			{
 				player.rejuv+= 3;
 				item.price += 25;
+			}
+		},
+		{
+			key: "dig_jump",
+			name: "Dig While Jumping",
+			curr_quantity: 1,
+			price: 20,
+			purchase: function(player, item)
+			{
+				player.canDigJump = true;
 			}
 		},
 		{
@@ -1125,7 +1136,7 @@ document.addEventListener("DOMContentLoaded", function()
 									game.scene.stop("main");
 									game.scene.start("shop");
 								}
-								else if(!player.falling && player.stamina > 0)
+								else if((!player.falling || player.canDigJump) && player.stamina > 0)
 								{
 									const index_col_facing = index_col + (player.facing === "right" ? 1 : -1);
 
