@@ -48,12 +48,12 @@ const shop = {
 	items: [
 		{
 			key: "max_stamina",
-			name: "Maximum stamina +2",
+			name: "Maximum stamina +5",
 			curr_quantity: 4,
 			price: 10,
 			purchase: function(player, item)
 			{
-				player.stamina_max += 3;
+				player.stamina_max += 5;
 				item.price += 20;
 			}
 		},
@@ -69,12 +69,12 @@ const shop = {
 		},
 		{
 			key: "bug_energy",
-			name: "Energy from eating +2",
+			name: "Energy from eating +3",
 			curr_quantity: 2,
 			price: 25,
 			purchase: function(player, item)
 			{
-				player.rejuv++;
+				player.rejuv+= 3;
 				item.price += 25;
 			}
 		},
