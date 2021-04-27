@@ -13,7 +13,7 @@ const COOLDOWN_DIG = 30;
 const COOLDOWN_EAT = 20;
 const MENU_SPACING = 40;
 
-const BUG_REJUVENATION = 3;
+const BUG_REJUVENATION = 5;
 
 // PHYSICS
 const JUMPSPEED = 3.4;
@@ -26,7 +26,7 @@ const GRAVITY = 0.15;
 const FALL_DMG_THRESHOLD = 6;
 
 //PLAYER VARIABLES
-const STAMINA_MAX = 5;
+const STAMINA_MAX = 10;
 
 const player = {
 	level: 1,
@@ -606,6 +606,7 @@ document.addEventListener("DOMContentLoaded", function()
 					this.load.audio("dig_dirt", "assets/soundfx/dig.wav");
 					this.load.audio("dig_mineral", "assets/soundfx/dig-gold.wav");
 					this.load.audio("munch", "assets/soundfx/eating-notdan.wav");
+					this.load.audio("complete", "assets/soundfx/level-complete.wav");
 
 
 				},
@@ -620,6 +621,7 @@ document.addEventListener("DOMContentLoaded", function()
 					scene.sound.add("dig_dirt");
 					scene.sound.add("dig_mineral");
 					scene.sound.add("munch");
+					scene.sound.add("complete");
 
 					scene.player = player;
 					player.stamina = player.stamina_max;
@@ -1105,7 +1107,6 @@ document.addEventListener("DOMContentLoaded", function()
 
 							if((bug.index_row === index_row && bug.index_col === index_col) && !bug.collected)
 							{
-								//xxx
 								bug.collected = true;
 								player.sprite.anims.play("eat");
 								this.sound.play("munch");
@@ -1131,10 +1132,12 @@ document.addEventListener("DOMContentLoaded", function()
 							{
 								if(index_row === level.coord_exit.index_row && index_col === level.coord_exit.index_col)
 								{
+									game.sound.play("complete");
 									setLevel(scene, player.level + 1);
 									scene.music.stop();
 									game.scene.stop("main");
 									game.scene.start("shop");
+
 								}
 								else if((!player.falling || player.canDigJump) && player.stamina > 0)
 								{
@@ -1162,7 +1165,6 @@ document.addEventListener("DOMContentLoaded", function()
 				}
 			},
 			{
-			//buttz
 				key: "shop",
 				preload: function()
 				{
