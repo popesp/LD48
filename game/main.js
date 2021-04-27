@@ -33,7 +33,7 @@ const player = {
 	damage: 0,
 	stamina_max: STAMINA_MAX,
 	canDoubleJump: false,
-	canDigJump: true,
+	canDigJump: false,
 	minerals: 0,
 	rejuv: 0,
 	input: {
