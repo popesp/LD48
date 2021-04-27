@@ -1181,7 +1181,10 @@ document.addEventListener("DOMContentLoaded", function()
 
 					scene.music = scene.sound.add("shoptheme");
 					scene.music.loop = true;
-					scene.music.play();
+					setTimeout(function(){ 
+						scene.music.play()
+					}, 1500);
+
 
 					scene.sound.add("dig_dirt");
 					scene.sound.add("upgrade");
